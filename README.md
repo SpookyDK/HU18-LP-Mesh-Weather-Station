@@ -5,3 +5,4 @@
 - Valg System
 - Distributed Spil Server
 - Traffik kontrolsystem
+- Banking System (crypto)
