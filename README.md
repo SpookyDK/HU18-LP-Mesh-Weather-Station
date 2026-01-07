@@ -1,6 +1,11 @@
 # P4-The-Good-Ones
+
 P4 Project
 
-# Projecte Ideer
+# Project Ideer
+
 Valg System
 
+# You ugly
+
+I hate this project
