@@ -1,11 +1,7 @@
 # P4-The-Good-Ones
-
-P4 Project
+## Reliabe Detributed Systems
 
 # Project Ideer
+- Valg System
+-  
 
-Valg System
-
-# You ugly
-
-I hate this project
