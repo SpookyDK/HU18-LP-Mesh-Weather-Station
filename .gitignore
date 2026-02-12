@@ -1,6 +1,12 @@
 venv
 .venv
-__pycache__
+__pycache__/
+.cache/
+.pyc
+
 build
 out
+
 blend1
+
+.env
