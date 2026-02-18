@@ -37,6 +37,16 @@ uint8_t cfg_rate_01hz[] = {
     0x01, 0x00,       // timeRef = UTC
     0x00, 0x00        // placeholder checksum → calculate next
 };
+
+uint8_t cfg_rate_5hz[] = {
+    0xB5, 0x62,       // UBX header
+    0x06, 0x08,       // CFG-RATE
+    0x06, 0x00,       // payload length = 6
+    0x68, 0x00,       // measRate = 10000 ms (0.1 Hz)
+    0x01, 0x00,       // navRate = 1
+    0x01, 0x00,       // timeRef = UTC
+    0x00, 0x00        // placeholder checksum → calculate next
+};
 uint8_t cfg_power_eco[] = {
     0xB5, 0x62,
     0x06, 0x11,
@@ -45,12 +55,28 @@ uint8_t cfg_power_eco[] = {
     0x00, 0x00
 };
 
-uint8_t cfg_power_eco_get[] = {
+uint8_t cfg_power_full[] = {
+    0xB5, 0x62,
+    0x06, 0x11,
+    0x02, 0x00,
+    0x08, 0x00,
+    0x00, 0x00
+};
+
+uint8_t cfg_power_get[] = {
     0xB5, 0x62,
     0x06, 0x11,
     0x00, 0x00,
     0x00, 0x00
 };
+
+uint8_t cfg_data_poll[] = {
+    0xB5, 0x62,
+    0x0B, 0x01,
+    0x00, 0x00,
+    0x0C, 0x2D,
+};
+
 
 void init_gps_uart() {
   const uart_config_t uart_config = {.baud_rate = 9600,
@@ -63,31 +89,6 @@ void init_gps_uart() {
   uart_set_pin(GPS_UART_NUM, GPS_TX_PIN, GPS_RX_PIN, UART_PIN_NO_CHANGE,
                UART_PIN_NO_CHANGE);
   uart_driver_install(GPS_UART_NUM, BUF_SIZE * 2, 0, 0, NULL, 0);
-  calcCheckSum(cfg_rate_01hz, 14);
-
-  uart_write_bytes(GPS_UART_NUM, (const char *)cfg_rate_01hz,
-                   sizeof(cfg_rate_01hz));
-
-
-  calcCheckSum(cfg_power_eco, 10);
-
-  uart_write_bytes(GPS_UART_NUM, (const char *)cfg_power_eco,
-                   sizeof(cfg_power_eco));
-
-
-  vTaskDelay(100 / portTICK_PERIOD_MS);
-  calcCheckSum(cfg_power_eco_get, 8);
-  uart_write_bytes(GPS_UART_NUM, (const char *)cfg_power_eco_get,
-                   sizeof(cfg_power_eco_get));
-  int len = uart_read_bytes(GPS_UART_NUM, data, BUF_SIZE,
-                              200 / portTICK_PERIOD_MS); // short timeout
- for(int i = 0; i < len; i++){
-     printf("%x,", data[i]);
- }
- printf("\n");
-
-
-  vTaskDelay(100 / portTICK_PERIOD_MS);
 
   uart_write_bytes(GPS_UART_NUM, (const char *)DISGGA, strlen(DISGGA));
   vTaskDelay(100 / portTICK_PERIOD_MS);
@@ -108,6 +109,79 @@ void init_gps_uart() {
   vTaskDelay(100 / portTICK_PERIOD_MS);
   uart_write_bytes(GPS_UART_NUM, (const char *)DISZDA, strlen(DISZDA));
   vTaskDelay(100 / portTICK_PERIOD_MS);
+
+ int len = uart_read_bytes(GPS_UART_NUM, data, BUF_SIZE,
+                              100 / portTICK_PERIOD_MS); // short timeout
+                                                         //
+ printf("Setting to 5hz\n");
+  calcCheckSum(cfg_rate_5hz, sizeof(cfg_rate_5hz));
+
+  uart_write_bytes(GPS_UART_NUM, (const char *)cfg_rate_5hz,
+                   sizeof(cfg_rate_5hz));
+
+
+ printf("Setting full power mode\n");
+  calcCheckSum(cfg_power_full, sizeof(cfg_power_full));
+
+  uart_write_bytes(GPS_UART_NUM, (const char *)cfg_power_full,
+                   sizeof(cfg_power_full));
+
+
+  vTaskDelay(200 / portTICK_PERIOD_MS);
+  calcCheckSum(cfg_power_get, sizeof(cfg_power_get));
+
+ printf("Asking for power_state\n");
+  uart_write_bytes(GPS_UART_NUM, (const char *)cfg_power_get,
+                   sizeof(cfg_power_get));
+ printf("Reading from gps\n");
+ len = uart_read_bytes(GPS_UART_NUM, data, BUF_SIZE,
+                              100 / portTICK_PERIOD_MS); // short timeout
+                                                         //
+printf("len = %d\n", len); 
+ for(int i = 0; i < len; i++){
+     if (data[i] == 0xB5){
+         printf("\n");
+     }
+     printf("%x,", data[i]);
+ }
+ printf("\n");
+
+ 
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
+ 
+  calcCheckSum(cfg_data_poll, sizeof(cfg_data_poll));
+ printf("Polling data\n");
+  uart_write_bytes(GPS_UART_NUM, (const char *)cfg_data_poll,
+                   sizeof(cfg_data_poll));
+
+ printf("Reading relod cords\n");
+ len = uart_read_bytes(GPS_UART_NUM, data, BUF_SIZE,
+                              200 / portTICK_PERIOD_MS); // short timeout
+     for(int i = 0; i < len; i++){
+         if (data[i] == 0xB5){
+             printf("\n");
+         }
+         printf("%x,", data[i]);
+     }
+     printf("\n");
+
+  vTaskDelay(100 / portTICK_PERIOD_MS);
+
+
+ printf("Setting to 0.1hz\n");
+
+  calcCheckSum(cfg_rate_01hz, sizeof(cfg_rate_01hz));
+
+  uart_write_bytes(GPS_UART_NUM, (const char *)cfg_rate_01hz,
+                   sizeof(cfg_rate_01hz));
+
+
+ printf("Setting to ECO\n");
+  calcCheckSum(cfg_power_eco, sizeof(cfg_power_eco));
+
+  uart_write_bytes(GPS_UART_NUM, (const char *)cfg_power_eco,
+                   sizeof(cfg_power_eco));
+  printf("Enabling message\n");
 
   uart_write_bytes(GPS_UART_NUM, (const char *)ENGGA, strlen(ENGGA));
   vTaskDelay(100 / portTICK_PERIOD_MS);
@@ -386,12 +460,13 @@ double distance_meters(double lat1, double lon1, double lat2, double lon2)
  volatile struct Coordinate newCoordinate;
 
 void gps_task(void *arg){
+    printf("starting task\n");
   while (1) {
      vTaskDelay(200 / portTICK_PERIOD_MS);
   
  
   int len = uart_read_bytes(GPS_UART_NUM, data, BUF_SIZE,
-                              200 / portTICK_PERIOD_MS); // short timeout
+                              5000 / portTICK_PERIOD_MS); // short timeout
     if (len > 0) {
       for (int i = 0; i < len; i++) {
         printf("%c", data[i]); // print each byte in hex
