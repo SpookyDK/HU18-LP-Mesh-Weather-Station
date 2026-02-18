@@ -6,7 +6,7 @@
 
 
 
-#define Testpin 14
+#define Testpin 5
 
 #define PCNT_INPUT_PIN 4 
 #define PCNT_HIGH_LIMIT 1000
@@ -39,14 +39,27 @@ void app_main(void)
 
     ESP_ERROR_CHECK(pcnt_channel_set_edge_action(pcnt_chan, PCNT_CHANNEL_EDGE_ACTION_INCREASE, PCNT_CHANNEL_EDGE_ACTION_HOLD));
 
+        ESP_ERROR_CHECK(pcnt_channel_set_edge_action(
+        pcnt_chan,
+        PCNT_CHANNEL_EDGE_ACTION_INCREASE,
+        PCNT_CHANNEL_EDGE_ACTION_HOLD));
+
+    
+    ESP_ERROR_CHECK(pcnt_unit_enable(pcnt_unit));
+    ESP_ERROR_CHECK(pcnt_unit_clear_count(pcnt_unit));
+    ESP_ERROR_CHECK(pcnt_unit_start(pcnt_unit));
+
     int val = 0;
     while (1) {
         gpio_set_level(Testpin, 1);
         vTaskDelay(pdMS_TO_TICKS(50));
-        gpio_set_level(Testpin, 0);     
+
+        gpio_set_level(Testpin, 0);
+
         ESP_ERROR_CHECK(pcnt_unit_get_count(pcnt_unit, &val));
         printf("Count: %d\n", val);
-        vTaskDelay(pdMS_TO_TICKS(1000));  
+
+        vTaskDelay(pdMS_TO_TICKS(1000));
 
     }   
 }
