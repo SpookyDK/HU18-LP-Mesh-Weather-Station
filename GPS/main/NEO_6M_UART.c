@@ -2,11 +2,14 @@
 #include "NEO_6M_UART.h"
 #include "esp_log.h"
 #include "freertos/idf_additions.h"
+#include "nvs.h"
+#include "nvs_flash.h"
 #include "portmacro.h"
 #include <ctype.h>
 #include <driver/uart.h>
 #include <inttypes.h>
 #include <math.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,6 +30,7 @@
 #define ENVTG "$PUBX,40,VTG,0,1,0,0,0,0*5F\r\n"
 #define ENZDA "$PUBX,40,ZDA,0,1,0,0,0,0*45\r\n"
 
+uint8_t hot_start_data[56];
 uint8_t cfg_rate_01hz[] = {
     0xB5, 0x62, // UBX header
     0x06, 0x08, // CFG-RATE
@@ -143,6 +147,12 @@ uint8_t ubx_wipe_settings[] = {
     0x00, 0x00              // checksum (calculate)
 };
 void gpsInitUart() {
+    esp_err_t err = nvs_flash_init();
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES ||
+        err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        nvs_flash_erase();
+        nvs_flash_init();
+    }
 
     const uart_config_t uart_config = {.baud_rate = 9600,
                                        .data_bits = UART_DATA_8_BITS,
@@ -161,6 +171,14 @@ void gpsInitUart() {
         printf("success\n");
     }
 
+    nvs_handle_t nvs;
+    nvs_open("cfg", NVS_READWRITE, &nvs);
+    size_t length = 56;
+    nvs_get_blob(nvs, "hot_start", hot_start_data, &length);
+    ret = gpsSendMessage(hot_start_data, length);
+    if (ret == 0) {
+        printf("how startt success\n");
+    }
     uart_write_bytes(GPS_UART_NUM, (const char *)DISGGA, strlen(DISGGA));
     vTaskDelay(100 / portTICK_PERIOD_MS);
 
@@ -192,11 +210,12 @@ void gpsInitUart() {
         printf("success\n");
     }
 
-    printf("Polling data  ");
-    ret = gpsSendMessage(cfg_data_poll, sizeof(cfg_data_poll));
-    if (ret == 0) {
-        printf("success\n");
-    }
+    // printf("Polling data  ");
+    // ret = gpsSendMessage(cfg_data_poll, sizeof(cfg_data_poll));
+    // if (ret == 0) {
+    //     printf("success\n");
+    // }
+
     printf("Setting to Stationary  ");
     ret =
         gpsSendMessage(cfg_nav5_stationary_3d, sizeof(cfg_nav5_stationary_3d));
@@ -223,12 +242,13 @@ void gpsInitUart() {
         printf("success\n");
     }
 
+    gpsSaveHotstartData();
+
     printf("Setting to Enabling pos update  ");
     ret = gpsSendMessage(cfg_msg_posllh, sizeof(cfg_msg_posllh));
     if (ret == 0) {
         printf("success\n");
     }
-
     printf("Setting to Enabling UTC update  ");
     ret = gpsSendMessage(cfg_msg_timeutc, sizeof(cfg_msg_timeutc));
     if (ret == 0) {
@@ -328,4 +348,66 @@ void gpsTask() {
             }
         }
     }
+}
+int gpsSaveHotstartData() {
+
+    uint8_t cfg_msg_posllhdis[] = {
+        0xB5, 0x62, // UBX header
+        0x06, 0x01, // CFG-MSG
+        0x08, 0x00, // payload length = 8
+        0x01, 0x02, // NAV-POSLLH
+        0x00,       // rate on I2C
+        0x00,       // rate on UART1
+        0x00,       // rate on UART2
+        0x00,       // rate on USB
+        0x00,       // rate on SPI
+        0x00,       // reserved
+        0x00, 0x00  // checksum (calculate)
+    };
+    uint8_t cfg_msg_timeutcdis[] = {
+        0xB5, 0x62, // UBX header
+        0x06, 0x01, // CFG-MSG
+        0x03, 0x00, // payload length
+        0x01, 0x21, // NAV-TIMEUTC
+        0x00,       // rate = 1 (every nav solution)
+        0x00, 0x00  // checksum (calculate)
+    };
+    printf("Disabling pos ");
+    int ret = gpsSendMessage(cfg_msg_posllhdis, sizeof(cfg_msg_posllhdis));
+    if (ret == 0) {
+        printf("  success\n");
+    }
+
+    printf("Disabling time ");
+    ret = gpsSendMessage(cfg_msg_timeutcdis, sizeof(cfg_msg_timeutcdis));
+    if (ret == 0) {
+        printf("  success\n");
+    }
+    while (1) {
+        printf("polling\n");
+        gpsCalcCheckSum(cfg_data_poll, sizeof(cfg_data_poll));
+
+        uart_write_bytes(GPS_UART_NUM, (const char *)cfg_data_poll,
+                         sizeof(cfg_data_poll));
+        int tlen = uart_read_bytes(GPS_UART_NUM, data, BUF_SIZE,
+                                   1000 / portTICK_PERIOD_MS); // short timeout
+        printf(" len = %d\n", tlen);
+        if (tlen == 56) {
+            nvs_handle_t nvs;
+
+            nvs_open("cfg", NVS_READWRITE, &nvs);
+            nvs_set_blob(nvs, "hot_start", hot_start_data, 56);
+            nvs_commit(nvs); // REQUIRED
+            nvs_close(nvs);
+            printf("saved to flash\n");
+            break;
+        }
+        for (int i = 0; i < tlen; i++) {
+            if (data[i] == 0xb5) {
+                printf("\n");
+            }
+            printf("%x,", data[i]);
+        }
+    }
+    return 0;
 }

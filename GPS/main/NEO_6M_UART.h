@@ -12,4 +12,5 @@ int gpsCalcCheckSum(uint8_t *sentence, uint8_t messageLengthInc);
 int gpsSendMessage(uint8_t *sentencte, uint8_t messageLengthInc);
 void gpsInitUart();
 void gpsTask();
+int gpsSaveHotstartData();
 static uint8_t data[1024];
