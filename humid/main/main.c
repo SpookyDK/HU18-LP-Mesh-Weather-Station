@@ -3,9 +3,11 @@
 #include "ds18b20.h"
 #include "esp_err.h"
 #include "esp_log.h"
+#include "esp_log_level.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/idf_additions.h"
 #include "freertos/projdefs.h"
+#include "inttypes.h"
 #include "onewire_bus_impl_rmt.h"
 #include "onewire_device.h"
 #include "onewire_types.h"
@@ -22,9 +24,6 @@
 #define TAG "main"
 
 void app_main(void) {
-    dht11_t dht11_sensor;
-    dht11_sensor.dht11_pin = CONFIG_DHT11_PIN;
-
     onewire_bus_handle_t bus = NULL;
     onewire_bus_config_t bus_config = {
         .bus_gpio_num = ONEWIRE_BUS_GPIO,
@@ -71,17 +70,22 @@ void app_main(void) {
     ESP_LOGI(TAG, "Searching over, %d ds18b20 devices found",
              ds18b20_device_num);
 
-    float temperature;
+    int16_t dht11_tempeture, dht11_humidity, ds18b20_temperature;
     while (true) {
-        if (!dht11_read(&dht11_sensor, CONFIG_CONNECTION_TIMEOUT)) {
-            ESP_LOGI("DHT11", "[Temperature]> %.2f", dht11_sensor.temperature);
-            ESP_LOGI("DHT11", "[Humidity]> %.2f", dht11_sensor.humidity);
+        if (dht_read_data(CONFIG_DHT11_PIN, &dht11_humidity,
+                          &dht11_tempeture) == ESP_OK) {
+            ESP_LOGI("DHT11", "[Temperature]> %d", dht11_tempeture);
+            ESP_LOGI("DHT11", "[Humidity]> %d", dht11_humidity);
+        } else {
+            ESP_LOGW("DHT11", "Failed to read");
         }
 
         ESP_ERROR_CHECK(ds18b20_trigger_temperature_conversion_for_all(bus));
         for (int i = 0; i < ds18b20_device_num; i++) {
-            ESP_ERROR_CHECK(ds18b20_get_temperature(ds18b20s[i], &temperature));
-            ESP_LOGI("DS18B20", "[%d] [Temperature]> %.2f", i, temperature);
+            ESP_ERROR_CHECK(
+                ds18b20_get_temperature(ds18b20s[i], &ds18b20_temperature));
+            ESP_LOGI("DS18B20", "[%d] [Temperature]> %.2f", i,
+                     ds18b20_temperature / 16.0f);
         }
         vTaskDelay(pdMS_TO_TICKS(2000));
     }
