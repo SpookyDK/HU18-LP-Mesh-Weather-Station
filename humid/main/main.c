@@ -7,6 +7,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/idf_additions.h"
 #include "freertos/projdefs.h"
+#include "freertos/task.h"
 #include "inttypes.h"
 #include "onewire_bus_impl_rmt.h"
 #include "onewire_device.h"
@@ -23,8 +24,44 @@
 
 #define TAG "main"
 
+onewire_bus_handle_t bus = NULL;
+int8_t ds18b20_device_num = 0;
+ds18b20_device_handle_t ds18b20s[ONEWIRE_MAX_DEVS];
+onewire_device_iter_handle_t iter = NULL;
+onewire_device_t next_onewire_device;
+esp_err_t search_result = ESP_OK;
+
+void print_runtime_stats(void) {
+    char buffer[1024];
+
+    vTaskGetRunTimeStats(buffer);
+
+    printf("Task Name\tRuntime\tCPU %%\n");
+    printf("%s\n", buffer);
+}
+void TEMP_TASK() {
+    int16_t dht11_tempeture, dht11_humidity, ds18b20_temperature;
+    while (true) {
+        ESP_LOGI("DHT11", "T1");
+        if (dht_read_data(CONFIG_DHT11_PIN, &dht11_humidity,
+                          &dht11_tempeture) == ESP_OK) {
+            ESP_LOGI("DHT11", "[Temperature]> %d", dht11_tempeture);
+            ESP_LOGI("DHT11", "[Humidity]> %d", dht11_humidity);
+        } else {
+            ESP_LOGW("DHT11", "Failed to read");
+        }
+
+        ESP_ERROR_CHECK(ds18b20_trigger_temperature_conversion_for_all(bus));
+        for (int i = 0; i < ds18b20_device_num; i++) {
+            ESP_ERROR_CHECK(
+                ds18b20_get_temperature(ds18b20s[i], &ds18b20_temperature));
+            ESP_LOGI("DS18B20", "[%d] [Temperature]> %.2f", i,
+                     ds18b20_temperature / 16.0f);
+        }
+        vTaskDelay(pdMS_TO_TICKS(2000));
+    }
+}
 void app_main(void) {
-    onewire_bus_handle_t bus = NULL;
     onewire_bus_config_t bus_config = {
         .bus_gpio_num = ONEWIRE_BUS_GPIO,
         .flags = {.en_pull_up = true},
@@ -32,12 +69,6 @@ void app_main(void) {
     onewire_bus_rmt_config_t rmt_config = {.max_rx_bytes = 10};
     ESP_ERROR_CHECK(onewire_new_bus_rmt(&bus_config, &rmt_config, &bus));
     ESP_LOGI(TAG, "1-Wire bus iniated");
-
-    int8_t ds18b20_device_num = 0;
-    ds18b20_device_handle_t ds18b20s[ONEWIRE_MAX_DEVS];
-    onewire_device_iter_handle_t iter = NULL;
-    onewire_device_t next_onewire_device;
-    esp_err_t search_result = ESP_OK;
 
     ESP_ERROR_CHECK(onewire_new_device_iter(bus, &iter));
     ESP_LOGI(TAG, "Device iterrator created, start search...");
@@ -70,23 +101,10 @@ void app_main(void) {
     ESP_LOGI(TAG, "Searching over, %d ds18b20 devices found",
              ds18b20_device_num);
 
-    int16_t dht11_tempeture, dht11_humidity, ds18b20_temperature;
-    while (true) {
-        if (dht_read_data(CONFIG_DHT11_PIN, &dht11_humidity,
-                          &dht11_tempeture) == ESP_OK) {
-            ESP_LOGI("DHT11", "[Temperature]> %d", dht11_tempeture);
-            ESP_LOGI("DHT11", "[Humidity]> %d", dht11_humidity);
-        } else {
-            ESP_LOGW("DHT11", "Failed to read");
-        }
-
-        ESP_ERROR_CHECK(ds18b20_trigger_temperature_conversion_for_all(bus));
-        for (int i = 0; i < ds18b20_device_num; i++) {
-            ESP_ERROR_CHECK(
-                ds18b20_get_temperature(ds18b20s[i], &ds18b20_temperature));
-            ESP_LOGI("DS18B20", "[%d] [Temperature]> %.2f", i,
-                     ds18b20_temperature / 16.0f);
-        }
-        vTaskDelay(pdMS_TO_TICKS(2000));
+    xTaskCreate(TEMP_TASK, "TEMPTask", 4096, NULL, 0, NULL);
+    // gpsTask();
+    while (1) {
+        print_runtime_stats();
+        vTaskDelay(pdMS_TO_TICKS(5000));
     }
 }

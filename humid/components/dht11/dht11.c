@@ -1,11 +1,11 @@
 #include "dht11.h"
 
 #include "esp_err.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include <esp_log.h>
-#include <freertos/FreeRTOS.h>
 #include <rom/ets_sys.h>
 #include <string.h>
-
 // DHT timer precision in microseconds
 #define DHT_TIMER_INTERVAL 2
 #define DHT_DATA_BITS 40
@@ -92,8 +92,8 @@ static inline esp_err_t dht_fetch_data(gpio_num_t pin,
                                        uint8_t data[DHT_DATA_BYTES]) {
     uint32_t low_duration;
     uint32_t high_duration;
-
     // Phase 'A' pulling signal low to initiate read sequence
+    //
     gpio_set_direction(pin, GPIO_MODE_OUTPUT_OD);
     gpio_set_level(pin, 0);
     ets_delay_us(20000);
@@ -131,10 +131,13 @@ esp_err_t dht_read_data(gpio_num_t pin, int16_t *humidity,
     uint8_t data[DHT_DATA_BYTES] = {0};
 
     gpio_set_direction(pin, GPIO_MODE_OUTPUT_OD);
+
+    vPortEnterCritical();
     gpio_set_level(pin, 1);
 
     esp_err_t result = dht_fetch_data(pin, data);
 
+    vPortExitCritical();
     /* restore GPIO direction because, after calling dht_fetch_data(), the
      * GPIO direction mode changes */
     gpio_set_direction(pin, GPIO_MODE_OUTPUT_OD);
