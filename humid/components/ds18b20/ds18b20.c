@@ -10,6 +10,7 @@
 #include "onewire_bus.h"
 #include "onewire_cmd.h"
 #include "onewire_crc.h"
+#include <stdint.h>
 #include <string.h>
 
 static const char *TAG = "ds18b20";
@@ -175,7 +176,7 @@ ds18b20_trigger_temperature_conversion_for_all(onewire_bus_handle_t bus) {
 }
 
 esp_err_t ds18b20_get_temperature(ds18b20_device_handle_t ds18b20,
-                                  float *ret_temperature) {
+                                  int16_t *ret_temperature) {
     ESP_RETURN_ON_FALSE(ds18b20 && ret_temperature, ESP_ERR_INVALID_ARG, TAG,
                         "invalid argument");
     // reset bus and check if the ds18b20 is present
@@ -205,8 +206,7 @@ esp_err_t ds18b20_get_temperature(ds18b20_device_handle_t ds18b20,
     // Combine the MSB and masked LSB into a signed 16-bit integer
     int16_t temperature_raw =
         (((int16_t)scratchpad.temp_msb << 8) | lsb_masked);
-    // Convert the raw temperature to a float,
-    *ret_temperature = temperature_raw / 16.0f;
+    *ret_temperature = temperature_raw;
 
     return ESP_OK;
 }

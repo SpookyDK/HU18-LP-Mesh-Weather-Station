@@ -130,7 +130,8 @@ ds18b20_trigger_temperature_conversion_for_all(onewire_bus_handle_t bus);
  * @brief Get temperature from a single DS18B20 device
  *
  * @param[in] ds18b20 DS18B20 device handle
- * @param[out] temperature conversion result from DS18B20
+ * @param[out] temperature conversion result from DS18B20, Value is 16x the
+ * actual value
  * @return
  *      - ESP_OK: Get temperature successfully
  *      - ESP_ERR_INVALID_ARG: Get temperature failed due to invalid argument
@@ -138,7 +139,7 @@ ds18b20_trigger_temperature_conversion_for_all(onewire_bus_handle_t bus);
  *      - ESP_FAIL: Get temperature failed due to other reasons
  */
 esp_err_t ds18b20_get_temperature(ds18b20_device_handle_t ds18b20,
-                                  float *temperature);
+                                  int16_t *temperature);
 
 /**
  * @brief Get the address of the DS18B20 device
