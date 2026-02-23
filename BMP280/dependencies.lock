@@ -72,6 +72,6 @@ dependencies:
 direct_dependencies:
 - esp-idf-lib/bmp280
 - idf
-manifest_hash: 5e6fc9839f84b884c199cc542885b5b3769c5454689a2213df45ec655335cd94
+manifest_hash: e5b353f83f43430179cf9837b6b7ee3eb33da51487567f027a1c3646c2f1958f
 target: esp32h2
 version: 2.0.0
