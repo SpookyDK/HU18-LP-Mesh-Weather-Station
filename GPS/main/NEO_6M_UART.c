@@ -50,6 +50,16 @@ uint8_t cfg_rate_5hz[] = {
     0x01, 0x00, // timeRef = UTC
     0x00, 0x00  // placeholder checksum → calculate next
 };
+
+uint8_t cfg_rate_1m[] = {
+    0xB5, 0x62, // UBX header
+    0x06, 0x08, // CFG-RATE
+    0x06, 0x00, // payload length = 6
+    0x60, 0xEA, // measRate = 10000 ms (0.1 Hz)
+    0x01, 0x00, // navRate = 1
+    0x01, 0x00, // timeRef = UTC
+    0x00, 0x00  // placeholder checksum → calculate next
+};
 uint8_t cfg_power_eco[] = {0xB5, 0x62, 0x06, 0x11, 0x02,
                            0x00, 0x08, 0x01, 0x00, 0x00};
 
@@ -281,13 +291,19 @@ int gpsSendMessage(uint8_t *sentence, uint8_t messageLengthInc) {
     vTaskDelay(50 / portTICK_PERIOD_MS);
     len = uart_read_bytes(GPS_UART_NUM, data, BUF_SIZE,
                           200 / portTICK_PERIOD_MS); // short timeout
-    if (data[3] == 0x01) {
+    if (len >= 10 && data[2] == 0x05 && data[3] == 0x01) {
         return 0;
     } else {
         return 1;
     }
 }
 void gpsTask() {
+
+    printf("Setting to 1 min interval  ");
+    int ret = gpsSendMessage(cfg_rate_1m, sizeof(cfg_rate_1m));
+    if (ret == 0) {
+        printf("success\n");
+    }
 
     int len = 0;
 
@@ -296,7 +312,7 @@ void gpsTask() {
         len = uart_read_bytes(GPS_UART_NUM, data, BUF_SIZE,
                               500 / portTICK_PERIOD_MS); // short timeout
                                                          //
-        vTaskDelay(3000 / portTICK_PERIOD_MS);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
         len = uart_read_bytes(GPS_UART_NUM, data, BUF_SIZE,
                               500 / portTICK_PERIOD_MS); // short timeout
         if (len == 0) {
@@ -321,8 +337,8 @@ void gpsTask() {
 
             double longitude_deg = lon / 1e7;
             double latitude_deg = lat / 1e7;
-            printf("Latitude:  %.7f\n", latitude_deg);
-            printf("Longitude: %.7f\n", longitude_deg);
+            printf("Latitude:Longiture:  %.7f, %.7f\n", latitude_deg,
+                   longitude_deg);
             printf("\n");
         }
         // check if second part of message is time
@@ -346,7 +362,9 @@ void gpsTask() {
                 }
                 printf("%x,", data[i]);
             }
+            continue;
         }
+        // vTaskDelay(59000 / portTICK_PERIOD_MS);
     }
 }
 int gpsSaveHotstartData() {
@@ -383,6 +401,12 @@ int gpsSaveHotstartData() {
     if (ret == 0) {
         printf("  success\n");
     }
+
+    printf("Setting to 5hz ");
+    ret = gpsSendMessage(cfg_rate_5hz, sizeof(cfg_rate_5hz));
+    if (ret == 0) {
+        printf("  success\n");
+    }
     while (1) {
         printf("polling\n");
         gpsCalcCheckSum(cfg_data_poll, sizeof(cfg_data_poll));
@@ -393,6 +417,7 @@ int gpsSaveHotstartData() {
                                    1000 / portTICK_PERIOD_MS); // short timeout
         printf(" len = %d\n", tlen);
         if (tlen == 56) {
+            printf("date recieved\n");
             nvs_handle_t nvs;
 
             nvs_open("cfg", NVS_READWRITE, &nvs);
