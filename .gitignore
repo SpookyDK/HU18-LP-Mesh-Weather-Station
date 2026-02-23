@@ -11,3 +11,5 @@ sdkconfig.old
 blend1
 
 .env
+
+.vscode
