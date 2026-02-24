@@ -30,8 +30,7 @@ static esp_err_t i2c_master_init(void)
 }
 
 
-/*SPLITTER FOR BMP280*/
-// Initialize BMP280 using the utkumaden BMX280 library
+// Initialize BMP280
 static bmx280_t* bmx280_dev_init(void)
 {
     bmx280_t *dev = bmx280_create(I2C_MASTER_NUM);
@@ -42,7 +41,7 @@ static bmx280_t* bmx280_dev_init(void)
 
     ESP_ERROR_CHECK(bmx280_init(dev));
 
-    bmx280_config_t cfg = BMX280_DEFAULT_CONFIG;
+    bmx280_config_t cfg = BMX280_DEFAULT_CONFIG; //ADD CONFIGURATIONS HERE
     ESP_ERROR_CHECK(bmx280_configure(dev, &cfg));
 
     return dev;
