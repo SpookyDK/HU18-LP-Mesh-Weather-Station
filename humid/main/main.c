@@ -44,8 +44,7 @@ void print_runtime_stats(void) {
 void TEMP_TASK() {
     int16_t dht11_tempeture, dht11_humidity, ds18b20_temperature;
     while (true) {
-        if (dht_read_data(CONFIG_DHT11_PIN, &dht11_humidity,
-                          &dht11_tempeture) == ESP_OK) {
+        if (dht_read_data(CONFIG_DHT11_PIN, &dht11_humidity, &dht11_tempeture) == ESP_OK) {
             ESP_LOGI("DHT11", "[Temperature]> %d", dht11_tempeture);
             ESP_LOGI("DHT11", "[Humidity]> %d", dht11_humidity);
         } else {
@@ -54,10 +53,8 @@ void TEMP_TASK() {
 
         ESP_ERROR_CHECK(ds18b20_trigger_temperature_conversion_for_all(bus));
         for (int i = 0; i < ds18b20_device_num; i++) {
-            ESP_ERROR_CHECK(
-                ds18b20_get_temperature(ds18b20s[i], &ds18b20_temperature));
-            ESP_LOGI("DS18B20", "[%d] [Temperature]> %.2f", i,
-                     ds18b20_temperature / 16.0f);
+            ESP_ERROR_CHECK(ds18b20_get_temperature(ds18b20s[i], &ds18b20_temperature));
+            ESP_LOGI("DS18B20", "[%d] [Temperature]> %.2f", i, ds18b20_temperature / 16.0f);
         }
         vTaskDelay(pdMS_TO_TICKS(30000));
     }
@@ -75,38 +72,31 @@ void app_main(void) {
     ESP_ERROR_CHECK(onewire_new_device_iter(bus, &iter));
     ESP_LOGI(TAG, "Device iterrator created, start search...");
     do {
-        search_result =
-            onewire_device_iter_get_next(iter, &next_onewire_device);
+        search_result = onewire_device_iter_get_next(iter, &next_onewire_device);
         if (search_result == ESP_OK) {
             ds18b20_config_t ds_config = {};
             onewire_device_address_t address;
-            if (ds18b20_new_device_from_enumeration(
-                    &next_onewire_device, &ds_config,
-                    &ds18b20s[ds18b20_device_num]) == ESP_OK) {
-                ds18b20_get_device_address(ds18b20s[ds18b20_device_num],
-                                           &address);
-                ESP_LOGI(TAG, "Found a ds18b20[%d], address: %016llx",
-                         ds18b20_device_num, address);
+            if (ds18b20_new_device_from_enumeration(&next_onewire_device, &ds_config, &ds18b20s[ds18b20_device_num]) ==
+                ESP_OK) {
+                ds18b20_get_device_address(ds18b20s[ds18b20_device_num], &address);
+                ESP_LOGI(TAG, "Found a ds18b20[%d], address: %016llx", ds18b20_device_num, address);
                 ds18b20_device_num++;
                 if (ds18b20_device_num >= ONEWIRE_MAX_DEVS) {
-                    ESP_LOGI(TAG,
-                             "Max 1-Wire devices Reached, stop searhing...");
+                    ESP_LOGI(TAG, "Max 1-Wire devices Reached, stop searhing...");
                     break;
                 }
             } else {
-                ESP_LOGI(TAG, "Found unkown device, address: %016llx",
-                         next_onewire_device.address);
+                ESP_LOGI(TAG, "Found unkown device, address: %016llx", next_onewire_device.address);
             }
         }
     } while (search_result != ESP_ERR_NOT_FOUND);
     ESP_ERROR_CHECK(onewire_del_device_iter(iter));
-    ESP_LOGI(TAG, "Searching over, %d ds18b20 devices found",
-             ds18b20_device_num);
+    ESP_LOGI(TAG, "Searching over, %d ds18b20 devices found", ds18b20_device_num);
 
     xTaskCreate(TEMP_TASK, "TEMPTask", 4096, NULL, 0, NULL);
 
     gpsInitUart();
-    xTaskCreate(gpsTask, "gpsTask", 2048, NULL, 0, NULL);
+    xTaskCreate(gpsTask, "gpsTask", 4096, NULL, 0, NULL);
 
     while (1) {
         print_runtime_stats();

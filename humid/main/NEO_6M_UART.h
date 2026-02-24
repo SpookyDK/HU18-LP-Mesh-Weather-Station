@@ -18,6 +18,7 @@
 #define DISVTG "$PUBX,40,VTG,0,0,0,0,0,0*5E\r\n"
 #define DISZDA "$PUBX,40,ZDA,0,0,0,0,0,0*44\r\n"
 
+// Do we ever intend to enable NMEA?
 #define ENGGA "$PUBX,40,GGA,0,1,0,0,0,0*5B\r\n"
 #define ENGLL "$PUBX,40,GLL,0,1,0,0,0,0*5D\r\n"
 #define ENGSA "$PUBX,40,GSA,0,1,0,0,0,0*4F\r\n"
@@ -58,23 +59,23 @@ static uint8_t cfg_rate_01hz[] = {
     0x00, 0x00  // placeholder checksum → calculate next
 };
 
-static uint8_t cfg_rate_5hz[] = {
+static uint8_t cfg_rate_high[] = {
     0xB5, 0x62, // UBX header
     0x06, 0x08, // CFG-RATE
     0x06, 0x00, // payload length = 6
-    0x68, 0x00, // measRate = 200 ms (5 Hz)
+    0xE8, 0x03, // measRate = 1000 ms (1 Hz)
     0x01, 0x00, // navRate = 1
-    0x01, 0x00, // timeRef = UTC
+    0x00, 0x00, // timeRef = UTC
     0x00, 0x00  // placeholder checksum → calculate next
 };
 
-static uint8_t cfg_rate_1m[] = {
+static uint8_t cfg_rate_low[] = {
     0xB5, 0x62, // UBX header
     0x06, 0x08, // CFG-RATE
     0x06, 0x00, // payload length = 6
-    0x60, 0xEA, // measRate = 60000 ms (0.0 Hz)
+    0x60, 0xEA, // measRate = 60000 ms
     0x01, 0x00, // navRate = 1
-    0x01, 0x00, // timeRef = UTC
+    0x00, 0x00, // timeRef = UTC
     0x00, 0x00  // placeholder checksum → calculate next
 };
 static uint8_t cfg_power_eco[] = {0xB5, 0x62, 0x06, 0x11, 0x02,
@@ -129,11 +130,17 @@ static uint8_t cfg_prt_ubx[] = {
     0x00, 0x00,             // txReady
     0xD0, 0x08, 0x00, 0x00, // mode (8N1, no parity)
     0x80, 0x25, 0x00, 0x00, // baud rate = 9600 (little-endian)
-    0x07, 0x00,             // inProtoMask = UBX+NMEA
-    0x03, 0x00,             // outProtoMask = UBX+NMEA
+    0x03, 0x00,             // inProtoMask = UBX+NMEA
+    0x01, 0x00,             // outProtoMask = UBX
     0x00, 0x00,             // flags
     0x00, 0x00,             // reserved
     0x00, 0x00              // placeholder checksum
+};
+static uint8_t poll_cfg_prt[] = {
+    0xB5, 0x62, 0x06, 0x00, // CFG-PRT
+    0x01, 0x00,             // payload = 1 byte (port ID)
+    0x01,                   // ask for UART1
+    0x00, 0x00              // checksum
 };
 
 static uint8_t poll_nav_posllh[] = {
@@ -178,6 +185,5 @@ int gpsCalcCheckSum(uint8_t *sentence, uint8_t messageLengthInc);
 int gpsSendMessage(uint8_t *sentencte, uint8_t messageLengthInc);
 void gpsInitUart();
 void gpsTask();
-int gpsSaveHotStartData();
-static uint8_t data[1024];
+void gpsSaveHotStartData();
 #endif // !NEO6MUART
