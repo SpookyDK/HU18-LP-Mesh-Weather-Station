@@ -1,7 +1,7 @@
-
 #include "NEO_6M_UART.h"
 #include "esp_log.h"
 #include "freertos/idf_additions.h"
+#include "freertos/projdefs.h"
 #include "nvs.h"
 #include "nvs_flash.h"
 #include "portmacro.h"
@@ -154,21 +154,20 @@ int gpsSendMessage(uint8_t *sentence, uint8_t messageLengthInc) {
     // Read to clear gps buffer
     len = uart_read_bytes(GPS_UART_NUM, data, BUF_SIZE,
                           100 / portTICK_PERIOD_MS); // short timeout
-                                                     //
+
     gpsCalcCheckSum(sentence, messageLengthInc);
-
     uart_write_bytes(GPS_UART_NUM, (const char *)sentence, messageLengthInc);
-    vTaskDelay(50 / portTICK_PERIOD_MS);
-    len = uart_read_bytes(GPS_UART_NUM, data, BUF_SIZE,
-                          100 / portTICK_PERIOD_MS); // short timeout
 
-    for (int i = 0; i < len; i++) {
+    len = uart_read_bytes(GPS_UART_NUM, data, BUF_SIZE,
+                          150 / portTICK_PERIOD_MS); // short timeout
+
+    /* for (int i = 0; i < len; i++) {
         if (data[i] == 0xb5) {
             printf("\n");
         }
         printf("%x,", data[i]);
     }
-    printf("\n");
+    printf("\n"); */
     if (len >= 10 && data[2] == 0x05 && data[3] == 0x01) {
         return 0;
     } else {
@@ -188,6 +187,7 @@ void gpsTask() {
     if (ret == 0) {
         printf("success\n");
     }
+
     printf("Setting to Enabling UTC update  ");
     ret = gpsSendMessage(cfg_msg_timeutc, sizeof(cfg_msg_timeutc));
     if (ret == 0) {
@@ -197,58 +197,65 @@ void gpsTask() {
     int len = 0;
 
     while (1) {
-        len = uart_read_bytes(GPS_UART_NUM, data, BUF_SIZE,
-                              2000 / portTICK_PERIOD_MS); // short timeout
+        len =
+            uart_read_bytes(GPS_UART_NUM, data, BUF_SIZE, pdMS_TO_TICKS(60000));
+
         if (len == 0) {
-            printf("recieved nothing\n");
+            ESP_LOGW("GPS", "Recieved nothing");
             continue;
         }
 
-        printf("something recieved len = %d \n", len);
+        if (len != 64) {
+            ESP_LOGW("GPS", "Recieved unkown package with len %d", len);
+            /* for (int i = 0; i < len; i++) { */
+            /*     if (data[i] == 0xB5) { */
+            /*         printf("\n"); */
+            /*     } */
+            /*     printf("%x,", data[i]); */
+            /* } */
+            uart_flush(GPS_UART_NUM);
+            continue;
+        }
+
+        if (!(data[0] == 0xb5 && data[1] == 0x62)) {
+            ESP_LOGW("GPS", "Recived unknown package, %x  %x", data[0],
+                     data[1]);
+            continue;
+        }
+
         // check if first message is pos
         if (len == 64 && data[2] == 0x01 && data[3] == 0x02) {
-            printf("\n");
-
-            int32_t lon =
+            int32_t longitude =
                 (int32_t)(((uint32_t)data[10]) | ((uint32_t)data[11] << 8) |
                           ((uint32_t)data[12] << 16) |
                           ((uint32_t)data[13] << 24));
-
-            int32_t lat =
+            int32_t latitude =
                 (int32_t)(((uint32_t)data[14]) | ((uint32_t)data[15] << 8) |
                           ((uint32_t)data[16] << 16) |
                           ((uint32_t)data[17] << 24));
 
-            double longitude_deg = lon / 1e7;
-            double latitude_deg = lat / 1e7;
-            printf("Latitude:Longiture:  %.7f, %.7f\n", latitude_deg,
-                   longitude_deg);
-            printf("\n");
+            ESP_LOGI("GPS", "Latitude:Longitude:  %.7f, %.7f\n",
+                     latitude / 1e7f, longitude / 1e7);
         }
+
         // check if second part of message is time
         if (len == 64 && data[38] == 0x01 && data[39] == 0x21) {
             uint8_t *time_data = &data[38];
+            uint16_t year = time_data[16] | (time_data[17] << 8);
+            uint8_t month = time_data[18];
             uint8_t day = time_data[19];
             uint8_t hour = time_data[20];
             uint8_t min = time_data[21];
             uint8_t sec = time_data[22];
             int32_t nano = data[56] | (data[57] << 8) | (data[58] << 16) |
                            (data[59] << 24);
-            printf("UTC:  day %02" PRIu8 " %02" PRIu8 ":%02" PRIu8 ":%02" PRIu8
-                   ".%" PRId32 "\n",
-                   day, hour, min, sec, nano);
+            // clang-format off
+            ESP_LOGI("GPS",
+                     "UTC:  %04" PRIu16    "-%02" PRIu8    "-%02T" PRIu8    "%02" PRIu8    ":%02" PRIu8    ":%02" PRIu8    ".%" PRId32  "UTC",
+                            year,            month,          day,           hour,           min,            sec,            nano);
+            // clang-format on
         }
-        if (len != 64) {
-            printf("recieved unknown package\n");
-            for (int i = 0; i < len; i++) {
-                if (data[i] == 0xB5) {
-                    printf("\n");
-                }
-                printf("%x,", data[i]);
-            }
-            continue;
-        }
-        vTaskDelay(59000 / portTICK_PERIOD_MS);
+        /* vTaskDelay(pdMS_TO_TICKS(58000)); */
     }
 }
 int gpsSaveHotStartData() {
@@ -279,7 +286,7 @@ int gpsSaveHotStartData() {
             break;
         }
         for (int i = 0; i < tlen; i++) {
-            if (data[i] == 0xb5) {
+            if (data[i] == 0xb5 && data[i + 1] == 0x62) {
                 printf("\n");
             }
             printf("%x,", data[i]);

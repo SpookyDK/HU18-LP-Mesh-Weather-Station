@@ -21,6 +21,6 @@ void app_main(void) {
     // gpsTask();
     while (1) {
         print_runtime_stats();
-        vTaskDelay(pdMS_TO_TICKS(5000));
+        vTaskDelay(pdMS_TO_TICKS(60000));
     }
 }

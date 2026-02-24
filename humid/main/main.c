@@ -1,4 +1,4 @@
-// HEHE ME FUCKED WITH YOUR CODE:  LUV U 2
+#include "NEO_6M_UART.h"
 #include "dht11.h"
 #include "driver/gpio.h"
 #include "ds18b20.h"
@@ -40,10 +40,10 @@ void print_runtime_stats(void) {
     printf("Task Name\tRuntime\tCPU %%\n");
     printf("%s\n", buffer);
 }
+
 void TEMP_TASK() {
     int16_t dht11_tempeture, dht11_humidity, ds18b20_temperature;
     while (true) {
-        ESP_LOGI("DHT11", "T1");
         if (dht_read_data(CONFIG_DHT11_PIN, &dht11_humidity,
                           &dht11_tempeture) == ESP_OK) {
             ESP_LOGI("DHT11", "[Temperature]> %d", dht11_tempeture);
@@ -59,9 +59,10 @@ void TEMP_TASK() {
             ESP_LOGI("DS18B20", "[%d] [Temperature]> %.2f", i,
                      ds18b20_temperature / 16.0f);
         }
-        vTaskDelay(pdMS_TO_TICKS(2000));
+        vTaskDelay(pdMS_TO_TICKS(30000));
     }
 }
+
 void app_main(void) {
     onewire_bus_config_t bus_config = {
         .bus_gpio_num = ONEWIRE_BUS_GPIO,
@@ -103,9 +104,12 @@ void app_main(void) {
              ds18b20_device_num);
 
     xTaskCreate(TEMP_TASK, "TEMPTask", 4096, NULL, 0, NULL);
-    // gpsTask();
+
+    gpsInitUart();
+    xTaskCreate(gpsTask, "gpsTask", 2048, NULL, 0, NULL);
+
     while (1) {
         print_runtime_stats();
-        vTaskDelay(pdMS_TO_TICKS(5000));
+        vTaskDelay(pdMS_TO_TICKS(60000));
     }
 }
