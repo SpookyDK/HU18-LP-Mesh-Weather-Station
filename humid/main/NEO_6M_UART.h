@@ -10,13 +10,12 @@
 #define BUF_SIZE 1024
 #include <stdint.h> // needed for uint32_t, uint16_t, etc.
 
-#define DISGGA "$PUBX,40,GGA,0,0,0,0,0,0*5A\r\n"
-#define DISGLL "$PUBX,40,GLL,0,0,0,0,0,0*5C\r\n"
-#define DISGSA "$PUBX,40,GSA,0,0,0,0,0,0*4E\r\n"
-#define DISGSV "$PUBX,40,GSV,0,0,0,0,0,0*59\r\n"
-#define DISRMC "$PUBX,40,RMC,0,0,0,0,0,0*47\r\n"
-#define DISVTG "$PUBX,40,VTG,0,0,0,0,0,0*5E\r\n"
-#define DISZDA "$PUBX,40,ZDA,0,0,0,0,0,0*44\r\n"
+static const char *nmea_dis[] = {
+    "$PUBX,40,GGA,0,0,0,0,0,0*5A\r\n", "$PUBX,40,GLL,0,0,0,0,0,0*5C\r\n",
+    "$PUBX,40,GSA,0,0,0,0,0,0*4E\r\n", "$PUBX,40,GSV,0,0,0,0,0,0*59\r\n",
+    "$PUBX,40,RMC,0,0,0,0,0,0*47\r\n", "$PUBX,40,VTG,0,0,0,0,0,0*5E\r\n",
+    "$PUBX,40,ZDA,0,0,0,0,0,0*44\r\n",
+};
 
 // Do we ever intend to enable NMEA?
 #define ENGGA "$PUBX,40,GGA,0,1,0,0,0,0*5B\r\n"
@@ -27,28 +26,41 @@
 #define ENVTG "$PUBX,40,VTG,0,1,0,0,0,0*5F\r\n"
 #define ENZDA "$PUBX,40,ZDA,0,1,0,0,0,0*45\r\n"
 
-static uint8_t cfg_msg_posllhdis[] = {
-    0xB5, 0x62, // UBX header
-    0x06, 0x01, // CFG-MSG
-    0x08, 0x00, // payload length = 8
-    0x01, 0x02, // NAV-POSLLH
-    0x00,       // rate on I2C
-    0x00,       // rate on UART1
-    0x00,       // rate on UART2
-    0x00,       // rate on USB
-    0x00,       // rate on SPI
-    0x00,       // reserved
-    0x00, 0x00  // checksum (calculate)
+static uint8_t ubx_wipe_settings[] = {
+    0xB5, 0x62,             // UBX header
+    0x06, 0x09,             // CFG-CFG
+    0x0D, 0x00,             // payload length = 13
+    0xFF, 0xFF, 0x00, 0x00, // clearMask (clear all)
+    0x00, 0x00, 0x00, 0x00, // saveMask (nothing)
+    0x00, 0x00, 0x00, 0x00, // loadMask (nothing)
+    0x07,                   // deviceMask: RAM | BBR | FLASH
+    0x00, 0x00              // checksum (calculate)
 };
-static uint8_t cfg_msg_timeutcdis[] = {
-    0xB5, 0x62, // UBX header
-    0x06, 0x01, // CFG-MSG
-    0x03, 0x00, // payload length
-    0x01, 0x21, // NAV-TIMEUTC
-    0x00,       // rate = 1 (every nav solution)
-    0x00, 0x00  // checksum (calculate)
+
+static uint8_t cfg_prt_ubx[] = {
+    0xB5, 0x62,             // header
+    0x06, 0x00,             // CFG-PRT
+    0x14, 0x00,             // payload length = 20 bytes
+    0x01,                   // portID = 1 (UART1)
+    0x00,                   // reserved
+    0x00, 0x00,             // txReady
+    0xD0, 0x08, 0x00, 0x00, // mode (8N1, no parity)
+    0x80, 0x25, 0x00, 0x00, // baud rate = 9600 (little-endian)
+    0x03, 0x00,             // inProtoMask = UBX
+    0x01, 0x00,             // outProtoMask = UBX
+    0x00, 0x00,             // flags
+    0x00, 0x00,             // reserved
+    0x00, 0x00              // placeholder checksum
 };
-static uint8_t hot_start_data[56];
+
+static uint8_t cfg_inf_poll_protocol[] = {
+    0xB5, 0x62, // header
+    0x06, 0x02, // CFG-INF
+    0x01, 0x00, // payload length
+    0x00, 0x00, // Get NMEA protol
+    0x00, 0x00  // placeholder checksum
+};
+
 static uint8_t cfg_rate_01hz[] = {
     0xB5, 0x62, // UBX header
     0x06, 0x08, // CFG-RATE
@@ -78,17 +90,44 @@ static uint8_t cfg_rate_low[] = {
     0x00, 0x00, // timeRef = UTC
     0x00, 0x00  // placeholder checksum → calculate next
 };
-static uint8_t cfg_power_eco[] = {0xB5, 0x62, 0x06, 0x11, 0x02,
-                                  0x00, 0x08, 0x01, 0x00, 0x00};
 
-static uint8_t cfg_power_full[] = {0xB5, 0x62, 0x06, 0x11, 0x02,
-                                   0x00, 0x08, 0x00, 0x00, 0x00};
+static uint8_t cfg_power_full[] = {
+    0xB5, 0x62, // UBX header
+    0x06, 0x11, // CFG-RXM
+    0x02, 0x00, // payload len = 2
+    0x08,       // Reserved to 8
+    0x00,       // Power mode {0: Max performance, 1: Power save, 4: Eco mode}
+    0x00, 0x00  // Checksum (calculate)
+};
 
-static uint8_t cfg_power_get[] = {0xB5, 0x62, 0x06, 0x11,
-                                  0x00, 0x00, 0x00, 0x00};
+static uint8_t cfg_power_eco[] = {
+    0xB5, 0x62, // UBX header
+    0x06, 0x11, // CFG-RXM
+    0x02, 0x00, // payload len = 2
+    0x08,       // Reserved to 8
+    0x01,       // Power mode {0: Max performance, 1: Power save, 4: Eco mode}
+    0x00, 0x00  // Checksum (calculate)
+};
+
+static uint8_t cfg_power_poll[] = {
+    0xB5, 0x62, // UBX header
+    0x06, 0x11, // CFG-RXM
+    0x00, 0x00, // payload len = 0
+    0x00, 0x00  // Checksum (calculate)
+};
 
 static uint8_t cfg_data_poll[] = {
-    0xB5, 0x62, 0x0B, 0x01, 0x00, 0x00, 0x0C, 0x2D,
+    0xB5, 0x62, // UBX header
+    0x0B, 0x01, // AID-INI
+    0x00, 0x00, // Payload len = 0
+    0x00, 0x00  // Checksum (calculate)
+};
+
+static uint8_t cfg_nmea_poll[] = {
+    0xB5, 0x62, // UBX header
+    0x06, 0x17, // CFG-NMEA
+    0x00, 0x00, // Payload len = 0
+    0x00, 0x00  // Checksum (calculate)
 };
 
 static uint8_t cfg_nav5_stationary_3d[] = {
@@ -121,21 +160,7 @@ static uint8_t cfg_nav_binary[] = {
     0x01, // class 0x01, ID 0x07 (NAV-PVT), rate = 1 (every navigation solution)
     0x00, 0x00 // placeholder checksum
 };
-static uint8_t cfg_prt_ubx[] = {
-    0xB5, 0x62,             // header
-    0x06, 0x00,             // CFG-PRT
-    0x14, 0x00,             // payload length = 20 bytes
-    0x01,                   // portID = 1 (UART1)
-    0x00,                   // reserved
-    0x00, 0x00,             // txReady
-    0xD0, 0x08, 0x00, 0x00, // mode (8N1, no parity)
-    0x80, 0x25, 0x00, 0x00, // baud rate = 9600 (little-endian)
-    0x03, 0x00,             // inProtoMask = UBX+NMEA
-    0x01, 0x00,             // outProtoMask = UBX
-    0x00, 0x00,             // flags
-    0x00, 0x00,             // reserved
-    0x00, 0x00              // placeholder checksum
-};
+
 static uint8_t poll_cfg_prt[] = {
     0xB5, 0x62, 0x06, 0x00, // CFG-PRT
     0x01, 0x00,             // payload = 1 byte (port ID)
@@ -149,6 +174,7 @@ static uint8_t poll_nav_posllh[] = {
     0x00, 0x00, // payload length = 0
     0x03, 0x05  // checksum CK_A, CK_B
 };
+
 static uint8_t cfg_msg_posllh[] = {
     0xB5, 0x62, // UBX header
     0x06, 0x01, // CFG-MSG
@@ -162,26 +188,52 @@ static uint8_t cfg_msg_posllh[] = {
     0x00,       // reserved
     0x00, 0x00  // checksum (calculate)
 };
-static uint8_t cfg_msg_timeutc[] = {
+
+static uint8_t cfg_msg_poslln_dis[] = {
     0xB5, 0x62, // UBX header
     0x06, 0x01, // CFG-MSG
-    0x03, 0x00, // payload length
-    0x01, 0x21, // NAV-TIMEUTC
-    0x01,       // rate = 1 (every nav solution)
+    0x08, 0x00, // payload length = 8
+    0x01, 0x02, // NAV-POSLLH
+    0x00,       // rate on I2C
+    0x00,       // rate on UART1
+    0x00,       // rate on UART2
+    0x00,       // rate on USB
+    0x00,       // rate on SPI
+    0x00,       // reserved
     0x00, 0x00  // checksum (calculate)
 };
 
-static uint8_t ubx_wipe_settings[] = {
-    0xB5, 0x62,             // UBX header
-    0x06, 0x09,             // CFG-CFG
-    0x0D, 0x00,             // payload length = 13
-    0xFF, 0xFF, 0x00, 0x00, // clearMask (clear all)
-    0x00, 0x00, 0x00, 0x00, // saveMask (nothing)
-    0x00, 0x00, 0x00, 0x00, // loadMask (nothing)
-    0x07,                   // deviceMask: RAM | BBR | FLASH
-    0x00, 0x00              // checksum (calculate)
+static uint8_t cfg_msg_timeutc[] = {
+    0xB5, 0x62, // UBX header
+    0x06, 0x01, // CFG-MSG
+    0x08, 0x00, // payload length = 8
+    0x01, 0x21, // NAV-TIMEUTC
+    0x00,       // rate on I2C
+    0x01,       // rate on UART1
+    0x00,       // rate on UART2
+    0x00,       // rate on USB
+    0x00,       // rate on SPI
+    0x00,       // reserved
+    0x00, 0x00  // checksum
 };
-int gpsCalcCheckSum(uint8_t *sentence, uint8_t messageLengthInc);
+
+static uint8_t cfg_msg_timeutc_dis[] = {
+    0xB5, 0x62, // UBX header
+    0x06, 0x01, // CFG-MSG
+    0x08, 0x00, // payload length = 8
+    0x01, 0x21, // NAV-TIMEUTC
+    0x00,       // rate on I2C
+    0x00,       // rate on UART1
+    0x00,       // rate on UART2
+    0x00,       // rate on USB
+    0x00,       // rate on SPI
+    0x00,       // reserved
+    0x00, 0x00  // checksum
+};
+
+static uint8_t hot_start_data[56];
+
+void gpsCalcCheckSum(uint8_t *sentence, uint8_t messageLengthInc);
 int gpsSendMessage(uint8_t *sentencte, uint8_t messageLengthInc);
 void gpsInitUart();
 void gpsTask();

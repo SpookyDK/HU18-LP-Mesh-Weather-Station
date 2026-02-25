@@ -37,8 +37,8 @@ void print_runtime_stats(void) {
 
     vTaskGetRunTimeStats(buffer);
 
-    printf("Task Name\tRuntime\tCPU %%\n");
-    printf("%s\n", buffer);
+    printf("Task Name\tRuntime\t\tCPU %%\n");
+    printf("%s", buffer);
 }
 
 void TEMP_TASK() {
