@@ -1,5 +1,6 @@
 #include "driver/spi_master.h"
 #include "esp_log.h"
+#include <stdio.h>
 
 #define PIN_NUM_MISO 4
 #define PIN_NUM_MOSI 5
@@ -33,18 +34,23 @@ void sx1276_init_spi() {
 }
 
 // Read a single register
-uint8_t sx1276_read_reg(uint8_t reg) {
+uint8_t sx1276_read_reg(uint8_t reg)
+{
     spi_transaction_t t = {0};
-    uint8_t rx_data = 0;
-    uint8_t tx_data = reg & 0x7F; // MSB=0 for read
 
-    t.length = 8;
-    t.tx_buffer = &tx_data;
-    t.rx_buffer = &rx_data;
-    t.flags = SPI_TRANS_USE_RXDATA | SPI_TRANS_USE_TXDATA;
+    uint8_t tx_data[2];
+    uint8_t rx_data[2];
+
+    tx_data[0] = reg & 0x7F;   // MSB = 0 for read
+    tx_data[1] = 0x00;         // Dummy byte to clock data out
+
+    t.length = 16;             // 2 bytes = 16 bits
+    t.tx_buffer = tx_data;
+    t.rx_buffer = rx_data;
 
     ESP_ERROR_CHECK(spi_device_transmit(spi, &t));
-    return t.rx_data[0];
+
+    return rx_data[1];         // Second byte contains register value
 }
 
 void sx1276_read_frequency() {
@@ -62,6 +68,7 @@ void sx1276_read_frequency() {
 void app_main(void) {
     sx1276_init_spi();
     uint8_t version = sx1276_read_reg(SX1276_REG_VERSION);
+    //printf(tag,"version: %i",version);
     if (version == 0x12) {
         ESP_LOGI(TAG, "SPI wiring is good! RegVersion = 0x%02X", version);
     } else {
