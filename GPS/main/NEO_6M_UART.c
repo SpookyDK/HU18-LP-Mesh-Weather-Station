@@ -197,9 +197,8 @@ void gpsTask() {
     int len = 0;
 
     while (1) {
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
         len = uart_read_bytes(GPS_UART_NUM, data, BUF_SIZE,
-                              500 / portTICK_PERIOD_MS); // short timeout
+                              2000 / portTICK_PERIOD_MS); // short timeout
         if (len == 0) {
             printf("recieved nothing\n");
             continue;

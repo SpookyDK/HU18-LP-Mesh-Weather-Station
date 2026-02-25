@@ -1,28 +1,22 @@
-#include <stdio.h>
+#include "driver/gpio.h"
+#include "driver/pulse_cnt.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "driver/pulse_cnt.h"
-#include "driver/gpio.h"
-
-
+#include <stdio.h>
 
 #define Testpin 5
 
-#define PCNT_INPUT_PIN 4 
+#define PCNT_INPUT_PIN 1
 #define PCNT_HIGH_LIMIT 1000
 #define PCNT_LOW_LIMIT -1000
 
-void app_main(void)
-{
-    gpio_config_t io_conf = {
-    .pin_bit_mask = (1ULL << Testpin), 
-    .mode = GPIO_MODE_OUTPUT,          
-    .pull_up_en = GPIO_PULLUP_DISABLE, 
-    .pull_down_en = GPIO_PULLDOWN_DISABLE,  
-    .intr_type = GPIO_INTR_DISABLE             
-    };
+void app_main(void) {
+    gpio_config_t io_conf = {.pin_bit_mask = (1ULL << Testpin),
+                             .mode = GPIO_MODE_OUTPUT,
+                             .pull_up_en = GPIO_PULLUP_DISABLE,
+                             .pull_down_en = GPIO_PULLDOWN_DISABLE,
+                             .intr_type = GPIO_INTR_DISABLE};
     gpio_config(&io_conf);
-
 
     pcnt_unit_config_t unit_config = {
         .high_limit = PCNT_HIGH_LIMIT,
@@ -37,14 +31,14 @@ void app_main(void)
     pcnt_channel_handle_t pcnt_chan = NULL;
     ESP_ERROR_CHECK(pcnt_new_channel(pcnt_unit, &chan_config, &pcnt_chan));
 
-    ESP_ERROR_CHECK(pcnt_channel_set_edge_action(pcnt_chan, PCNT_CHANNEL_EDGE_ACTION_INCREASE, PCNT_CHANNEL_EDGE_ACTION_HOLD));
-
-        ESP_ERROR_CHECK(pcnt_channel_set_edge_action(
-        pcnt_chan,
-        PCNT_CHANNEL_EDGE_ACTION_INCREASE,
+    ESP_ERROR_CHECK(pcnt_channel_set_edge_action(
+        pcnt_chan, PCNT_CHANNEL_EDGE_ACTION_INCREASE,
         PCNT_CHANNEL_EDGE_ACTION_HOLD));
 
-    
+    ESP_ERROR_CHECK(pcnt_channel_set_edge_action(
+        pcnt_chan, PCNT_CHANNEL_EDGE_ACTION_INCREASE,
+        PCNT_CHANNEL_EDGE_ACTION_HOLD));
+
     ESP_ERROR_CHECK(pcnt_unit_enable(pcnt_unit));
     ESP_ERROR_CHECK(pcnt_unit_clear_count(pcnt_unit));
     ESP_ERROR_CHECK(pcnt_unit_start(pcnt_unit));
@@ -60,6 +54,5 @@ void app_main(void)
         printf("Count: %d\n", val);
 
         vTaskDelay(pdMS_TO_TICKS(1000));
-
-    }   
+    }
 }
