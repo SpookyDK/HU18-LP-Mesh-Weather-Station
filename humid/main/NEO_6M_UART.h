@@ -264,12 +264,27 @@ static uint8_t cfg_msg_timeutc_dis[] = {
     0x00,       // reserved
     0x00, 0x00  // checksum
 };
+#define UBX_FRAME_BUF_SIZE 128
+#define UBX_FRAME_POOL_SIZE 8
+typedef struct {
+  uint8_t data[UBX_FRAME_BUF_SIZE];
+  uint16_t len;
+  bool in_use;
+  uint8_t frame_count;
+  uint8_t frame_offsets[4];
+} ubx_frame_t;
+
+static ubx_frame_t frame_pool[UBX_FRAME_POOL_SIZE];
+
+static QueueHandle_t uart_event_queue;
+static QueueHandle_t response_queue;
+static QueueHandle_t nav_queue;
 
 static uint8_t hot_start_data[56];
 
 void gpsCalcCheckSum(uint8_t *sentence, uint8_t messageLengthInc);
-int gpsSendMessage(uint8_t *sentencte, uint8_t messageLengthInc);
+int gps_send_request(uint8_t *sentencte, uint8_t messageLengthInc);
 void gpsInitUart();
 void gpsTask();
-void gpsSaveHotStartData();
+static void evaluate_nav_frame(ubx_frame_t *frame);
 #endif // !NEO6MUART
