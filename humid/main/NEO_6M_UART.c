@@ -79,6 +79,8 @@ void gpsInitUart() {
     ESP_LOGI("GPS", "Setting to 1 min interval...");
     ESP_ERROR_CHECK(gpsSendMessage(cfg_rate_low, sizeof(cfg_rate_low)));
 
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
     ESP_LOGI("GPS", "Enabling NAV-POSLLH on UART1...");
     ESP_ERROR_CHECK(gpsSendMessage(cfg_msg_posllh, sizeof(cfg_msg_posllh)));
 
@@ -182,16 +184,17 @@ void gpsTask() {
     int len = 0;
     uint16_t target_len, target_location;
 
+    gpsSaveHotStartData();
+
     while (1) {
         uart_flush(GPS_UART_NUM);
-        len = uart_read_bytes(GPS_UART_NUM, data, BUF_SIZE, pdMS_TO_TICKS(50000));
+        len = uart_read_bytes(GPS_UART_NUM, data, BUF_SIZE, pdMS_TO_TICKS(10000));
 
         if (find_target(0x0201, len, &target_location, &target_len) == 0) {
             int32_t longitude = *(int32_t *)&data[target_location + 10];
             int32_t latitude = *(int32_t *)&data[target_location + 14];
 
             ESP_LOGI("GPS", "Latitude:Longitude:  %.7f, %.7f", latitude / 1e7f, longitude / 1e7);
-            gpsSaveHotStartData();
         }
 
         if (find_target(0x2101, len, &target_location, &target_len) == 0) {
@@ -220,7 +223,7 @@ void gpsSaveHotStartData() {
         uart_write_bytes(GPS_UART_NUM, (const char *)cfg_data_poll, sizeof(cfg_data_poll));
 
         int len = uart_read_bytes(GPS_UART_NUM, data, BUF_SIZE, pdMS_TO_TICKS(2000));
-        if (len >= 56 && find_target(target_id, len, &target_location, &target_len) == 0 && target_len == 56) {
+        if (len >= 48 && find_target(target_id, len, &target_location, &target_len) == 0) {
             ESP_LOGI("GPS_HotStart", "Poll recieved");
             nvs_handle_t nvs;
             ESP_ERROR_CHECK(nvs_open("cfg", NVS_READWRITE, &nvs));
