@@ -37,7 +37,7 @@ static uint8_t ubx_wipe_settings[] = {
     0x00, 0x00              // checksum (calculate)
 };
 
-static uint8_t cfg_prt_ubx[] = {
+static uint8_t cfg_prt_ubx_only[] = {
     0xB5, 0x62,             // header
     0x06, 0x00,             // CFG-PRT
     0x14, 0x00,             // payload length = 20 bytes
@@ -105,7 +105,7 @@ static uint8_t cfg_power_eco[] = {
     0x06, 0x11, // CFG-RXM
     0x02, 0x00, // payload len = 2
     0x08,       // Reserved to 8
-    0x01,       // Power mode {0: Max performance, 1: Power save, 4: Eco mode}
+    0x04,       // Power mode {0: Max performance, 1: Power save, 4: Eco mode}
     0x00, 0x00  // Checksum (calculate)
 };
 
@@ -116,7 +116,34 @@ static uint8_t cfg_power_poll[] = {
     0x00, 0x00  // Checksum (calculate)
 };
 
-static uint8_t cfg_data_poll[] = {
+static uint8_t cfg_power_our[] = {
+    0xB5, 0x62, // UBX header
+    0x06, 0x11, // CFG-RXM
+    0x02, 0x00, // payload len = 2
+    0x08,       // Reserved to 8
+    0x01,       // Power mode {0: Max performance, 1: Power save, 4: Eco mode}
+    0x00, 0x00  // Checksum (calculate)
+};
+
+static uint8_t cfg_pm2_low[] = {
+    0xB5, 0x62,             // UBX header
+    0x06, 0x31,             // CFG-PM2
+    0x2c, 0x00,             // payload len = 44
+    0x01,                   // Version has to be 1
+    0x00, 0x00, 0x00,       // Reserved
+    0x00, 0x90, 0x02, 0x00, // flags
+    0x60, 0xEA, 0x00, 0x00, // Update period = 60000 ms = 60 seconds
+    0x10, 0x27, 0x00, 0x00, // Search period = 10000 ms = 10 seconds
+    0x00, 0x00, 0x00, 0x00, // grid offset
+    0x00, 0x00,             // on time after first fix
+    0x00, 0x00,             // min search time
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Reserved
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Reserved
+    0x00, 0x00 // Checksum (calculate)
+
+};
+
+static uint8_t aid_ini_poll[] = {
     0xB5, 0x62, // UBX header
     0x0B, 0x01, // AID-INI
     0x00, 0x00, // Payload len = 0
@@ -175,6 +202,13 @@ static uint8_t poll_nav_posllh[] = {
     0x03, 0x05  // checksum CK_A, CK_B
 };
 
+static uint8_t poll_nav_status[] = {
+    0xB5, 0x62, // UBX header
+    0x01, 0x03, // Class = NAV, ID = Status
+    0x00, 0x00, // payload length = 0
+    0x03, 0x05  // checksum CK_A, CK_B
+};
+
 static uint8_t cfg_msg_posllh[] = {
     0xB5, 0x62, // UBX header
     0x06, 0x01, // CFG-MSG
@@ -189,7 +223,7 @@ static uint8_t cfg_msg_posllh[] = {
     0x00, 0x00  // checksum (calculate)
 };
 
-static uint8_t cfg_msg_poslln_dis[] = {
+static uint8_t cfg_msg_posllh_dis[] = {
     0xB5, 0x62, // UBX header
     0x06, 0x01, // CFG-MSG
     0x08, 0x00, // payload length = 8
