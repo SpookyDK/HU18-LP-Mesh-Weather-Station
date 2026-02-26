@@ -3,7 +3,7 @@
 #include "freertos/task.h"
 #include <stdio.h>
 
-#define HALL_PIN 1
+#define HALL_PIN 5
 
 void app_main(void) {
     gpio_set_direction(HALL_PIN, GPIO_MODE_INPUT);
