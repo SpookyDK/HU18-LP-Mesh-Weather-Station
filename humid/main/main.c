@@ -93,13 +93,13 @@ void app_main(void) {
     ESP_ERROR_CHECK(onewire_del_device_iter(iter));
     ESP_LOGI(TAG, "Searching over, %d ds18b20 devices found", ds18b20_device_num);
 
-    xTaskCreate(TEMP_TASK, "TEMPTask", 4096, NULL, 0, NULL);
+    // xTaskCreate(TEMP_TASK, "TEMPTask", 4096, NULL, 0, NULL);
 
     gpsInitUart();
     xTaskCreate(gpsTask, "gpsTask", 4096, NULL, 0, NULL);
 
     while (1) {
-        print_runtime_stats();
+        // print_runtime_stats();
         vTaskDelay(pdMS_TO_TICKS(60000));
     }
 }

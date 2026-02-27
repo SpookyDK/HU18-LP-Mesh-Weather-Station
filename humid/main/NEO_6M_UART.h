@@ -5,15 +5,15 @@
 #include <stdint.h>
 
 #define GPS_UART_NUM UART_NUM_1
+#define GPS_DISABLE_PIN 0
 #define GPS_RX_PIN 1
 #define GPS_TX_PIN 2
 #define BUF_SIZE 1024
 #include <stdint.h> // needed for uint32_t, uint16_t, etc.
 
 static const char *nmea_dis[] = {
-    "$PUBX,40,GGA,0,0,0,0,0,0*5A\r\n", "$PUBX,40,GLL,0,0,0,0,0,0*5C\r\n",
-    "$PUBX,40,GSA,0,0,0,0,0,0*4E\r\n", "$PUBX,40,GSV,0,0,0,0,0,0*59\r\n",
-    "$PUBX,40,RMC,0,0,0,0,0,0*47\r\n", "$PUBX,40,VTG,0,0,0,0,0,0*5E\r\n",
+    "$PUBX,40,GGA,0,0,0,0,0,0*5A\r\n", "$PUBX,40,GLL,0,0,0,0,0,0*5C\r\n", "$PUBX,40,GSA,0,0,0,0,0,0*4E\r\n",
+    "$PUBX,40,GSV,0,0,0,0,0,0*59\r\n", "$PUBX,40,RMC,0,0,0,0,0,0*47\r\n", "$PUBX,40,VTG,0,0,0,0,0,0*5E\r\n",
     "$PUBX,40,ZDA,0,0,0,0,0,0*44\r\n",
 };
 
@@ -125,22 +125,45 @@ static uint8_t cfg_power_our[] = {
     0x00, 0x00  // Checksum (calculate)
 };
 
+static uint8_t cfg_pm2_poll[] = {
+    0xB5, 0x62, // UBX header
+    0x06, 0x3B, // CFG-PM2
+    0x00, 0x00, // payload len = 44
+    0x00, 0x00, // Checksum
+};
+
+static uint8_t cfg_pm2_whatever[] = {
+    0xB5, 0x62,             // Header
+    0x06, 0x3B,             // Class/ID: CFG-PM2
+    0x2C, 0x00,             // Length: 44 bytes
+    0x01,                   // Version
+    0x06, 0x00, 0x00,       // Reserved
+    0x00, 0x10, 0x00, 0x00, // flags (enable cyclic tracking)
+    0x60, 0xEA, 0x00, 0x00, // updatePeriod: 60000ms
+    0xE8, 0x03, 0x00, 0x00, // searchPeriod: 1000ms
+    0x00, 0x00, 0x00, 0x00, // gridOffset
+    0x00, 0x00,             // onTime
+    0x00, 0x00,             // minAcqTime
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Reserved
+    0x00, 0x00,                                                 // Checksum
+};
+
 static uint8_t cfg_pm2_low[] = {
     0xB5, 0x62,             // UBX header
-    0x06, 0x31,             // CFG-PM2
+    0x06, 0x3B,             // CFG-PM2
     0x2c, 0x00,             // payload len = 44
     0x01,                   // Version has to be 1
-    0x00, 0x00, 0x00,       // Reserved
+    0x06, 0x00, 0x00,       // Reserved
     0x00, 0x90, 0x02, 0x00, // flags
-    0x60, 0xEA, 0x00, 0x00, // Update period = 60000 ms = 60 seconds
+    0xe8, 0x03, 0x00, 0x00, // Update period = 60000 ms = 60 seconds
     0x10, 0x27, 0x00, 0x00, // Search period = 10000 ms = 10 seconds
     0x00, 0x00, 0x00, 0x00, // grid offset
-    0x00, 0x00,             // on time after first fix
+    0x02, 0x00,             // on time after first fix
     0x00, 0x00,             // min search time
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Reserved
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Reserved
-    0x00, 0x00 // Checksum (calculate)
-
+    0x2c, 0x01, 0x00, 0x00, 0x4f, 0xc1, 0x03, 0x00, 0x86, 0x02,
+    0x00, 0x00, 0xfe, 0x00, 0x00, 0x00, 0x64, 0x40, 0x01, 0x00, // Reserved
+    0x00, 0x00                                                  // Checksum (calculate)
 };
 
 static uint8_t aid_ini_poll[] = {
@@ -184,7 +207,7 @@ static uint8_t cfg_nav_binary[] = {
     0x06, 0x01, // CFG-MSG
     0x03, 0x00, // payload length = 3
     0x01, 0x07,
-    0x01, // class 0x01, ID 0x07 (NAV-PVT), rate = 1 (every navigation solution)
+    0x01,      // class 0x01, ID 0x07 (NAV-PVT), rate = 1 (every navigation solution)
     0x00, 0x00 // placeholder checksum
 };
 
@@ -223,6 +246,13 @@ static uint8_t cfg_msg_posllh[] = {
     0x00, 0x00  // checksum (calculate)
 };
 
+static uint8_t nav_posllh_poll[] = {
+    0xB5, 0x62, // UBX header
+    0x01, 0x02, // NAV-POSLLH
+    0x00, 0x00, // payload length = 0
+    0x00, 0x00  // checksum (calculate)
+};
+
 static uint8_t cfg_msg_posllh_dis[] = {
     0xB5, 0x62, // UBX header
     0x06, 0x01, // CFG-MSG
@@ -251,6 +281,13 @@ static uint8_t cfg_msg_timeutc[] = {
     0x00, 0x00  // checksum
 };
 
+static uint8_t nav_timeutc_poll[] = {
+    0xB5, 0x62, // UBX header
+    0x01, 0x21, // NAV-TIMEUTC
+    0x00, 0x00, // payload length = 0
+    0x00, 0x00  // checksum (calculate)
+};
+
 static uint8_t cfg_msg_timeutc_dis[] = {
     0xB5, 0x62, // UBX header
     0x06, 0x01, // CFG-MSG
@@ -266,15 +303,18 @@ static uint8_t cfg_msg_timeutc_dis[] = {
 };
 #define UBX_FRAME_BUF_SIZE 128
 #define UBX_FRAME_POOL_SIZE 8
+
 typedef struct {
-  uint8_t data[UBX_FRAME_BUF_SIZE];
-  uint16_t len;
-  bool in_use;
-  uint8_t frame_count;
-  uint8_t frame_offsets[4];
+    uint8_t data[UBX_FRAME_BUF_SIZE];
+    uint8_t len;
+    bool in_use;
+    uint8_t frame_count;
+    uint8_t frame_offsets[4];
 } ubx_frame_t;
 
 static ubx_frame_t frame_pool[UBX_FRAME_POOL_SIZE];
+static uint8_t left_over_buffer[UBX_FRAME_BUF_SIZE];
+static uint16_t left_over_buffer_len = 0;
 
 static QueueHandle_t uart_event_queue;
 static QueueHandle_t response_queue;
@@ -282,9 +322,6 @@ static QueueHandle_t nav_queue;
 
 static uint8_t hot_start_data[56];
 
-void gpsCalcCheckSum(uint8_t *sentence, uint8_t messageLengthInc);
-int gps_send_request(uint8_t *sentencte, uint8_t messageLengthInc);
 void gpsInitUart();
 void gpsTask();
-static void evaluate_nav_frame(ubx_frame_t *frame);
 #endif // !NEO6MUART
