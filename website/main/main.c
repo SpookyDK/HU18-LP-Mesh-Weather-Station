@@ -6,7 +6,8 @@
 #include <stdio.h>
 
 void app_main(void) {
-    connect_to_hotspot();
+    wifi_init_softap();
+
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
