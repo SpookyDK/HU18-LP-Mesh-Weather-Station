@@ -13,8 +13,8 @@ static const char *TAG = "moisture-soil";
 #define MOISTURE_ADC_ATTEN   ADC_ATTEN_DB_12
 
 // Calibration values - measure once, change and forget
-#define ADC_DRY_VALUE 3000 // place sensor in bone dry dirt and read raw value, use that as dry reference
-#define ADC_WET_VALUE 1000 // place sensor in dirt then add water until fully saturated, read raw value, use that as wet reference
+#define ADC_DRY_VALUE 1950 // place sensor in bone dry dirt and read raw value, use that as dry reference
+#define ADC_WET_VALUE 1250 // place sensor in dirt then add water until fully saturated, read raw value, use that as wet reference
 
 // Convert raw ADC value to percentage (0% = dry, 100% = wet)
 static int raw_to_percent(int raw)
