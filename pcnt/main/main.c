@@ -1,28 +1,28 @@
 #include "driver/gpio.h"
 #include "driver/pulse_cnt.h"
+#include "esp_log.h"
+#include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "inttypes.h"
+#include <stdint.h>
 #include <stdio.h>
-
-#define Testpin 1
 
 #define PCNT_INPUT_PIN 5
 #define PCNT_HIGH_LIMIT 1000
 #define PCNT_LOW_LIMIT -1000
 
-void app_main(void) {
-    gpio_config_t io_conf = {.pin_bit_mask = (1ULL << Testpin),
-                             .mode = GPIO_MODE_OUTPUT,
-                             .pull_up_en = GPIO_PULLUP_DISABLE,
-                             .pull_down_en = GPIO_PULLDOWN_DISABLE,
-                             .intr_type = GPIO_INTR_DISABLE};
-    gpio_config(&io_conf);
+pcnt_unit_handle_t pcnt_unit = NULL;
 
+/**
+ * @brief The init function for the windPcnt counter
+ * @note Is usually called before starting the windPcntTask
+ **/
+void windPcntInit(void) {
     pcnt_unit_config_t unit_config = {
         .high_limit = PCNT_HIGH_LIMIT,
         .low_limit = PCNT_LOW_LIMIT,
     };
-    pcnt_unit_handle_t pcnt_unit = NULL;
     ESP_ERROR_CHECK(pcnt_new_unit(&unit_config, &pcnt_unit));
 
     pcnt_chan_config_t chan_config = {
@@ -42,17 +42,33 @@ void app_main(void) {
     ESP_ERROR_CHECK(pcnt_unit_enable(pcnt_unit));
     ESP_ERROR_CHECK(pcnt_unit_clear_count(pcnt_unit));
     ESP_ERROR_CHECK(pcnt_unit_start(pcnt_unit));
-
+}
+/**
+ * @brief The task function to measure the wind,
+ * @Important  The windPcntInit function needs to be called before starting the
+ * task
+ * @paramin uint32_t timedelay:  The time between measurements ms
+ **/
+void windPcntTask(uint32_t timedelay) {
     int val = 0;
+    int64_t lasttime = 0;
+    int64_t time = 0;
+    uint32_t rpm = 0;
+    uint32_t delay = pdMS_TO_TICKS(timedelay);
     while (1) {
-        gpio_set_level(Testpin, 1);
-        vTaskDelay(pdMS_TO_TICKS(50));
+        ESP_ERROR_CHECK(pcnt_unit_get_count(pcnt_unit, &val)); // get count
+        time = esp_timer_get_time();              // get high precision time
+        rpm = val / (time - lasttime / 60000000); // Calculate RPM
+        ESP_LOGI("Wind2",
+                 "time1 = %lld, time2 = %lld, val = %ld, dif = %lld, rpm = %ld",
+                 lasttime, time, val, time - lasttime, rpm);
 
-        gpio_set_level(Testpin, 0);
-
-        ESP_ERROR_CHECK(pcnt_unit_get_count(pcnt_unit, &val));
-        printf("Count: %d\n", val);
-
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        ESP_ERROR_CHECK(pcnt_unit_clear_count(pcnt_unit)); // Reset the counter
+        lasttime = esp_timer_get_time();                   // Note the time
+        vTaskDelay(pdMS_TO_TICKS(delay));                  // wait
     }
+}
+void app_main(void) {
+    windPcntInit();
+    windPcntTask(10000);
 }
