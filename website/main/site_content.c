@@ -1,12 +1,26 @@
 #include "esp_err.h"
 #include "esp_http_server.h"
 #include "esp_log.h"
+#include "http_parser.h"
 #include "site_content.h"
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 static esp_err_t get_handler_root(httpd_req_t *req) {
-    const char *resp_str = "<h1>Hello from ESP32!</h1><p>Sent from your mom</p>";
+    // clang-format off
+    const char *resp_str =
+        "<head> <style> p { white-space: pre-wrap; line-height: 1.05; } body { font-family: monospace; } </style> </head>"
+        "<body>"
+        "<h1>Esp32 Status page</h1>"
+        "<h2>The current Value is <span id='val'>0</span></h2>"
+        "<p>"
+        COCIO_LOGO
+        "</p>"
+        "<script> setInterval(function() { fetch('/data').then(response => response.text()).then(data => {document.getElementById('val').innerText = data;}); }, 1000); </script>"
+        "</body>";
+    // clang-format on
+    httpd_resp_set_type(req, "text/html; charset=utf-8");
     httpd_resp_send(req, resp_str, HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
@@ -24,6 +38,14 @@ static esp_err_t get_handler_favicon(httpd_req_t *req) {
 static httpd_uri_t uri_get_favicon = {
     .uri = "/favicon.ico", .method = HTTP_GET, .handler = get_handler_favicon, .user_ctx = NULL};
 
+static esp_err_t get_handler_data(httpd_req_t *req) {
+    char val_str[32];
+    sniprintf(val_str, sizeof(val_str), "%d", 24);
+    httpd_resp_send(req, val_str, HTTPD_RESP_USE_STRLEN);
+    return ESP_OK;
+}
+static httpd_uri_t uri_get_data = {.uri = "/data", .method = HTTP_GET, .handler = get_handler_data, .user_ctx = NULL};
+
 httpd_handle_t start_webserver(void) {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     httpd_handle_t server = NULL;
@@ -32,6 +54,7 @@ httpd_handle_t start_webserver(void) {
         ESP_LOGI("webserver", "Registring uri");
         httpd_register_uri_handler(server, &uri_get_root);
         httpd_register_uri_handler(server, &uri_get_favicon);
+        httpd_register_uri_handler(server, &uri_get_data);
         ESP_LOGI("webserver", "Registred all uri");
         return server;
     }
