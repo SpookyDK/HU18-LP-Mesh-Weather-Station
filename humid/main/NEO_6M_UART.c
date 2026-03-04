@@ -1,4 +1,3 @@
-#include "NEO_6M_UART.h"
 #include "driver/gpio.h"
 #include "esp_err.h"
 #include "esp_log.h"
@@ -17,6 +16,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/param.h>
+
+#define DEFINE_ALL_BYTE_ARRAYS
+#include "NEO_6M_UART.h"
 
 #define MIN_TO_TICKS(min) pdMS_TO_TICKS((min) * 60 * 1000)
 
@@ -287,7 +289,8 @@ void ensure_gps_fix() {
     int attempts = 0;
     ubx_frame_t *frame;
     while (1) {
-        ESP_LOGI("GPS_FIX", "Attempt nr %d to get good fix...", attempts++);
+        attempts++;
+        /* ESP_LOGI("GPS_FIX", "Attempt nr %d to get good fix...", attempts); */
         if (attempts == 3) {
             ESP_LOGI("GPS_FIX", "Attempting to hot start");
             gps_hot_start();
@@ -355,10 +358,6 @@ void gpsInitUart() {
     ESP_ERROR_CHECK(gps_send_request(cfg_prt_ubx_only, sizeof(cfg_prt_ubx_only)));
     vTaskDelay(pdMS_TO_TICKS(200));
 
-    /* ESP_LOGI("GPS", "Polling PM2...");
-    ESP_ERROR_CHECK(gps_send_request(cfg_pm2_poll, sizeof(cfg_pm2_poll)));
-    vTaskDelay(pdMS_TO_TICKS(200)); */
-
     ESP_LOGI("GPS", "Setting to Stationary...");
     ESP_ERROR_CHECK(gps_send_request(cfg_nav5_stationary_3d, sizeof(cfg_nav5_stationary_3d)));
     vTaskDelay(pdMS_TO_TICKS(500));
@@ -366,25 +365,6 @@ void gpsInitUart() {
     ESP_LOGI("GPS_HotStart", "Attempting to resume with HotStart...");
 
     ensure_gps_fix();
-
-    /* ESP_LOGI("GPS", "Setting Advanced Power Save Mode...");
-    ESP_ERROR_CHECK(gps_send_request(cfg_pm2_whatever, sizeof(cfg_pm2_whatever))); */
-
-    /* vTaskDelay(pdMS_TO_TICKS(1000)); */
-
-    /* ESP_LOGI("GPS", "Setting to Our Power Mode...");
-    ESP_ERROR_CHECK(gps_send_request(cfg_power_our, sizeof(cfg_power_our))); */
-
-    /* vTaskDelay(pdMS_TO_TICKS(1000)); */
-
-    /* ESP_LOGI("GPS", "Enabling NAV-POSLLH on UART1...");
-    ESP_ERROR_CHECK(gps_send_request(cfg_msg_posllh, sizeof(cfg_msg_posllh))); */
-
-    /* ESP_LOGI("GPS", "Enabling NAV-TIMEUTC on UART1...");
-    ESP_ERROR_CHECK(gps_send_request(cfg_msg_timeutc, sizeof(cfg_msg_timeutc))); */
-
-    /* ESP_LOGI("GPS", "Setting to 1 min interval...");
-    ESP_ERROR_CHECK(gps_send_request(cfg_rate_low, sizeof(cfg_rate_low))); */
 
     vTaskDelay(pdMS_TO_TICKS(1000));
 
@@ -397,6 +377,8 @@ void gpsInitUart() {
 }
 
 void gpsTask() {
+    gpsInitUart();
+
     ubx_frame_t *frame;
     TickType_t last_wake = xTaskGetTickCount();
     const TickType_t gps_polling_rate = MIN_TO_TICKS(10);
@@ -425,4 +407,5 @@ void gpsTask() {
         gpio_set_level(GPS_DISABLE_PIN, 1);
         vTaskDelayUntil(&last_wake, gps_polling_rate);
     }
+    ESP_LOGW("GPS", "Leaving Task");
 }

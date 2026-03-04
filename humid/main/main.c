@@ -10,6 +10,7 @@
 #include "freertos/projdefs.h"
 #include "freertos/task.h"
 #include "inttypes.h"
+#include "moist_soil.h"
 #include "onewire_bus_impl_rmt.h"
 #include "onewire_device.h"
 #include "onewire_types.h"
@@ -23,7 +24,7 @@
 #define ONEWIRE_BUS_GPIO 12
 #define ONEWIRE_MAX_DEVS 4
 
-#define TAG "main"
+static const char *TAG = "main";
 
 onewire_bus_handle_t bus = NULL;
 int8_t ds18b20_device_num = 0;
@@ -93,9 +94,10 @@ void app_main(void) {
     ESP_ERROR_CHECK(onewire_del_device_iter(iter));
     ESP_LOGI(TAG, "Searching over, %d ds18b20 devices found", ds18b20_device_num);
 
-    // xTaskCreate(TEMP_TASK, "TEMPTask", 4096, NULL, 0, NULL);
+    xTaskCreate(TEMP_TASK, "TEMPTask", 4096, NULL, 0, NULL);
 
-    gpsInitUart();
+    xTaskCreate(moist_task, "moistTask", 4096, NULL, 0, NULL);
+
     xTaskCreate(gpsTask, "gpsTask", 4096, NULL, 0, NULL);
 
     while (1) {
