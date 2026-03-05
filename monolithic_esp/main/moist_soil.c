@@ -33,7 +33,7 @@ static inline uint8_t raw_to_percent(int32_t raw) {
     return (uint8_t)((ADC_DRY_VALUE - raw) * 100 / (ADC_DRY_VALUE - ADC_WET_VALUE));
 }
 
-void moist_task() {
+void moist_task(void *duty_cycle_ms) {
     // Initialize ADC for soil moisture sensor
     adc_oneshot_unit_handle_t adc_handle;
     adc_oneshot_unit_init_cfg_t adc_unit_cfg = {.unit_id = ADC_UNIT_1};
@@ -65,7 +65,7 @@ void moist_task() {
         adc_cali_raw_to_voltage(cali_handle, raw, &voltage);
 
         ESP_LOGI(TAG, "Raw: %4d | Voltage: %4d mV | Moisture: %3d%%", raw, voltage, raw_to_percent(raw));
-        vTaskDelay(pdMS_TO_TICKS(30000));
+        vTaskDelay(pdMS_TO_TICKS((uint32_t)duty_cycle_ms));
     }
     ESP_LOGW(TAG, "Leaving task");
 }

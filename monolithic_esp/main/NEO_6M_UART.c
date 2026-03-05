@@ -376,7 +376,7 @@ void gpsInitUart() {
     ESP_LOGI("GPS", "Init Complete.");
 }
 
-void gpsTask() {
+void gps_task() {
     gpsInitUart();
 
     ubx_frame_t *frame;

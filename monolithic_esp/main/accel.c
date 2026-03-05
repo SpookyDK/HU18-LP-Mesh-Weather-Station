@@ -48,7 +48,7 @@ static void init_bmp280(void) {
     ESP_ERROR_CHECK(bmx280_setMode(sensor, BMX280_MODE_CYCLE));
 }
 
-void accel_task() {
+void accel_task(void *duty_cycle_ms) {
     init_bmp280();
 
     int32_t temp;
@@ -63,7 +63,7 @@ void accel_task() {
 
         ESP_LOGI(TAG, "Read Values: temp = %2d °C, pres = %.2f Pa", temp, (float)(pres / 256.0f));
 
-        vTaskDelay(pdMS_TO_TICKS(30000));
+        vTaskDelay(pdMS_TO_TICKS((uint32_t)duty_cycle_ms));
     }
     bmx280_close(sensor);
     ESP_ERROR_CHECK(i2c_driver_delete(I2C_MASTER_NUM));

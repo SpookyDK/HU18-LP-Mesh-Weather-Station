@@ -9,8 +9,7 @@
 #define GPS_TX_PIN 2
 #define BUF_SIZE 1024
 
-void gpsInitUart();
-void gpsTask();
+void gps_task();
 
 // In case of many missing things, ensure this is a "ifdef" not a "ifndef"
 #ifdef DEFINE_ALL_BYTE_ARRAYS

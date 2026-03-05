@@ -52,7 +52,7 @@ static void init_tempeture() {
     ESP_LOGI(TAG, "Searching over, %d ds18b20 devices found", ds18b20_device_num);
 }
 
-void temp_task() {
+void temp_task(void *duty_cycle_ms) {
     init_tempeture();
 
     int16_t dht11_tempeture, dht11_humidity, ds18b20_temperature;
@@ -69,6 +69,6 @@ void temp_task() {
             ESP_ERROR_CHECK(ds18b20_get_temperature(ds18b20s[i], &ds18b20_temperature));
             ESP_LOGI("DS18B20", "[%d] [Temperature]> %.2f", i, ds18b20_temperature / 16.0f);
         }
-        vTaskDelay(pdMS_TO_TICKS(30000));
+        vTaskDelay(pdMS_TO_TICKS((uint32_t)duty_cycle_ms));
     }
 }
