@@ -4,7 +4,7 @@
 
 #define DUTY_CYCLES_MS 30000
 #include "NEO_6M_UART.h"
-#include "accel.h"
+#include "i2c_tasks.h"
 #include "moist_soil.h"
 #include "tempeture.h"
 
@@ -21,14 +21,17 @@ void print_runtime_stats(void) {
 
 void app_main(void) {
 
-    ESP_LOGI(TAG, "Starting Tempeture Task");
-    xTaskCreate(temp_task, "tempTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
+    /* ESP_LOGI(TAG, "Starting Tempeture Task");
+    xTaskCreate(temp_task, "tempTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL); */
 
-    ESP_LOGI(TAG, "Starting Soil Moisture Reading Task");
-    xTaskCreate(moist_task, "moistTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
+    /* ESP_LOGI(TAG, "Starting Soil Moisture Reading Task");
+    xTaskCreate(moist_task, "moistTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL); */
 
     ESP_LOGI(TAG, "Starting Accelerometer Task");
     xTaskCreate(accel_task, "accelTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
+
+    ESP_LOGI(TAG, "Starting Light Sensor Task");
+    xTaskCreate(accel_task, "lightTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
 
     /* ESP_LOGI(TAG, "Starting GPS Task");
     xTaskCreate(gpsTask, "gpsTask", 4096, NULL, 0, NULL); */
