@@ -364,14 +364,12 @@ static esp_err_t i2c_setup_port(i2c_dev_t *dev) // dev is non-const to update de
         bool sda_pullup = dev->cfg.sda_pullup_en;
         bool scl_pullup = dev->cfg.scl_pullup_en;
 
-#if CONFIG_I2CDEV_AUTO_ENABLE_PULLUPS
         // CONFIG_I2CDEV_AUTO_ENABLE_PULLUPS=y: If user didn't configure pullups, enable them automatically
         if (!sda_pullup && !scl_pullup) {
             sda_pullup = true;
             scl_pullup = true;
             ESP_LOGI(TAG, "[Port %d] Auto-enabling internal pullups (CONFIG_I2CDEV_AUTO_ENABLE_PULLUPS=y)", dev->port);
         }
-#endif
 
         ESP_LOGI(TAG,
                  "[Port %d] First initialization. Configuring bus with SDA=%d, SCL=%d (Pullups "
