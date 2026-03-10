@@ -7,15 +7,16 @@
 #include "onewire_device.h"
 #include "onewire_types.h"
 #include "tempeture.h"
+#include <stdint.h>
 
 static const char *TAG = "temp_task";
 
-onewire_bus_handle_t bus = NULL;
-int8_t ds18b20_device_num = 0;
-ds18b20_device_handle_t ds18b20s[ONEWIRE_MAX_DEVS];
-onewire_device_iter_handle_t iter = NULL;
-onewire_device_t next_onewire_device;
-esp_err_t search_result = ESP_OK;
+static onewire_bus_handle_t bus = NULL;
+static int8_t ds18b20_device_num = 0;
+static ds18b20_device_handle_t ds18b20s[ONEWIRE_MAX_DEVS];
+static onewire_device_iter_handle_t iter = NULL;
+static onewire_device_t next_onewire_device;
+static esp_err_t search_result = ESP_OK;
 
 static void init_tempeture() {
     onewire_bus_config_t bus_config = {
@@ -52,12 +53,18 @@ static void init_tempeture() {
     ESP_LOGI(TAG, "Searching over, %d ds18b20 devices found", ds18b20_device_num);
 }
 
+uint8_t dht_shared_air_humidity = 0;
+int16_t dht_shared_air_tempeture = 0;
+int16_t ds18b20_shared_soil_tempeture[ONEWIRE_MAX_DEVS] = {0}; // It is fairly important this remains 4 for later
+
 void temp_task(void *duty_cycle_ms) {
     init_tempeture();
 
     int16_t dht11_tempeture, dht11_humidity, ds18b20_temperature;
     while (true) {
         if (dht_read_data(CONFIG_DHT11_PIN, &dht11_humidity, &dht11_tempeture) == ESP_OK) {
+            dht_shared_air_humidity = (uint8_t)dht11_humidity;
+            dht_shared_air_tempeture = dht11_tempeture;
             ESP_LOGI("DHT11", "[Temperature]> %d", dht11_tempeture);
             ESP_LOGI("DHT11", "[Humidity]> %d", dht11_humidity);
         } else {
@@ -67,6 +74,7 @@ void temp_task(void *duty_cycle_ms) {
         ESP_ERROR_CHECK(ds18b20_trigger_temperature_conversion_for_all(bus));
         for (int i = 0; i < ds18b20_device_num; i++) {
             ESP_ERROR_CHECK(ds18b20_get_temperature(ds18b20s[i], &ds18b20_temperature));
+            ds18b20_shared_soil_tempeture[i] = ds18b20_temperature >> 2;
             ESP_LOGI("DS18B20", "[%d] [Temperature]> %.2f", i, ds18b20_temperature / 16.0f);
         }
         vTaskDelay(pdMS_TO_TICKS((uint32_t)duty_cycle_ms));

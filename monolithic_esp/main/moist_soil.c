@@ -33,6 +33,8 @@ static inline uint8_t raw_to_percent(int32_t raw) {
     return (uint8_t)((ADC_DRY_VALUE - raw) * 100 / (ADC_DRY_VALUE - ADC_WET_VALUE));
 }
 
+uint8_t moist_shared_percentage = 0;
+
 void moist_task(void *duty_cycle_ms) {
     // Initialize ADC for soil moisture sensor
     adc_oneshot_unit_handle_t adc_handle;
@@ -64,7 +66,8 @@ void moist_task(void *duty_cycle_ms) {
         ESP_ERROR_CHECK(adc_oneshot_read(adc_handle, MOISTURE_ADC_CHANNEL, &raw));
         adc_cali_raw_to_voltage(cali_handle, raw, &voltage);
 
-        ESP_LOGI(TAG, "Raw: %4d | Voltage: %4d mV | Moisture: %3d%%", raw, voltage, raw_to_percent(raw));
+        moist_shared_percentage = raw_to_percent(raw);
+        ESP_LOGI(TAG, "Raw: %4d | Voltage: %4d mV | Moisture: %3d%%", raw, voltage, moist_shared_percentage);
         vTaskDelay(pdMS_TO_TICKS((uint32_t)duty_cycle_ms));
     }
     ESP_LOGW(TAG, "Leaving task");

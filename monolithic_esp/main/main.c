@@ -1,6 +1,9 @@
 #include "esp_log.h"
 #include "freertos/idf_additions.h"
 #include "freertos/task.h"
+#include <math.h>
+#include <stdint.h>
+#include <stdio.h>
 
 #define DUTY_CYCLES_MS 30000
 #include "NEO_6M_UART.h"
@@ -10,7 +13,50 @@
 
 static const char *TAG = "main";
 
-void print_runtime_stats(void) {
+extern int32_t gps_shared_longitude;
+extern int32_t gps_shared_latitude;
+extern uint8_t dht_shared_air_humidity;
+extern int16_t dht_shared_air_tempeture;
+extern int16_t ds18b20_shared_soil_tempeture[ONEWIRE_MAX_DEVS];
+extern uint8_t moist_shared_percentage;
+extern int16_t bmp_shared_pressure;
+extern uint16_t tsl_shared_lux;
+
+typedef struct __attribute__((packed)) {
+    int32_t longitude;
+    int32_t latitude;
+    uint8_t air_humidity;
+    int16_t air_tempeture;
+    int16_t soil_tempeture[ONEWIRE_MAX_DEVS];
+    uint8_t soil_moisture;
+    int16_t pressure;
+    uint16_t lux;
+} sensor_payload_t;
+
+sensor_payload_t payload = {0};
+static void prepare_payload() {
+    payload.longitude = gps_shared_longitude;
+    payload.latitude = gps_shared_latitude;
+    payload.air_humidity = dht_shared_air_humidity;
+    payload.air_tempeture = dht_shared_air_tempeture;
+    for (int i = 0; i < ONEWIRE_MAX_DEVS; i++) {
+        payload.soil_tempeture[i] = ds18b20_shared_soil_tempeture[i];
+    }
+    payload.soil_moisture = moist_shared_percentage;
+    payload.pressure = bmp_shared_pressure;
+    payload.lux = tsl_shared_lux;
+}
+
+static char payload_string[sizeof(sensor_payload_t) * 2 + 1] = {0};
+static void payload_to_string(void) {
+    ESP_LOGI(TAG, "temp %d", payload.air_tempeture);
+    uint8_t *ptr = (uint8_t *)&payload;
+    for (int i = 0; i < sizeof(payload); i++) {
+        sprintf(&payload_string[i * 2], "%02x", ptr[i]);
+    }
+}
+
+static void print_runtime_stats(void) {
     char buffer[1024];
 
     vTaskGetRunTimeStats(buffer);
@@ -28,17 +74,20 @@ void app_main(void) {
     xTaskCreate(moist_task, "moistTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
 
     ESP_LOGI(TAG, "Starting Accelerometer Task");
-    xTaskCreate(accel_task, "accelTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
+    xTaskCreate(barometer_task, "barTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
 
     ESP_LOGI(TAG, "Starting Light Sensor Task");
     xTaskCreate(light_sensor_task, "lightTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
 
-    /* ESP_LOGI(TAG, "Starting GPS Task");
-    xTaskCreate(gpsTask, "gpsTask", 4096, NULL, 0, NULL); */
+    ESP_LOGI(TAG, "Starting GPS Task");
+    xTaskCreate(gps_task, "gpsTask", 4096, NULL, 0, NULL);
 
     ESP_LOGI(TAG, "Finished starting all tasks");
     while (1) {
         // print_runtime_stats();
+        prepare_payload();
+        payload_to_string();
+        ESP_LOGI(TAG, "The payload: '%s'", payload_string);
         vTaskDelay(pdMS_TO_TICKS(DUTY_CYCLES_MS));
     }
 }

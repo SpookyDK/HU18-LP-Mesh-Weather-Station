@@ -9,6 +9,7 @@
 #include "portmacro.h"
 #include <driver/uart.h>
 #include <inttypes.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -188,9 +189,12 @@ static void print_frame(ubx_frame_t *frame) {
     }
 }
 
+int32_t gps_shared_longitude = 0.0f;
+int32_t gps_shared_latitude = 0.0f;
+
 static void evaluate_frame(ubx_frame_t *frame) {
     uint16_t offset, msg_id, year;
-    int32_t longitude, latitude, nano;
+    int32_t nano;
     uint8_t month, day, hour, min, sec;
     for (int f = 0; f < frame->frame_count; f++) {
         offset = frame->frame_offsets[f];
@@ -219,9 +223,9 @@ static void evaluate_frame(ubx_frame_t *frame) {
             ESP_LOGW("GPS", "Nav Status should not be here");
             break;
         case 0x0201: // NAV-POSLLH
-            longitude = *(int32_t *)&frame->data[offset + 10];
-            latitude = *(int32_t *)&frame->data[offset + 14];
-            ESP_LOGI("GPS", "Latitude:Longitude:  %.7f, %.7f", latitude / 1e7f, longitude / 1e7);
+            gps_shared_longitude = *(int32_t *)&frame->data[offset + 10];
+            gps_shared_latitude = *(int32_t *)&frame->data[offset + 14];
+            ESP_LOGI("GPS", "Latitude:Longitude:  %.7f, %.7f", gps_shared_latitude / 1e7f, gps_shared_longitude / 1e7);
             break;
         case 0x2101: // NAV-TIMEUTC
             nano = *(int32_t *)&frame->data[offset + 14];
