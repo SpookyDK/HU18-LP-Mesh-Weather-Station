@@ -1,3 +1,4 @@
+#include "big_data.h"
 #include "esp_err.h"
 #include "esp_http_server.h"
 #include "esp_log.h"
@@ -7,17 +8,25 @@
 #include <stdint.h>
 #include <stdio.h>
 
+extern int16_t big_int_data;
+extern uint16_t big_uint_data;
+
 static esp_err_t get_handler_root(httpd_req_t *req) {
     // clang-format off
     const char *resp_str =
         "<head> <style> p { white-space: pre-wrap; line-height: 1.05; } body { font-family: monospace; } </style> </head>"
         "<body>"
         "<h1>Esp32 Status page</h1>"
-        "<h2>The current Value is <span id='val'>0</span></h2>"
+        "<h2>The current Value is <span id='val1'>0</span> random int</h2>"
+        "<h2>The current Value is <span id='val2'>0</span> random uint</h2>"
         "<p>"
         COCIO_LOGO
         "</p>"
-        "<script> setInterval(function() { fetch('/data').then(response => response.text()).then(data => {document.getElementById('val').innerText = data;}); }, 1000); </script>"
+        "<script> setInterval(function() {"
+        "fetch('/data').then((response) => response.json()) .then((data) => { Object.keys(data).forEach((key) => {"
+        "const element = document.getElementById(key); if (element) { element.innerText = data[key]; } });"
+        "}) .catch((error) => console.error('Update failed:', error)); },"
+        "1000); </script>"
         "</body>";
     // clang-format on
     httpd_resp_set_type(req, "text/html; charset=utf-8");
@@ -39,8 +48,9 @@ static httpd_uri_t uri_get_favicon = {
     .uri = "/favicon.ico", .method = HTTP_GET, .handler = get_handler_favicon, .user_ctx = NULL};
 
 static esp_err_t get_handler_data(httpd_req_t *req) {
-    char val_str[32];
-    sniprintf(val_str, sizeof(val_str), "%d", 24);
+    char val_str[64];
+    sniprintf(val_str, sizeof(val_str), "{\"val1\":%d,\"val2\":%d}", big_int_data, big_uint_data);
+    httpd_resp_set_type(req, "text/json");
     httpd_resp_send(req, val_str, HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
