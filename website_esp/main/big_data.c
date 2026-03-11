@@ -5,13 +5,11 @@
 #include "freertos/projdefs.h"
 #include <stdint.h>
 
-int16_t big_int_data = 0;
-uint16_t big_uint_data = 0;
+uint8_t big_data_bytearray[] = {0x0a, 0xc2, 0xf3, 0x05, 0x19, 0x9b, 0xfb, 0x21, 0x2c, 0xec, 0x00, 0x74, 0x01, 0x77,
+                                0x01, 0x74, 0x01, 0x71, 0x01, 0x00, 0xc6, 0x00, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 void generate_big_data_task() {
     while (1) {
-        big_int_data = esp_random() % 2674 - 1337;
-        big_uint_data = esp_random() % 1337;
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }

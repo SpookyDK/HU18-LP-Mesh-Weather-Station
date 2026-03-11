@@ -8,26 +8,27 @@
 #include <stdint.h>
 #include <stdio.h>
 
-extern int16_t big_int_data;
-extern uint16_t big_uint_data;
-
 static esp_err_t get_handler_root(httpd_req_t *req) {
     // clang-format off
     const char *resp_str =
+        "<!doctype html><html lang=\"en\">"
         "<head> <style> p { white-space: pre-wrap; line-height: 1.05; } body { font-family: monospace; } </style> </head>"
         "<body>"
         "<h1>Esp32 Status page</h1>"
-        "<h2>The current Value is <span id='val1'>0</span> random int</h2>"
-        "<h2>The current Value is <span id='val2'>0</span> random uint</h2>"
+        "<h2>The current location is <span id='latitude'>0</span>, <span id='longitude'>0</span></h2>"
+        "<h2>The current air humidity is <span id='air_humidity'>0</span> %RH</h2>"
+        "<h2>The current air tempeture is <span id='air_temp'>0</span> °C</h2>"
+        "<h2>The current soil tempetures are </h2><span style='font-size:18px'><ol id='soil_temps'></ol></span>"
+        "<h2>The current soil moisture is <span id='soil_moisture'>0</span> %</h2>"
+        "<h2>The current air pressure is <span id='pressure'>0</span> hPa</h2>"
+        "<h2>The current solar intensity is <span id='lux'>0</span> %</h2>"
+        "<h2>The amount of precipitation in the past time frame is <span id='precipitation'>0</span> micro meters</h2>"
+        "<h2>The current wind speed is <span id='wind_speed'>0</span> meters per second</h2>"
         "<p>"
         COCIO_LOGO
         "</p>"
-        "<script> setInterval(function() {"
-        "fetch('/data').then((response) => response.json()) .then((data) => { Object.keys(data).forEach((key) => {"
-        "const element = document.getElementById(key); if (element) { element.innerText = data[key]; } });"
-        "}) .catch((error) => console.error('Update failed:', error)); },"
-        "1000); </script>"
-        "</body>";
+        "<script src=code.js></script>"
+        "</body></html>";
     // clang-format on
     httpd_resp_set_type(req, "text/html; charset=utf-8");
     httpd_resp_send(req, resp_str, HTTPD_RESP_USE_STRLEN);
@@ -47,14 +48,24 @@ static esp_err_t get_handler_favicon(httpd_req_t *req) {
 static httpd_uri_t uri_get_favicon = {
     .uri = "/favicon.ico", .method = HTTP_GET, .handler = get_handler_favicon, .user_ctx = NULL};
 
+extern uint8_t big_data_bytearray[];
 static esp_err_t get_handler_data(httpd_req_t *req) {
-    char val_str[64];
-    sniprintf(val_str, sizeof(val_str), "{\"val1\":%d,\"val2\":%d}", big_int_data, big_uint_data);
-    httpd_resp_set_type(req, "text/json");
-    httpd_resp_send(req, val_str, HTTPD_RESP_USE_STRLEN);
+    httpd_resp_set_type(req, "application/octet-stream");
+    httpd_resp_send(req, (const char *)big_data_bytearray, 28);
     return ESP_OK;
 }
 static httpd_uri_t uri_get_data = {.uri = "/data", .method = HTTP_GET, .handler = get_handler_data, .user_ctx = NULL};
+
+static esp_err_t get_handler_code(httpd_req_t *req) {
+    extern const uint8_t code_js_start[] asm("_binary_code_js_start");
+    extern const uint8_t code_js_end[] asm("_binary_code_js_end");
+    const size_t code_js_size = (code_js_end - code_js_start);
+    httpd_resp_set_type(req, "text/jscript");
+    httpd_resp_send(req, (const char *)code_js_start, code_js_size);
+    return ESP_OK;
+}
+static httpd_uri_t uri_get_code = {
+    .uri = "/code.js", .method = HTTP_GET, .handler = get_handler_code, .user_ctx = NULL};
 
 httpd_handle_t start_webserver(void) {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -65,6 +76,7 @@ httpd_handle_t start_webserver(void) {
         httpd_register_uri_handler(server, &uri_get_root);
         httpd_register_uri_handler(server, &uri_get_favicon);
         httpd_register_uri_handler(server, &uri_get_data);
+        httpd_register_uri_handler(server, &uri_get_code);
         ESP_LOGI("webserver", "Registred all uri");
         return server;
     }

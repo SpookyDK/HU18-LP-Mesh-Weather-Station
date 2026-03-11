@@ -55,6 +55,9 @@ static void init_tempeture() {
 
 uint8_t dht_shared_air_humidity = 0;
 int16_t dht_shared_air_tempeture = 0;
+/*
+ * Note this value is raw and needs to be shifted 4 times, Like: val >> 4
+ */
 int16_t ds18b20_shared_soil_tempeture[ONEWIRE_MAX_DEVS] = {0}; // It is fairly important this remains 4 for later
 
 void temp_task(void *duty_cycle_ms) {
@@ -63,7 +66,7 @@ void temp_task(void *duty_cycle_ms) {
     int16_t dht11_tempeture, dht11_humidity, ds18b20_temperature;
     while (true) {
         if (dht_read_data(CONFIG_DHT11_PIN, &dht11_humidity, &dht11_tempeture) == ESP_OK) {
-            dht_shared_air_humidity = (uint8_t)dht11_humidity;
+            dht_shared_air_humidity = (uint8_t)(dht11_humidity / 10);
             dht_shared_air_tempeture = dht11_tempeture;
             ESP_LOGI("DHT11", "[Temperature]> %d", dht11_tempeture);
             ESP_LOGI("DHT11", "[Humidity]> %d", dht11_humidity);
@@ -74,8 +77,9 @@ void temp_task(void *duty_cycle_ms) {
         ESP_ERROR_CHECK(ds18b20_trigger_temperature_conversion_for_all(bus));
         for (int i = 0; i < ds18b20_device_num; i++) {
             ESP_ERROR_CHECK(ds18b20_get_temperature(ds18b20s[i], &ds18b20_temperature));
-            ds18b20_shared_soil_tempeture[i] = ds18b20_temperature >> 2;
-            ESP_LOGI("DS18B20", "[%d] [Temperature]> %.2f", i, ds18b20_temperature / 16.0f);
+            ds18b20_shared_soil_tempeture[i] = ds18b20_temperature;
+            ESP_LOGI("DS18B20", "[%d] [Temperature]> %.2f, Shared> %d", i, ds18b20_temperature / 16.0f,
+                     ds18b20_shared_soil_tempeture[i]);
         }
         vTaskDelay(pdMS_TO_TICKS((uint32_t)duty_cycle_ms));
     }
