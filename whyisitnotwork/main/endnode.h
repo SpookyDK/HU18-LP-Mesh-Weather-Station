@@ -7,7 +7,6 @@
 
 // Node Configuration
 #define MAX_RELAY_HOPS 2 // Star Topoogy modified to allow smaller jumps
-#define ONEWIRE_MAX_DEVICES 4 // Max number of temp sensors soil
 
 // SPI Setup
 #define PIN_NUM_MISO  13
@@ -108,7 +107,7 @@ typedef struct __attribute__((packed)) {
     int32_t latitude;
     uint8_t air_humidity;
     int16_t air_temperature;
-    int16_t soil_temperature[ONEWIRE_MAX_DEVICES];
+    int16_t soil_temperature[4];
     uint8_t soil_moisture;
     int16_t pressure;
     uint16_t lux;
