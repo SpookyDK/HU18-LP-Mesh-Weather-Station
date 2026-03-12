@@ -1,9 +1,14 @@
 #include "esp_log.h"
+#include "esp_mac.h"
 #include "freertos/idf_additions.h"
+#include "freertos/projdefs.h"
 #include "freertos/task.h"
+#include "lora.h"
+#include "packet_def.h"
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #define DUTY_CYCLES_MS 30000
 #include "NEO_6M_UART.h"
@@ -22,33 +27,6 @@ extern uint8_t moist_shared_percentage;
 extern int16_t bmp_shared_pressure;
 extern uint16_t tsl_shared_lux;
 
-/**
- * Main Struct
- * @version 3
- * @param longitude Is scaled with 1e-7
- * @param latitude Is scaled with 1e-7
- * @param air_humidity From 0 to 100%RH
- * @param air_tempeture Is scaled with 10
- * @param soil_tempeture[4] Is scaled with 16
- * @param soil_moisture From 0 to 100% where 0 is our measured lowest moisture and 100% is most
- * @param pressure The diff from 100000 Pa
- * @param lux Lux
- * @param precipitation In units of 100 micro meters per hour
- * @param wind_speed In 0.1 m/s
- */
-typedef struct __attribute__((packed)) {
-    int32_t longitude;
-    int32_t latitude;
-    uint8_t air_humidity;
-    int16_t air_tempeture;
-    int16_t soil_tempeture[4];
-    uint8_t soil_moisture;
-    int16_t pressure;
-    uint16_t lux;
-    uint16_t precipitation; // TODO: Missing Sensor
-    uint16_t wind_speed;    // TODO: Missing Sensor
-} sensor_payload_t;
-
 sensor_payload_t payload = {0};
 static void prepare_payload() {
     payload.longitude = gps_shared_longitude;
@@ -65,13 +43,48 @@ static void prepare_payload() {
     payload.wind_speed = 0;    // TODO: Missing sensor
 }
 
-static char payload_string[sizeof(sensor_payload_t) * 2 + 1] = {0};
+static uint8_t payload_string[sizeof(sensor_payload_t) * 2 + 1] = {0};
 static void payload_to_string(void) {
-    ESP_LOGI(TAG, "temp %d", payload.air_tempeture);
     uint8_t *ptr = (uint8_t *)&payload;
     for (int i = 0; i < sizeof(payload); i++) {
-        sprintf(&payload_string[i * 2], "%02x", ptr[i]);
+        sprintf((char *)&payload_string[i * 2], "%02x", ptr[i]);
     }
+}
+
+static uint16_t crc16(const uint8_t *data, size_t len) {
+    uint16_t crc = 0xFFFF;
+    for (size_t i = 0; i < len; i++) {
+        crc ^= (uint16_t)data[i] << 8;
+        for (int j = 0; j < 8; j++)
+            crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : (crc << 1);
+    }
+    return crc;
+}
+
+static void transmit_task(void *p) {
+    lora_init();
+    lora_set_frequency(868e6);
+    lora_set_spreading_factor(7);
+    lora_set_bandwidth(125000);
+    lora_set_coding_rate(5);
+    lora_set_preamble_length(8);
+    lora_set_sync_word(0x12);
+    lora_set_tx_power(2);
+    lora_enable_crc();
+    lora_dump_registers();
+
+    // Wait a little to hope some data has been generated
+    vTaskDelay(pdMS_TO_TICKS(10000));
+
+    while (1) {
+        prepare_payload();
+        payload_to_string();
+        ESP_LOGI("TXtask", "The payload: '%s'", payload_string);
+        lora_send_packet(payload_string, sizeof(payload_string));
+        ESP_LOGI("TXtask", "Sent Pakcet");
+        vTaskDelay(pdMS_TO_TICKS(DUTY_CYCLES_MS));
+    }
+    ESP_LOGW("TXtask", "Left task");
 }
 
 static void print_runtime_stats(void) {
@@ -100,12 +113,12 @@ void app_main(void) {
     ESP_LOGI(TAG, "Starting GPS Task");
     xTaskCreate(gps_task, "gpsTask", 4096, NULL, 0, NULL);
 
+    ESP_LOGI(TAG, "Starting Transmitter Task");
+    xTaskCreate(transmit_task, "txTask", 4096, NULL, 5, NULL);
+
     ESP_LOGI(TAG, "Finished starting all tasks");
     while (1) {
         // print_runtime_stats();
-        prepare_payload();
-        payload_to_string();
-        ESP_LOGI(TAG, "The payload: '%s'", payload_string);
         vTaskDelay(pdMS_TO_TICKS(DUTY_CYCLES_MS));
     }
 }

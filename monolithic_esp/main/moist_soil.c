@@ -11,7 +11,7 @@
 
 static const char *TAG = "moisture-soil";
 
-#define MOISTURE_ADC_CHANNEL ADC_CHANNEL_2 // This is GPIO 3, on the ESP32-H2
+#define MOISTURE_ADC_CHANNEL ADC_CHANNEL_4 // This is GPIO 5, on the ESP32-H2
 #define MOISTURE_ADC_ATTEN ADC_ATTEN_DB_12
 
 // Calibration values - measure once, change and forget
