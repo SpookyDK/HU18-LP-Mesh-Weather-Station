@@ -2,11 +2,11 @@
 #define __LORA_H__
 
 // Pins
-#define CONFIG_MISO_GPIO 26
-#define CONFIG_MOSI_GPIO 27
-#define CONFIG_SCK_GPIO 4
-#define CONFIG_CS_GPIO 1
-/* #define CONFIG_RST_GPIO 25 // idk, */
+#define CONFIG_MISO_GPIO 5
+#define CONFIG_MOSI_GPIO 4
+#define CONFIG_SCK_GPIO 6
+#define CONFIG_CS_GPIO 3
+#define CONFIG_DIO0_GPIO 2
 
 #include <stdint.h>
 

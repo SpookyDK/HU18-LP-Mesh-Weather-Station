@@ -11,7 +11,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define PCNT_INPUT_PIN 0
 #define PCNT_HIGH_LIMIT 1000
 #define PCNT_LOW_LIMIT -1000
 

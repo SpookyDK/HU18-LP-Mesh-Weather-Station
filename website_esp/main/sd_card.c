@@ -15,10 +15,10 @@ static const char *TAG = "SD_CARD";
 
 #define MOUNT_POINT "/sdcard"
 
-#define PIN_MISO 6
+#define PIN_MISO 5
 #define PIN_MOSI 4
-#define PIN_CLK 5
-#define PIN_CS 1
+#define PIN_CLK 6
+#define PIN_CS 10
 
 static esp_err_t s_write_file(const char *path, char *data) {
     ESP_LOGI(TAG, "Opening file for writing, '%s'", path);
@@ -66,7 +66,7 @@ void test_sd_card() {
     ESP_LOGI(TAG, "Using SPI");
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-    spi_bus_config_t bus_cfg = {
+    /* spi_bus_config_t bus_cfg = {
         .mosi_io_num = PIN_MOSI,
         .miso_io_num = PIN_MISO,
         .sclk_io_num = PIN_CLK,
@@ -79,7 +79,7 @@ void test_sd_card() {
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to init SPI bus");
         return;
-    }
+    } */
 
     sdspi_device_config_t slot_cfg = SDSPI_DEVICE_CONFIG_DEFAULT();
     slot_cfg.gpio_cs = PIN_CS;

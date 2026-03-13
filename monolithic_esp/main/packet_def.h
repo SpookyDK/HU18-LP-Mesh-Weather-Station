@@ -5,13 +5,14 @@
 
 /**
  * Packet Header
- * @version 1
+ * @version 2
  */
 typedef struct __attribute__((packed)) {
-    uint8_t node_id;
     uint16_t network_id;
+    uint8_t node_id;
     uint8_t orig_id;
     uint8_t hop_count;
+    uint8_t flags;
 } packet_header_t;
 
 /**

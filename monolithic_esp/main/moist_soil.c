@@ -11,9 +11,6 @@
 
 static const char *TAG = "moisture-soil";
 
-#define MOISTURE_ADC_CHANNEL ADC_CHANNEL_4 // This is GPIO 5, on the ESP32-H2
-#define MOISTURE_ADC_ATTEN ADC_ATTEN_DB_12
-
 // Calibration values - measure once, change and forget
 #define ADC_DRY_VALUE 3560 // Dry reference achieved by placing sensor in Very Dry dirt
 #define ADC_WET_VALUE 2500 // Wet reference achieved by placing sensor in dirt fully saturated by water

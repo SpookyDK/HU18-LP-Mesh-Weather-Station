@@ -1,3 +1,4 @@
+
 #include "driver/gpio.h"
 #include "driver/spi_master.h"
 #include "esp_log.h"
@@ -213,7 +214,7 @@ int lora_init(void) {
     /* gpio_set_direction(CONFIG_RST_GPIO, GPIO_MODE_OUTPUT); */
     gpio_set_direction(CONFIG_CS_GPIO, GPIO_MODE_OUTPUT);
 
-    spi_bus_config_t bus = {.miso_io_num = CONFIG_MISO_GPIO,
+    /* spi_bus_config_t bus = {.miso_io_num = CONFIG_MISO_GPIO,
                             .mosi_io_num = CONFIG_MOSI_GPIO,
                             .sclk_io_num = CONFIG_SCK_GPIO,
                             .quadwp_io_num = -1,
@@ -221,7 +222,7 @@ int lora_init(void) {
                             .max_transfer_sz = 0};
 
     ret = spi_bus_initialize(SPI2_HOST, &bus, 0);
-    assert(ret == ESP_OK);
+    assert(ret == ESP_OK); */
 
     spi_device_interface_config_t dev = {
         .clock_speed_hz = 9000000, .mode = 0, .spics_io_num = -1, .queue_size = 1, .flags = 0, .pre_cb = NULL};

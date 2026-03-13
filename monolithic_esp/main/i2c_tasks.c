@@ -10,11 +10,6 @@
 #include "tsl2591.h"
 #include <stdint.h>
 
-#define I2C_MASTER_SCL_IO 11
-#define I2C_MASTER_SDA_IO 10
-#define I2C_MASTER_NUM I2C_NUM_0
-#define I2C_MASTER_FREQ_HZ 100000
-
 static bool is_i2c_init = false;
 
 static void init_i2c(void) {

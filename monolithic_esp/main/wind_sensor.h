@@ -1,6 +1,8 @@
 #ifndef WIND_SENSOR_H
 #define WIND_SENSOR_H
 
+#define PCNT_INPUT_PIN 0
+
 /**
  * @brief The init function for the windPcnt counter
  * @note Is usually called before starting the windPcntTask
