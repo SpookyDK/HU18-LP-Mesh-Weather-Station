@@ -41,20 +41,20 @@
 
 static const char *TAG = "dht";
 
-#define CHECK_ARG(VAL)                                                         \
-    do {                                                                       \
-        if (!(VAL))                                                            \
-            return ESP_ERR_INVALID_ARG;                                        \
+#define CHECK_ARG(VAL)                                                                                                 \
+    do {                                                                                                               \
+        if (!(VAL))                                                                                                    \
+            return ESP_ERR_INVALID_ARG;                                                                                \
     } while (0)
 
-#define CHECK_LOGE(x, msg, ...)                                                \
-    do {                                                                       \
-        esp_err_t __;                                                          \
-        if ((__ = x) != ESP_OK) {                                              \
-            PORT_EXIT_CRITICAL();                                              \
-            ESP_LOGE(TAG, msg, ##__VA_ARGS__);                                 \
-            return __;                                                         \
-        }                                                                      \
+#define CHECK_LOGE(x, msg, ...)                                                                                        \
+    do {                                                                                                               \
+        esp_err_t __;                                                                                                  \
+        if ((__ = x) != ESP_OK) {                                                                                      \
+            PORT_EXIT_CRITICAL();                                                                                      \
+            ESP_LOGE(TAG, msg, ##__VA_ARGS__);                                                                         \
+            return __;                                                                                                 \
+        }                                                                                                              \
     } while (0)
 
 /**
@@ -63,9 +63,7 @@ static const char *TAG = "dht";
  * false is returned.
  * The elapsed time is returned in pointer 'duration' if it is not NULL.
  */
-static esp_err_t dht_await_pin_state(gpio_num_t pin, uint32_t timeout,
-                                     int expected_pin_state,
-                                     uint32_t *duration) {
+static esp_err_t dht_await_pin_state(gpio_num_t pin, uint32_t timeout, int expected_pin_state, uint32_t *duration) {
     /* XXX dht_await_pin_state() should save pin direction and restore
      * the direction before return. however, the SDK does not provide
      * gpio_get_direction().
@@ -88,8 +86,7 @@ static esp_err_t dht_await_pin_state(gpio_num_t pin, uint32_t timeout,
  * The function call should be protected from task switching.
  * Return false if error occurred.
  */
-static inline esp_err_t dht_fetch_data(gpio_num_t pin,
-                                       uint8_t data[DHT_DATA_BYTES]) {
+static inline esp_err_t dht_fetch_data(gpio_num_t pin, uint8_t data[DHT_DATA_BYTES]) {
     uint32_t low_duration;
     uint32_t high_duration;
     // Phase 'A' pulling signal low to initiate read sequence
@@ -124,8 +121,7 @@ static inline esp_err_t dht_fetch_data(gpio_num_t pin,
 /**
  * Pack two data bytes into single value and take into account sign bit.
  */
-esp_err_t dht_read_data(gpio_num_t pin, int16_t *humidity,
-                        int16_t *temperature) {
+esp_err_t dht_read_data(gpio_num_t pin, int16_t *humidity, int16_t *temperature) {
     CHECK_ARG(humidity || temperature);
 
     uint8_t data[DHT_DATA_BYTES] = {0};

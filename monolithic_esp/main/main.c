@@ -15,6 +15,7 @@
 #include "i2c_tasks.h"
 #include "moist_soil.h"
 #include "tempeture.h"
+#include "wind_sensor.h"
 
 static const char *TAG = "main";
 
@@ -26,6 +27,7 @@ extern int16_t ds18b20_shared_soil_tempeture[ONEWIRE_MAX_DEVS];
 extern uint8_t moist_shared_percentage;
 extern int16_t bmp_shared_pressure;
 extern uint16_t tsl_shared_lux;
+extern uint16_t wind_shared_rpm;
 
 sensor_payload_t payload = {0};
 static void prepare_payload() {
@@ -40,7 +42,7 @@ static void prepare_payload() {
     payload.pressure = bmp_shared_pressure;
     payload.lux = tsl_shared_lux;
     payload.precipitation = 0; // TODO: Missing sensor
-    payload.wind_speed = 0;    // TODO: Missing sensor
+    payload.wind_speed = wind_shared_rpm;
 }
 
 static uint8_t payload_string[sizeof(sensor_payload_t) * 2 + 1] = {0};
@@ -109,6 +111,9 @@ void app_main(void) {
 
     ESP_LOGI(TAG, "Starting Light Sensor Task");
     xTaskCreate(light_sensor_task, "lightTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
+
+    ESP_LOGI(TAG, "Starting Wind Sensor Task");
+    xTaskCreate(wind_task, "windTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
 
     ESP_LOGI(TAG, "Starting GPS Task");
     xTaskCreate(gps_task, "gpsTask", 4096, NULL, 0, NULL);

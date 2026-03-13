@@ -1,12 +1,13 @@
 #include "driver/gpio.h"
 #include "driver/spi_master.h"
-#include "esp_rom_gpio.h"
+#include "esp_log.h"
 #include "esp_system.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "hal/spi_types.h"
 #include "lora.h"
 #include "soc/gpio_struct.h"
+#include <stdint.h>
 #include <string.h>
 
 // Pins
@@ -14,7 +15,7 @@
 #define CONFIG_MOSI_GPIO 27
 #define CONFIG_SCK_GPIO 4
 #define CONFIG_CS_GPIO 1
-#define CONFIG_RST_GPIO 25 // idk,
+/* #define CONFIG_RST_GPIO 25 // idk, */
 
 /*
  * Register definitions
@@ -79,11 +80,6 @@ static spi_device_handle_t __spi;
 static int __implicit = 0;
 static long __frequency;
 
-/**
- * Write a value to a register.
- * @param reg Register index.
- * @param val Value to write.
- */
 void lora_write_reg(int reg, int val) {
     uint8_t out[2] = {0x80 | reg, val};
     uint8_t in[2];
@@ -95,11 +91,6 @@ void lora_write_reg(int reg, int val) {
     gpio_set_level(CONFIG_CS_GPIO, 1);
 }
 
-/**
- * Read the current value of a register.
- * @param reg Register index.
- * @return Value of the register.
- */
 int lora_read_reg(int reg) {
     uint8_t out[2] = {reg, 0xff};
     uint8_t in[2];
@@ -112,58 +103,31 @@ int lora_read_reg(int reg) {
     return in[1];
 }
 
-/**
- * Perform physical reset on the Lora chip
- */
 void lora_reset(void) {
-    gpio_set_level(CONFIG_RST_GPIO, 0);
+    ESP_LOGW("LoRa", "Feature not really implemented");
+    /* gpio_set_level(CONFIG_RST_GPIO, 0); */
     vTaskDelay(pdMS_TO_TICKS(1));
-    gpio_set_level(CONFIG_RST_GPIO, 1);
+    /* gpio_set_level(CONFIG_RST_GPIO, 1); */
     vTaskDelay(pdMS_TO_TICKS(10));
 }
 
-/**
- * Configure explicit header mode.
- * Packet size will be included in the frame.
- */
 void lora_explicit_header_mode(void) {
     __implicit = 0;
     lora_write_reg(REG_MODEM_CONFIG_1, lora_read_reg(REG_MODEM_CONFIG_1) & 0xfe);
 }
 
-/**
- * Configure implicit header mode.
- * All packets will have a predefined size.
- * @param size Size of the packets.
- */
 void lora_implicit_header_mode(int size) {
     __implicit = 1;
     lora_write_reg(REG_MODEM_CONFIG_1, lora_read_reg(REG_MODEM_CONFIG_1) | 0x01);
     lora_write_reg(REG_PAYLOAD_LENGTH, size);
 }
 
-/**
- * Sets the radio transceiver in idle mode.
- * Must be used to change registers and access the FIFO.
- */
 void lora_idle(void) { lora_write_reg(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_STDBY); }
 
-/**
- * Sets the radio transceiver in sleep mode.
- * Low power consumption and FIFO is lost.
- */
 void lora_sleep(void) { lora_write_reg(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_SLEEP); }
 
-/**
- * Sets the radio transceiver in receive mode.
- * Incoming packets will be received.
- */
 void lora_receive(void) { lora_write_reg(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_RX_CONTINUOUS); }
 
-/**
- * Configure power level for transmission
- * @param level 2-17, from least to most power
- */
 void lora_set_tx_power(int level) {
     // RF9x module uses PA_BOOST pin
     if (level < 2)
@@ -173,10 +137,6 @@ void lora_set_tx_power(int level) {
     lora_write_reg(REG_PA_CONFIG, PA_BOOST | (level - 2));
 }
 
-/**
- * Set carrier frequency.
- * @param frequency Frequency in Hz
- */
 void lora_set_frequency(long frequency) {
     __frequency = frequency;
 
@@ -187,10 +147,6 @@ void lora_set_frequency(long frequency) {
     lora_write_reg(REG_FRF_LSB, (uint8_t)(frf >> 0));
 }
 
-/**
- * Set spreading factor.
- * @param sf 6-12, Spreading factor to use.
- */
 void lora_set_spreading_factor(int sf) {
     if (sf < 6)
         sf = 6;
@@ -208,10 +164,6 @@ void lora_set_spreading_factor(int sf) {
     lora_write_reg(REG_MODEM_CONFIG_2, (lora_read_reg(REG_MODEM_CONFIG_2) & 0x0f) | ((sf << 4) & 0xf0));
 }
 
-/**
- * Set bandwidth (bit rate)
- * @param sbw Bandwidth in Hz (up to 500000)
- */
 void lora_set_bandwidth(long sbw) {
     int bw;
 
@@ -238,10 +190,6 @@ void lora_set_bandwidth(long sbw) {
     lora_write_reg(REG_MODEM_CONFIG_1, (lora_read_reg(REG_MODEM_CONFIG_1) & 0x0f) | (bw << 4));
 }
 
-/**
- * Set coding rate
- * @param denominator 5-8, Denominator for the coding rate 4/x
- */
 void lora_set_coding_rate(int denominator) {
     if (denominator < 5)
         denominator = 5;
@@ -252,43 +200,24 @@ void lora_set_coding_rate(int denominator) {
     lora_write_reg(REG_MODEM_CONFIG_1, (lora_read_reg(REG_MODEM_CONFIG_1) & 0xf1) | (cr << 1));
 }
 
-/**
- * Set the size of preamble.
- * @param length Preamble length in symbols.
- */
 void lora_set_preamble_length(long length) {
     lora_write_reg(REG_PREAMBLE_MSB, (uint8_t)(length >> 8));
     lora_write_reg(REG_PREAMBLE_LSB, (uint8_t)(length >> 0));
 }
 
-/**
- * Change radio sync word.
- * @param sw New sync word to use.
- */
 void lora_set_sync_word(int sw) { lora_write_reg(REG_SYNC_WORD, sw); }
 
-/**
- * Enable appending/verifying packet CRC.
- */
 void lora_enable_crc(void) { lora_write_reg(REG_MODEM_CONFIG_2, lora_read_reg(REG_MODEM_CONFIG_2) | 0x04); }
 
-/**
- * Disable appending/verifying packet CRC.
- */
 void lora_disable_crc(void) { lora_write_reg(REG_MODEM_CONFIG_2, lora_read_reg(REG_MODEM_CONFIG_2) & 0xfb); }
 
-/**
- * Perform hardware initialization.
- */
 int lora_init(void) {
     esp_err_t ret;
 
     /*
      * Configure CPU hardware to communicate with the radio chip
      */
-    esp_rom_gpio_pad_select_gpio(CONFIG_RST_GPIO);
-    gpio_set_direction(CONFIG_RST_GPIO, GPIO_MODE_OUTPUT);
-    esp_rom_gpio_pad_select_gpio(CONFIG_CS_GPIO);
+    /* gpio_set_direction(CONFIG_RST_GPIO, GPIO_MODE_OUTPUT); */
     gpio_set_direction(CONFIG_CS_GPIO, GPIO_MODE_OUTPUT);
 
     spi_bus_config_t bus = {.miso_io_num = CONFIG_MISO_GPIO,
@@ -338,11 +267,6 @@ int lora_init(void) {
     return 1;
 }
 
-/**
- * Send a packet.
- * @param buf Data to be sent
- * @param size Size of data.
- */
 void lora_send_packet(uint8_t *buf, int size) {
     /*
      * Transfer data to radio.
@@ -358,19 +282,18 @@ void lora_send_packet(uint8_t *buf, int size) {
     /*
      * Start transmission and wait for conclusion.
      */
+    uint16_t attempts = 0;
     lora_write_reg(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_TX);
-    while ((lora_read_reg(REG_IRQ_FLAGS) & IRQ_TX_DONE_MASK) == 0)
+    while ((lora_read_reg(REG_IRQ_FLAGS) & IRQ_TX_DONE_MASK) == 0) {
         vTaskDelay(2);
+        if (attempts++ > 50) {
+            ESP_LOGE("Asd", "Failed to send packet");
+        }
+    }
 
     lora_write_reg(REG_IRQ_FLAGS, IRQ_TX_DONE_MASK);
 }
 
-/**
- * Read a received packet.
- * @param buf Buffer for the data.
- * @param size Available size in buffer (bytes).
- * @return Number of bytes received (zero if no packet available).
- */
 int lora_receive_packet(uint8_t *buf, int size) {
     int len = 0;
 
@@ -405,28 +328,16 @@ int lora_receive_packet(uint8_t *buf, int size) {
     return len;
 }
 
-/**
- * Returns non-zero if there is data to read (packet received).
- */
 int lora_received(void) {
     if (lora_read_reg(REG_IRQ_FLAGS) & IRQ_RX_DONE_MASK)
         return 1;
     return 0;
 }
 
-/**
- * Return last packet's RSSI.
- */
 int lora_packet_rssi(void) { return (lora_read_reg(REG_PKT_RSSI_VALUE) - (__frequency < 868E6 ? 164 : 157)); }
 
-/**
- * Return last packet's SNR (signal to noise ratio).
- */
 float lora_packet_snr(void) { return ((int8_t)lora_read_reg(REG_PKT_SNR_VALUE)) * 0.25; }
 
-/**
- * Shutdown hardware.
- */
 void lora_close(void) {
     lora_sleep();
     //   close(__spi);  FIXME: end hardware features after lora_close
