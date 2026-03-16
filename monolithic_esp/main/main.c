@@ -45,14 +45,6 @@ static void prepare_payload() {
     payload.wind_speed = wind_shared_rpm;
 }
 
-static uint8_t payload_string[sizeof(sensor_payload_t) * 2 + 1] = {0};
-static void payload_to_string(void) {
-    uint8_t *ptr = (uint8_t *)&payload;
-    for (int i = 0; i < sizeof(payload); i++) {
-        sprintf((char *)&payload_string[i * 2], "%02x", ptr[i]);
-    }
-}
-
 static uint16_t crc16(const uint8_t *data, size_t len) {
     uint16_t crc = 0xFFFF;
     for (size_t i = 0; i < len; i++) {
@@ -80,10 +72,9 @@ static void transmit_task(void *p) {
 
     while (1) {
         prepare_payload();
-        payload_to_string();
-        ESP_LOGI("TXtask", "The payload: '%s'", payload_string);
+        block_if_receiving();
         lora_send_packet((uint8_t *)&payload, sizeof(payload));
-        ESP_LOGI("TXtask", "Sent Pakcet");
+        ESP_LOGI("TXtask", "Sent Packet with length: '%d'", sizeof(payload));
         vTaskDelay(pdMS_TO_TICKS(DUTY_CYCLES_MS));
     }
     ESP_LOGW("TXtask", "Left task");
@@ -100,23 +91,23 @@ static void print_runtime_stats(void) {
 
 void app_main(void) {
 
-    /* ESP_LOGI(TAG, "Starting Tempeture Task");
-    xTaskCreate(temp_task, "tempTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL); */
+    ESP_LOGI(TAG, "Starting Tempeture Task");
+    xTaskCreate(temp_task, "tempTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
 
-    /* ESP_LOGI(TAG, "Starting Soil Moisture Reading Task");
-    xTaskCreate(moist_task, "moistTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL); */
+    ESP_LOGI(TAG, "Starting Soil Moisture Reading Task");
+    xTaskCreate(moist_task, "moistTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
 
-    /* ESP_LOGI(TAG, "Starting Barometer Task");
-    xTaskCreate(barometer_task, "barTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL); */
+    ESP_LOGI(TAG, "Starting Barometer Task");
+    xTaskCreate(barometer_task, "barTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
 
-    /* ESP_LOGI(TAG, "Starting Light Sensor Task");
-    xTaskCreate(light_sensor_task, "lightTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL); */
+    ESP_LOGI(TAG, "Starting Light Sensor Task");
+    xTaskCreate(light_sensor_task, "lightTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
 
-    /* ESP_LOGI(TAG, "Starting Wind Sensor Task");
-    xTaskCreate(wind_task, "windTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL); */
+    ESP_LOGI(TAG, "Starting Wind Sensor Task");
+    xTaskCreate(wind_task, "windTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
 
-    /* ESP_LOGI(TAG, "Starting GPS Task");
-    xTaskCreate(gps_task, "gpsTask", 4096, NULL, 0, NULL); */
+    ESP_LOGI(TAG, "Starting GPS Task");
+    xTaskCreate(gps_task, "gpsTask", 4096, NULL, 0, NULL);
 
     ESP_LOGI(TAG, "Starting Transmitter Task");
     xTaskCreate(transmit_task, "txTask", 4096, NULL, 5, NULL);

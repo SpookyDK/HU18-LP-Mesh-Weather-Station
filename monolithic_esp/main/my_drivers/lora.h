@@ -138,6 +138,11 @@ int lora_receive_packet(uint8_t *buf, int size);
 int lora_received(void);
 
 /**
+ * Blocks task if LoRa is receiving
+ */
+void block_if_receiving(void);
+
+/**
  * Return last packet's RSSI.
  */
 int lora_packet_rssi(void);

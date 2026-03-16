@@ -1,12 +1,14 @@
 #include "driver/gpio.h"
 #include "driver/spi_master.h"
 #include "esp_log.h"
+#include "esp_random.h"
 #include "esp_system.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "hal/spi_types.h"
 #include "lora.h"
 #include "soc/gpio_struct.h"
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -325,6 +327,21 @@ int lora_received(void) {
     if (lora_read_reg(REG_IRQ_FLAGS) & IRQ_RX_DONE_MASK)
         return 1;
     return 0;
+}
+
+void block_if_receiving(void) {
+    lora_receive();
+    uint8_t count = 0;
+    bool is_busy = lora_received();
+    uint8_t limit = 5 + (is_busy ? esp_random() % 5 : 0);
+    while (count < limit) {
+        if (lora_received()) {
+            count = 0;
+        } else {
+            count++;
+        }
+        vTaskDelay(1);
+    }
 }
 
 int lora_packet_rssi(void) { return (lora_read_reg(REG_PKT_RSSI_VALUE) - (__frequency < 868E6 ? 164 : 157)); }
