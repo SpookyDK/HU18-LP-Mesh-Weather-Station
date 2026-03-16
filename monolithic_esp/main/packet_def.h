@@ -5,12 +5,15 @@
 
 /**
  * Packet Header
- * @version 2
+ * @version 3
+ * @param packet_id Is a unique identifier per packet
+ * @param hop_count Decrementing until zero, then drop
+ * @param flags Currently not used
  */
 typedef struct __attribute__((packed)) {
-    uint16_t network_id;
-    uint8_t node_id;
-    uint8_t orig_id;
+    uint8_t network_id;
+    uint8_t orig_node_id;
+    uint16_t packet_id;
     uint8_t hop_count;
     uint8_t flags;
 } packet_header_t;
@@ -44,12 +47,11 @@ typedef struct __attribute__((packed)) {
 
 /**
  * Full Packet
- * @version 1
+ * @version 2
  */
 typedef struct __attribute__((packed)) {
     packet_header_t head;
     sensor_payload_t payload;
-    uint16_t crc16;
 } full_packet_t;
 
 #endif // !PACKET_DEF_H

@@ -80,9 +80,9 @@ void lora_write_reg(int reg, int val) {
 
     spi_transaction_t t = {.flags = 0, .length = 8 * sizeof(out), .tx_buffer = out, .rx_buffer = in};
 
-    gpio_set_level(CONFIG_CS_GPIO, 0);
+    /* gpio_set_level(CONFIG_CS_GPIO, 0); */
     spi_device_transmit(__spi, &t);
-    gpio_set_level(CONFIG_CS_GPIO, 1);
+    /* gpio_set_level(CONFIG_CS_GPIO, 1); */
 }
 
 int lora_read_reg(int reg) {
@@ -91,9 +91,9 @@ int lora_read_reg(int reg) {
 
     spi_transaction_t t = {.flags = 0, .length = 8 * sizeof(out), .tx_buffer = out, .rx_buffer = in};
 
-    gpio_set_level(CONFIG_CS_GPIO, 0);
+    /* gpio_set_level(CONFIG_CS_GPIO, 0); */
     spi_device_transmit(__spi, &t);
-    gpio_set_level(CONFIG_CS_GPIO, 1);
+    /* gpio_set_level(CONFIG_CS_GPIO, 1); */
     return in[1];
 }
 
@@ -212,7 +212,7 @@ int lora_init(void) {
      * Configure CPU hardware to communicate with the radio chip
      */
     /* gpio_set_direction(CONFIG_RST_GPIO, GPIO_MODE_OUTPUT); */
-    gpio_set_direction(CONFIG_CS_GPIO, GPIO_MODE_OUTPUT);
+    /* gpio_set_direction(CONFIG_CS_GPIO, GPIO_MODE_OUTPUT); */
 
     /* spi_bus_config_t bus = {.miso_io_num = CONFIG_MISO_GPIO,
                             .mosi_io_num = CONFIG_MOSI_GPIO,
@@ -224,8 +224,12 @@ int lora_init(void) {
     ret = spi_bus_initialize(SPI2_HOST, &bus, 0);
     assert(ret == ESP_OK); */
 
-    spi_device_interface_config_t dev = {
-        .clock_speed_hz = 9000000, .mode = 0, .spics_io_num = -1, .queue_size = 1, .flags = 0, .pre_cb = NULL};
+    spi_device_interface_config_t dev = {.clock_speed_hz = 9000000,
+                                         .mode = 0,
+                                         .spics_io_num = CONFIG_CS_GPIO,
+                                         .queue_size = 1,
+                                         .flags = 0,
+                                         .pre_cb = NULL};
     ret = spi_bus_add_device(SPI2_HOST, &dev, &__spi);
     assert(ret == ESP_OK);
 
@@ -281,7 +285,8 @@ void lora_send_packet(uint8_t *buf, int size) {
     while ((lora_read_reg(REG_IRQ_FLAGS) & IRQ_TX_DONE_MASK) == 0) {
         vTaskDelay(2);
         if (attempts++ > 50) {
-            ESP_LOGE("Asd", "Failed to send packet");
+            ESP_LOGE("LoRa", "Tx timeout, aborted");
+            break;
         }
     }
 

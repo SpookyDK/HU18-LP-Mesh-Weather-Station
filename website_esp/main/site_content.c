@@ -21,7 +21,7 @@ static esp_err_t get_handler_root(httpd_req_t *req) {
         "<h2>The current soil tempetures are </h2><span style='font-size:18px'><ol id='soil_temps'></ol></span>"
         "<h2>The current soil moisture is <span id='soil_moisture'>0</span> %</h2>"
         "<h2>The current air pressure is <span id='pressure'>0</span> hPa</h2>"
-        "<h2>The current solar intensity is <span id='lux'>0</span> %</h2>"
+        "<h2>The current solar intensity is <span id='lux'>0</span> lx</h2>"
         "<h2>The amount of precipitation in the past time frame is <span id='precipitation'>0</span> micro meters</h2>"
         "<h2>The current wind speed is <span id='wind_speed'>0</span> meters per second</h2>"
         "<p>"

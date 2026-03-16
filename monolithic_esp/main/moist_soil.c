@@ -6,6 +6,7 @@
 #include "freertos/projdefs.h"
 #include "freertos/task.h"
 #include "hal/adc_types.h"
+#include "moist_soil.h"
 #include <stdint.h>
 #include <stdio.h>
 

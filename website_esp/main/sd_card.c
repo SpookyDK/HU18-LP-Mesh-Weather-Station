@@ -1,8 +1,10 @@
 #include "driver/sdspi_host.h"
 #include "driver/spi_common.h"
+#include "driver/spi_master.h"
 #include "esp_err.h"
 #include "esp_log.h"
 #include "esp_vfs_fat.h"
+#include "hal/spi_types.h"
 #include "sd_card.h"
 #include "sdmmc_cmd.h"
 #include <stdio.h>
@@ -12,13 +14,6 @@
 static const char *TAG = "SD_CARD";
 
 #define MAX_BUF_SIZE 64
-
-#define MOUNT_POINT "/sdcard"
-
-#define PIN_MISO 5
-#define PIN_MOSI 4
-#define PIN_CLK 6
-#define PIN_CS 10
 
 static esp_err_t s_write_file(const char *path, char *data) {
     ESP_LOGI(TAG, "Opening file for writing, '%s'", path);
@@ -81,6 +76,17 @@ void test_sd_card() {
         return;
     } */
 
+    spi_device_handle_t dev_handle;
+
+    spi_device_interface_config_t dev_cfg = {
+        .clock_speed_hz = 9000000, .mode = 0, .spics_io_num = PIN_CS, .queue_size = 1, .flags = 0, .pre_cb = NULL};
+
+    ret = spi_bus_add_device(SPI2_HOST, &dev_cfg, &dev_handle);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to add Device to SPI bus");
+        return;
+    }
+
     sdspi_device_config_t slot_cfg = SDSPI_DEVICE_CONFIG_DEFAULT();
     slot_cfg.gpio_cs = PIN_CS;
     slot_cfg.host_id = host.slot;
@@ -113,6 +119,4 @@ void test_sd_card() {
     ESP_LOGI(TAG, "Unmounting Filesystem");
     esp_vfs_fat_sdcard_unmount(MOUNT_POINT, card);
     ESP_LOGI(TAG, "Card Unmounted");
-
-    spi_bus_free(host.slot);
 }

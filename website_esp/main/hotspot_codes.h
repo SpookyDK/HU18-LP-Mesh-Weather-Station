@@ -1,0 +1,8 @@
+#ifndef HOTSPOT_CODES
+#define HOTSPOT_CODES
+
+#define NOT_HOTSPOT_SSID "MyShittyESP32"
+#define NOT_HOTSPOT_PASS "idgaf123"
+#define NOT_HOTSPOT_CHANNEL 1
+
+#endif // !HOTSPOT_CODES

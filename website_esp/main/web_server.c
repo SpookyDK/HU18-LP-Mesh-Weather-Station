@@ -29,12 +29,12 @@ static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT BIT1
 
-#define MAX_RETRY_NUM 5
-static int s_retry_num = 0;
+/* #define MAX_RETRY_NUM 5 */
+/* static int s_retry_num = 0; */
 
 httpd_handle_t start_webserver(void);
 
-static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
+/* static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
         esp_wifi_connect();
     } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
@@ -52,9 +52,9 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
         s_retry_num = 0;
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
     }
-}
+} */
 
-void connect_to_hotspot(void) {
+/* void connect_to_hotspot(void) {
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_ERROR_CHECK(nvs_flash_erase());
@@ -96,7 +96,7 @@ void connect_to_hotspot(void) {
     } else {
         ESP_LOGE("wifi", "UNEXPECTED EVENT");
     }
-}
+} */
 
 static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
     if (event_id == WIFI_EVENT_AP_STACONNECTED) {

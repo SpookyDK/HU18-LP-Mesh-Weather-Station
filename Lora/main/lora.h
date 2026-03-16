@@ -1,8 +1,8 @@
 #ifndef __LORA_H__
 #define __LORA_H__
 
-#define CONFIG_MISO_GPIO 2
-#define CONFIG_MOSI_GPIO 3
+#define CONFIG_MISO_GPIO 26
+#define CONFIG_MOSI_GPIO 27
 #define CONFIG_SCK_GPIO 4
 #define CONFIG_CS_GPIO 1
 #define CONFIG_RST_GPIO 5 // idk

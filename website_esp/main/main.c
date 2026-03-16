@@ -21,6 +21,9 @@ static void init_my_spi() {
 }
 
 void app_main(void) {
+    ESP_LOGI("main", "Starting SPI");
+    init_my_spi();
+
     xTaskCreate(generate_big_data_task, "DataGen", 4096, NULL, 0, NULL);
 
     wifi_init_softap();
