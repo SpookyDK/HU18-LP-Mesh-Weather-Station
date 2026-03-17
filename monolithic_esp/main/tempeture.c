@@ -68,8 +68,7 @@ void temp_task(void *duty_cycle_ms) {
         if (dht_read_data(CONFIG_DHT11_PIN, &dht11_humidity, &dht11_tempeture) == ESP_OK) {
             dht_shared_air_humidity = (uint8_t)(dht11_humidity / 10);
             dht_shared_air_tempeture = dht11_tempeture;
-            ESP_LOGI("DHT11", "[Temperature]> %d", dht11_tempeture);
-            ESP_LOGI("DHT11", "[Humidity]> %d", dht11_humidity);
+            ESP_LOGI("DHT11", "Temperature: %d  Humidity: %d", dht11_tempeture, dht11_humidity);
         } else {
             ESP_LOGW("DHT11", "Failed to read");
         }

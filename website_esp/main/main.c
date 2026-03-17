@@ -8,6 +8,8 @@
 #include "web_server.h"
 #include <stdio.h>
 
+const char *TAG = "main";
+
 static void init_my_spi() {
     spi_bus_config_t bus_cfg = {
         .mosi_io_num = 4,
@@ -21,13 +23,16 @@ static void init_my_spi() {
 }
 
 void app_main(void) {
-    ESP_LOGI("main", "Starting SPI");
+    ESP_LOGI(TAG, "Starting SPI");
     init_my_spi();
 
+    ESP_LOGI(TAG, "Starting Data Collection");
     xTaskCreate(generate_big_data_task, "DataGen", 4096, NULL, 0, NULL);
 
+    ESP_LOGI(TAG, "Starting Wi-Fi as Access Point");
     wifi_init_softap();
 
+    ESP_LOGI(TAG, "Starting SD Card");
     test_sd_card();
 
     while (1) {

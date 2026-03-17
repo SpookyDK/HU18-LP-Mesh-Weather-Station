@@ -29,8 +29,8 @@ typedef struct __attribute__((packed)) {
  * @param soil_moisture From 0 to 100% where 0 is our measured lowest moisture and 100% is most
  * @param pressure The diff from 100000 Pa
  * @param lux Lux
- * @param precipitation In units of 100 micro meters per hour
- * @param wind_speed In 0.1 m/s
+ * @param precipitation Gives the amount since last reading/packet, scaled with 10
+ * @param wind_speed In mili meters per second
  */
 typedef struct __attribute__((packed)) {
     int32_t longitude;
@@ -41,8 +41,8 @@ typedef struct __attribute__((packed)) {
     uint8_t soil_moisture;
     int16_t pressure;
     uint16_t lux;
-    uint16_t precipitation; // TODO: Missing Sensor
-    uint16_t wind_speed;    // TODO: Missing Sensor
+    uint16_t precipitation;
+    uint16_t wind_speed;
 } sensor_payload_t;
 
 /**

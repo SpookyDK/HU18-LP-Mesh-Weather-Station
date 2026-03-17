@@ -86,11 +86,12 @@ void light_sensor_task(void *duty_cycle_ms) {
     ESP_ERROR_CHECK(tsl2591_set_integration_time(&light_sensor_dev, TSL2591_INTEGRATION_300MS));
 
     float lux; // Im so sorry, but this float will remain a float
+    uint16_t ir;
     esp_err_t res;
     while (1) {
-        if ((res = tsl2591_get_lux(&light_sensor_dev, &lux)) == ESP_OK) {
+        if ((res = tsl2591_get_lux(&light_sensor_dev, &lux, &ir)) == ESP_OK) {
             tsl_shared_lux = (uint16_t)lux;
-            ESP_LOGI("Light", "Lux reading: %f shared_lux = %d", lux, tsl_shared_lux);
+            ESP_LOGI("Light", "Lux: %f shared_lux = %d  IR reading: %d", lux, tsl_shared_lux, ir);
         } else {
             ESP_LOGW("Light", "Cound not read Lux value: %d", res);
         }

@@ -9,6 +9,7 @@
 #include "freertos/task.h"
 #include "hal/gpio_types.h"
 #include "lora.h"
+#include "packet_def.h"
 #include "portmacro.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -38,8 +39,7 @@ void init_dio0_interrupt() {
     gpio_isr_handler_add(CONFIG_DIO0_GPIO, lora_isr_handler, NULL);
 }
 
-uint8_t big_data_bytearray[] = {0x0a, 0xc2, 0xf3, 0x05, 0x19, 0x9b, 0xfb, 0x21, 0x2c, 0xec, 0x00, 0x74, 0x01, 0x77,
-                                0x01, 0x74, 0x01, 0x71, 0x01, 0x00, 0xc6, 0x00, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00};
+full_packet_t big_data_packet = {0};
 static uint8_t buffer[256] = {0};
 
 static void receive_task(void *p) {
@@ -64,10 +64,10 @@ static void receive_task(void *p) {
             if (packet_len > 0) {
                 buffer[packet_len] = '\0';
                 ESP_LOGI("RXtask", "len: '%d'", packet_len);
-                if (packet_len == 28) {
-                    memcpy(&big_data_bytearray, buffer, 28);
+                if (packet_len == sizeof(full_packet_t)) {
+                    memcpy(&big_data_packet, buffer, sizeof(full_packet_t));
                 } else {
-                    ESP_LOGW("RXtask", "Unkown pakcet");
+                    ESP_LOGW("RXtask", "Unkown packet");
                 }
             }
             lora_receive();

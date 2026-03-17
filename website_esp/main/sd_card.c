@@ -4,6 +4,8 @@
 #include "esp_err.h"
 #include "esp_log.h"
 #include "esp_vfs_fat.h"
+#include "freertos/idf_additions.h"
+#include "freertos/projdefs.h"
 #include "hal/spi_types.h"
 #include "sd_card.h"
 #include "sdmmc_cmd.h"
@@ -49,6 +51,9 @@ static esp_err_t s_read_file(const char *path, char *result) {
 
 static sdmmc_card_t *card;
 void test_sd_card() {
+    // The sd card needs some power before starting
+    vTaskDelay(pdMS_TO_TICKS(2000));
+
     esp_err_t ret;
 
     esp_vfs_fat_sdmmc_mount_config_t mount_cfg = {

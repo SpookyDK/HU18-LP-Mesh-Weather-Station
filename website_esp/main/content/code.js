@@ -15,7 +15,7 @@ function parsePayload(bytes) {
     pressure: [(view.getInt16(offset, true) + 100000) / 100, (offset += 2)][0],
     lux: [view.getInt16(offset, true), (offset += 2)][0],
     precipitation: [view.getUint16(offset, true) / 10, (offset += 2)][0],
-    wind_speed: [view.getUint16(offset, true), (offset += 2)][0],
+    wind_speed: [view.getUint16(offset, true) / 1000, (offset += 2)][0],
   };
   return data;
 }

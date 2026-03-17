@@ -36,6 +36,7 @@
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <stdint.h>
 
 #define I2C_FREQ_HZ 400000 // 400kHz
 
@@ -251,11 +252,12 @@ esp_err_t tsl2591_calculate_lux(tsl2591_t *dev, uint16_t channel0, uint16_t chan
     return ESP_OK;
 }
 
-esp_err_t tsl2591_get_lux(tsl2591_t *dev, float *lux) {
-    CHECK_ARG(dev && lux);
+esp_err_t tsl2591_get_lux(tsl2591_t *dev, float *lux, uint16_t *ir) {
+    CHECK_ARG(dev && lux && ir);
 
     uint16_t channel0, channel1;
     CHECK(tsl2591_get_channel_data(dev, &channel0, &channel1));
+    *ir = channel1;
 
     return tsl2591_calculate_lux(dev, channel0, channel1, lux);
 }

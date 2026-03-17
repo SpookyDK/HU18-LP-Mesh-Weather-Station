@@ -38,6 +38,7 @@
 
 #include <esp_err.h>
 #include <i2cdev.h>
+#include <stdint.h>
 
 #define TSL2591_I2C_ADDR 0x29 // TSL2591 has only one i2c address.
 
@@ -186,7 +187,7 @@ esp_err_t tsl2591_calculate_lux(tsl2591_t *dev, uint16_t channel0, uint16_t chan
  * @param[out] lux Light intensity
  * @return `ESP_OK`
  */
-esp_err_t tsl2591_get_lux(tsl2591_t *dev, float *lux);
+esp_err_t tsl2591_get_lux(tsl2591_t *dev, float *lux, uint16_t *ir);
 
 /**
  * @brief Set device power status

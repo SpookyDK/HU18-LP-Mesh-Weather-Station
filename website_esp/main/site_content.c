@@ -3,6 +3,7 @@
 #include "esp_http_server.h"
 #include "esp_log.h"
 #include "http_parser.h"
+#include "packet_def.h"
 #include "site_content.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -22,7 +23,7 @@ static esp_err_t get_handler_root(httpd_req_t *req) {
         "<h2>The current soil moisture is <span id='soil_moisture'>0</span> %</h2>"
         "<h2>The current air pressure is <span id='pressure'>0</span> hPa</h2>"
         "<h2>The current solar intensity is <span id='lux'>0</span> lx</h2>"
-        "<h2>The amount of precipitation in the past time frame is <span id='precipitation'>0</span> micro meters</h2>"
+        "<h2>The amount of precipitation in the past time frame is <span id='precipitation'>0</span> mili meters</h2>"
         "<h2>The current wind speed is <span id='wind_speed'>0</span> meters per second</h2>"
         "<p>"
         COCIO_LOGO
@@ -48,10 +49,10 @@ static esp_err_t get_handler_favicon(httpd_req_t *req) {
 static httpd_uri_t uri_get_favicon = {
     .uri = "/favicon.ico", .method = HTTP_GET, .handler = get_handler_favicon, .user_ctx = NULL};
 
-extern uint8_t big_data_bytearray[];
+extern full_packet_t big_data_packet;
 static esp_err_t get_handler_data(httpd_req_t *req) {
     httpd_resp_set_type(req, "application/octet-stream");
-    httpd_resp_send(req, (const char *)big_data_bytearray, 28);
+    httpd_resp_send(req, (const char *)&big_data_packet.payload, sizeof(sensor_payload_t));
     return ESP_OK;
 }
 static httpd_uri_t uri_get_data = {.uri = "/data", .method = HTTP_GET, .handler = get_handler_data, .user_ctx = NULL};
