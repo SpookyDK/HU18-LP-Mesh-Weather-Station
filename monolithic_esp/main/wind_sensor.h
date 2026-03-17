@@ -2,7 +2,7 @@
 #define WIND_SENSOR_H
 
 #define PCNT_INPUT_PIN 0
-
+static float calculate_wind_speed(uint32_t windrpm);
 /**
  * @brief The init function for the windPcnt counter
  * @note Is usually called before starting the windPcntTask
