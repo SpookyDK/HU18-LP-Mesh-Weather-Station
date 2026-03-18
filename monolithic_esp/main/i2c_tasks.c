@@ -31,8 +31,7 @@ void barometer_task(void *duty_cycle_ms) {
     init_i2c();
 
     bmp280_dev_t bmp = {0};
-    ESP_ERROR_CHECK(
-        bmp280_init_desc(&bmp, I2C_MASTER_NUM, BMP280_I2C_ADDR_SDO_LOW, I2C_MASTER_SDA_IO, I2C_MASTER_SCL_IO));
+    ESP_ERROR_CHECK(bmp280_init_desc(&bmp, I2C_MASTER_NUM, BMP280_I2C_ADDR_SDO_LOW, I2C_MASTER_SDA_IO, I2C_MASTER_SCL_IO));
 
     bmp280_config_t bmp_cfg = {
         .mode = BMP280_MODE_NORMAL,
@@ -55,8 +54,8 @@ void barometer_task(void *duty_cycle_ms) {
         res = bmp280_read(&bmp, &bmp_tempeture, &bmp_pressure);
         if (res == ESP_OK) {
             bmp_shared_pressure = (bmp_pressure >> 8) - 100000;
-            ESP_LOGI("BMP280", "Read Values: temp = %2d °C, pres_diff = %d, Raw=%.2f", bmp_tempeture,
-                     bmp_shared_pressure, (float)(bmp_pressure / 256.0f));
+            ESP_LOGI("BMP280", "Read Values: temp = %2d °C, pres_diff = %d, Raw=%.2f", bmp_tempeture, bmp_shared_pressure,
+                     (float)(bmp_pressure / 256.0f));
         } else {
             ESP_LOGE("BMP280", "Read Failed: %s", esp_err_to_name(res));
         }
@@ -68,7 +67,7 @@ void barometer_task(void *duty_cycle_ms) {
     ESP_LOGW("BMP280", "Leaving Accel Task");
 }
 
-uint16_t tsl_shared_lux = 0;
+uint16_t tsl_shared_spectrum = 0;
 
 void light_sensor_task(void *duty_cycle_ms) {
     // Ensure I2C is stated
@@ -85,13 +84,12 @@ void light_sensor_task(void *duty_cycle_ms) {
     ESP_ERROR_CHECK(tsl2591_set_gain(&light_sensor_dev, TSL2591_GAIN_MEDIUM));
     ESP_ERROR_CHECK(tsl2591_set_integration_time(&light_sensor_dev, TSL2591_INTEGRATION_300MS));
 
-    float lux; // Im so sorry, but this float will remain a float
-    uint16_t ir;
+    uint16_t cha0_full, cha1_ir;
     esp_err_t res;
     while (1) {
-        if ((res = tsl2591_get_lux(&light_sensor_dev, &lux, &ir)) == ESP_OK) {
-            tsl_shared_lux = (uint16_t)lux;
-            ESP_LOGI("Light", "Lux: %f shared_lux = %d  IR reading: %d", lux, tsl_shared_lux, ir);
+        if ((res = tsl2591_get_channel_data(&light_sensor_dev, &cha0_full, &cha1_ir)) == ESP_OK) {
+            tsl_shared_spectrum = cha0_full;
+            ESP_LOGI("Light", "Full: %f shared_spectrum = %d  IR reading: %d", cha0_full, tsl_shared_spectrum, cha1_ir);
         } else {
             ESP_LOGW("Light", "Cound not read Lux value: %d", res);
         }

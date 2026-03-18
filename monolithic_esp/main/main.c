@@ -29,7 +29,7 @@ extern int16_t dht_shared_air_tempeture;
 extern int16_t ds18b20_shared_soil_tempeture[4];
 extern uint8_t moist_shared_percentage;
 extern int16_t bmp_shared_pressure;
-extern uint16_t tsl_shared_lux;
+extern uint16_t tsl_shared_spectrum;
 extern uint16_t wind_shared_speed;
 
 sensor_payload_t payload = {0};
@@ -43,7 +43,7 @@ static void prepare_payload() {
     }
     payload.soil_moisture = moist_shared_percentage;
     payload.pressure = bmp_shared_pressure;
-    payload.lux = tsl_shared_lux;
+    payload.spectrum = tsl_shared_spectrum;
     payload.precipitation = get_rain();
     payload.wind_speed = wind_shared_speed;
 }
@@ -52,8 +52,8 @@ packet_header_t header = {0};
 static void prepare_header() {
     header.network_id = 1;
     header.orig_node_id = 1;
-    header.packet_id = esp_random() % sizeof(header.packet_id);
-    header.hop_count = 5;
+    header.packet_id = esp_random() % 65535;
+    header.hop_count = PACKET_TIME_TO_LIVE;
     header.flags = 1;
 }
 

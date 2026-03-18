@@ -16,6 +16,8 @@ static esp_err_t get_handler_root(httpd_req_t *req) {
         "<head> <style> p { white-space: pre-wrap; line-height: 1.05; } body { font-family: monospace; } </style> </head>"
         "<body>"
         "<h1>Esp32 Status page</h1>"
+        "<h2>Most recent Packet ID <span id='packet_id'>0</span> from node <span id='orig_node_id'>0</span> as part of network <span id='network_id'>0</span></h2>"
+        "<h2>Remaining hops <span id='hop_count'>0</span>, along with this flag <span id='flags'>0</span></h2>"
         "<h2>The current location is <span id='latitude'>0</span>, <span id='longitude'>0</span></h2>"
         "<h2>The current air humidity is <span id='air_humidity'>0</span> %RH</h2>"
         "<h2>The current air tempeture is <span id='air_temp'>0</span> °C</h2>"
@@ -46,13 +48,12 @@ static esp_err_t get_handler_favicon(httpd_req_t *req) {
     httpd_resp_send(req, (const char *)favicon_ico_start, favicon_ico_size);
     return ESP_OK;
 }
-static httpd_uri_t uri_get_favicon = {
-    .uri = "/favicon.ico", .method = HTTP_GET, .handler = get_handler_favicon, .user_ctx = NULL};
+static httpd_uri_t uri_get_favicon = {.uri = "/favicon.ico", .method = HTTP_GET, .handler = get_handler_favicon, .user_ctx = NULL};
 
 extern full_packet_t big_data_packet;
 static esp_err_t get_handler_data(httpd_req_t *req) {
     httpd_resp_set_type(req, "application/octet-stream");
-    httpd_resp_send(req, (const char *)&big_data_packet.payload, sizeof(sensor_payload_t));
+    httpd_resp_send(req, (const char *)&big_data_packet, sizeof(full_packet_t));
     return ESP_OK;
 }
 static httpd_uri_t uri_get_data = {.uri = "/data", .method = HTTP_GET, .handler = get_handler_data, .user_ctx = NULL};
@@ -65,8 +66,7 @@ static esp_err_t get_handler_code(httpd_req_t *req) {
     httpd_resp_send(req, (const char *)code_js_start, code_js_size);
     return ESP_OK;
 }
-static httpd_uri_t uri_get_code = {
-    .uri = "/code.js", .method = HTTP_GET, .handler = get_handler_code, .user_ctx = NULL};
+static httpd_uri_t uri_get_code = {.uri = "/code.js", .method = HTTP_GET, .handler = get_handler_code, .user_ctx = NULL};
 
 httpd_handle_t start_webserver(void) {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();

@@ -33,7 +33,7 @@ void app_main(void) {
     wifi_init_softap();
 
     ESP_LOGI(TAG, "Starting SD Card");
-    test_sd_card();
+    init_sd_card();
 
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(60000));

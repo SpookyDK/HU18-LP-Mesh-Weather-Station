@@ -43,6 +43,8 @@ full_packet_t big_data_packet = {0};
 static uint8_t buffer[256] = {0};
 
 static void receive_task(void *p) {
+    init_dio0_interrupt();
+
     lora_init();
     lora_set_frequency(868e6);
     lora_set_spreading_factor(7);
@@ -78,7 +80,6 @@ static void receive_task(void *p) {
 }
 
 void generate_big_data_task() {
-    init_dio0_interrupt();
     xTaskCreate(receive_task, "rx_task", 4096, NULL, 5, &lora_task_handle);
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(1000));

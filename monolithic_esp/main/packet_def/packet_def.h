@@ -28,7 +28,7 @@ typedef struct __attribute__((packed)) {
  * @param soil_tempeture[4] Is scaled with 16
  * @param soil_moisture From 0 to 100% where 0 is our measured lowest moisture and 100% is most
  * @param pressure The diff from 100000 Pa
- * @param lux Lux
+ * @param spectrum spectrum including both Lux and Ir
  * @param precipitation Gives the amount since last reading/packet, scaled with 10
  * @param wind_speed In mili meters per second
  */
@@ -40,7 +40,7 @@ typedef struct __attribute__((packed)) {
     int16_t soil_tempeture[4];
     uint8_t soil_moisture;
     int16_t pressure;
-    uint16_t lux;
+    uint16_t spectrum;
     uint16_t precipitation;
     uint16_t wind_speed;
 } sensor_payload_t;

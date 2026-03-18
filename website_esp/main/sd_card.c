@@ -50,7 +50,7 @@ static esp_err_t s_read_file(const char *path, char *result) {
 }
 
 static sdmmc_card_t *card;
-void test_sd_card() {
+void init_sd_card() {
     // The sd card needs some power before starting
     vTaskDelay(pdMS_TO_TICKS(2000));
 
@@ -66,23 +66,7 @@ void test_sd_card() {
     ESP_LOGI(TAG, "Using SPI");
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-    /* spi_bus_config_t bus_cfg = {
-        .mosi_io_num = PIN_MOSI,
-        .miso_io_num = PIN_MISO,
-        .sclk_io_num = PIN_CLK,
-        .quadwp_io_num = -1,
-        .quadhd_io_num = -1,
-        .max_transfer_sz = 4000,
-    };
-
-    ret = spi_bus_initialize(host.slot, &bus_cfg, SDSPI_DEFAULT_DMA);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to init SPI bus");
-        return;
-    } */
-
     spi_device_handle_t dev_handle;
-
     spi_device_interface_config_t dev_cfg = {
         .clock_speed_hz = 9000000, .mode = 0, .spics_io_num = PIN_CS, .queue_size = 1, .flags = 0, .pre_cb = NULL};
 
@@ -108,8 +92,9 @@ void test_sd_card() {
         ESP_LOGE(TAG, "Failed to init the card (%s)", esp_err_to_name(ret));
         return;
     }
-
     sdmmc_card_print_info(stdout, card);
+    return;
+    // The rest Is demonstration not indended for actual work
 
     const char *file_hello = MOUNT_POINT "/hello.txt";
     char data[MAX_BUF_SIZE];

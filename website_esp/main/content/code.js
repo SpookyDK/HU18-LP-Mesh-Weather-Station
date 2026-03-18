@@ -3,6 +3,11 @@ function parsePayload(bytes) {
   let offset = 0;
 
   const data = {
+    network_id: [view.getUint8(offset), (offset += 1)][0],
+    orig_node_id: [view.getUint8(offset), (offset += 1)][0],
+    packet_id: [view.getUint16(offset, true), (offset += 2)][0],
+    hop_count: [view.getUint8(offset), (offset += 1)][0],
+    flags: [view.getUint8(offset), (offset += 1)][0],
     longitude: [view.getInt32(offset, true) / 1e7, (offset += 4)][0],
     latitude: [view.getInt32(offset, true) / 1e7, (offset += 4)][0],
     air_humidity: [view.getUint8(offset), (offset += 1)][0],

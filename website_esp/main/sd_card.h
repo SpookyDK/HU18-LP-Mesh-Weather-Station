@@ -8,6 +8,6 @@
 #define PIN_CLK 6
 #define PIN_CS 10
 
-void test_sd_card();
+void init_sd_card();
 
 #endif // !SD_CARD_MINE
