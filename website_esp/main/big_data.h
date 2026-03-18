@@ -2,6 +2,6 @@
 #define BIG_DATA
 
 #include <stdint.h>
-void generate_big_data_task();
+void start_receive_task();
 
 #endif // !BIG_DATA

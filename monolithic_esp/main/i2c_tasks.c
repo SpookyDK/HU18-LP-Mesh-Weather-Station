@@ -81,7 +81,7 @@ void light_sensor_task(void *duty_cycle_ms) {
     ESP_ERROR_CHECK(tsl2591_set_power_status(&light_sensor_dev, TSL2591_POWER_ON));
     ESP_ERROR_CHECK(tsl2591_set_als_status(&light_sensor_dev, TSL2591_ALS_ON));
 
-    ESP_ERROR_CHECK(tsl2591_set_gain(&light_sensor_dev, TSL2591_GAIN_MEDIUM));
+    ESP_ERROR_CHECK(tsl2591_set_gain(&light_sensor_dev, TSL2591_GAIN_LOW));
     ESP_ERROR_CHECK(tsl2591_set_integration_time(&light_sensor_dev, TSL2591_INTEGRATION_300MS));
 
     uint16_t cha0_full, cha1_ir;
@@ -89,7 +89,7 @@ void light_sensor_task(void *duty_cycle_ms) {
     while (1) {
         if ((res = tsl2591_get_channel_data(&light_sensor_dev, &cha0_full, &cha1_ir)) == ESP_OK) {
             tsl_shared_spectrum = cha0_full;
-            ESP_LOGI("Light", "Full: %f shared_spectrum = %d  IR reading: %d", cha0_full, tsl_shared_spectrum, cha1_ir);
+            ESP_LOGI("Light", "Full: %d shared_spectrum = %d  IR reading: %d", cha0_full, tsl_shared_spectrum, cha1_ir);
         } else {
             ESP_LOGW("Light", "Cound not read Lux value: %d", res);
         }

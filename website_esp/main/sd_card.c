@@ -21,7 +21,19 @@ static esp_err_t s_write_file(const char *path, char *data) {
     ESP_LOGI(TAG, "Opening file for writing, '%s'", path);
     FILE *f = fopen(path, "w");
     if (f == NULL) {
-        ESP_LOGE(TAG, "Failed to open file, %s", path);
+        ESP_LOGE(TAG, "Failed to open file, '%s'", path);
+        return ESP_FAIL;
+    }
+    fprintf(f, "%s", data);
+    fclose(f);
+    return ESP_OK;
+}
+
+static esp_err_t s_append_file(const char *path, char *data) {
+    ESP_LOGI(TAG, "Opening file to append, '%s'", path);
+    FILE *f = fopen(path, "a");
+    if (f == NULL) {
+        ESP_LOGE(TAG, "Failed to open file, '%s'", path);
         return ESP_FAIL;
     }
     fprintf(f, "%s", data);

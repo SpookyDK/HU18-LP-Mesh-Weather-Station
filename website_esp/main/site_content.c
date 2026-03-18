@@ -10,31 +10,11 @@
 #include <stdio.h>
 
 static esp_err_t get_handler_root(httpd_req_t *req) {
-    // clang-format off
-    const char *resp_str =
-        "<!doctype html><html lang=\"en\">"
-        "<head> <style> p { white-space: pre-wrap; line-height: 1.05; } body { font-family: monospace; } </style> </head>"
-        "<body>"
-        "<h1>Esp32 Status page</h1>"
-        "<h2>Most recent Packet ID <span id='packet_id'>0</span> from node <span id='orig_node_id'>0</span> as part of network <span id='network_id'>0</span></h2>"
-        "<h2>Remaining hops <span id='hop_count'>0</span>, along with this flag <span id='flags'>0</span></h2>"
-        "<h2>The current location is <span id='latitude'>0</span>, <span id='longitude'>0</span></h2>"
-        "<h2>The current air humidity is <span id='air_humidity'>0</span> %RH</h2>"
-        "<h2>The current air tempeture is <span id='air_temp'>0</span> °C</h2>"
-        "<h2>The current soil tempetures are </h2><span style='font-size:18px'><ol id='soil_temps'></ol></span>"
-        "<h2>The current soil moisture is <span id='soil_moisture'>0</span> %</h2>"
-        "<h2>The current air pressure is <span id='pressure'>0</span> hPa</h2>"
-        "<h2>The current solar intensity is <span id='lux'>0</span> lx</h2>"
-        "<h2>The amount of precipitation in the past time frame is <span id='precipitation'>0</span> mili meters</h2>"
-        "<h2>The current wind speed is <span id='wind_speed'>0</span> meters per second</h2>"
-        "<p>"
-        COCIO_LOGO
-        "</p>"
-        "<script src=code.js></script>"
-        "</body></html>";
-    // clang-format on
+    extern const uint8_t index_html_start[] asm("_binary_index_html_start");
+    extern const uint8_t index_html_end[] asm("_binary_index_html_end");
+    const size_t index_html_size = (index_html_end - index_html_start);
     httpd_resp_set_type(req, "text/html; charset=utf-8");
-    httpd_resp_send(req, resp_str, HTTPD_RESP_USE_STRLEN);
+    httpd_resp_send(req, (const char *)index_html_start, index_html_size);
     return ESP_OK;
 }
 static httpd_uri_t uri_get_root = {.uri = "/", .method = HTTP_GET, .handler = get_handler_root, .user_ctx = NULL};

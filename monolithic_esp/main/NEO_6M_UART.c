@@ -74,8 +74,8 @@ void uart_reader_task(void *args) {
 
         memcpy(frame->data, left_over_buffer, left_over_buffer_len);
 
-        int16_t read = uart_read_bytes(GPS_UART_NUM, frame->data,
-                                       MIN(event.size, UBX_FRAME_BUF_SIZE - left_over_buffer_len), pdMS_TO_TICKS(100));
+        int16_t read =
+            uart_read_bytes(GPS_UART_NUM, frame->data, MIN(event.size, UBX_FRAME_BUF_SIZE - left_over_buffer_len), pdMS_TO_TICKS(100));
         if (read < 0) {
             frame_free(frame);
             ESP_LOGE("GPS_UART", "Uart failed to read buffer");

@@ -1,12 +1,6 @@
 #ifndef __LORA_H__
 #define __LORA_H__
 
-// Pins
-#define CONFIG_MISO_GPIO 26
-#define CONFIG_MOSI_GPIO 27
-#define CONFIG_SCK_GPIO 4
-#define CONFIG_CS_GPIO 9
-
 #include <stdint.h>
 
 /**
@@ -22,11 +16,6 @@ void lora_write_reg(int reg, int val);
  * @return Value of the register.
  */
 int lora_read_reg(int reg);
-
-/**
- * Perform physical reset on the Lora chip
- */
-void lora_reset(void);
 
 /**
  * Configure explicit header mode.

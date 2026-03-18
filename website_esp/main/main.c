@@ -27,7 +27,7 @@ void app_main(void) {
     init_my_spi();
 
     ESP_LOGI(TAG, "Starting Data Collection");
-    xTaskCreate(generate_big_data_task, "DataGen", 4096, NULL, 0, NULL);
+    start_receive_task();
 
     ESP_LOGI(TAG, "Starting Wi-Fi as Access Point");
     wifi_init_softap();
