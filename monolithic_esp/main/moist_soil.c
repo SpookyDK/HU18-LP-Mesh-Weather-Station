@@ -13,19 +13,17 @@
 static const char *TAG = "moisture-soil";
 
 // Calibration values - measure once, change and forget
-#define ADC_DRY_VALUE 3560 // Dry reference achieved by placing sensor in Very Dry dirt
-#define ADC_WET_VALUE 2500 // Wet reference achieved by placing sensor in dirt fully saturated by water
+#define ADC_DRY_VALUE 2700 // Dry reference achieved by placing sensor in Very Dry dirt
+#define ADC_WET_VALUE 1750 // Wet reference achieved by placing sensor in dirt fully saturated by water
 
 // Convert raw ADC value to percentage (0% = dry, 100% = wet)
 static inline uint8_t raw_to_percent(int32_t raw) {
     if (raw >= ADC_DRY_VALUE) {
-        ESP_LOGW(TAG, "The measured dryness reached or exceeded expected values, Expected=%d, Got=%d", ADC_DRY_VALUE,
-                 raw);
+        ESP_LOGW(TAG, "The measured dryness reached or exceeded expected values, Expected=%d, Got=%d", ADC_DRY_VALUE, raw);
         return 0;
     }
     if (raw <= ADC_WET_VALUE) {
-        ESP_LOGW(TAG, "The measured wetness is equal to or lower than expected values, Expected=%d, Got=%d",
-                 ADC_WET_VALUE, raw);
+        ESP_LOGW(TAG, "The measured wetness is equal to or lower than expected values, Expected=%d, Got=%d", ADC_WET_VALUE, raw);
         return 100;
     }
     return (uint8_t)((ADC_DRY_VALUE - raw) * 100 / (ADC_DRY_VALUE - ADC_WET_VALUE));

@@ -24,9 +24,7 @@ static const char *TAG = "bmp280";
 /**
  * Write a single byte to a register.
  */
-static inline esp_err_t write_reg(bmp280_dev_t *dev, uint8_t reg, uint8_t val) {
-    return i2c_dev_write_reg(&dev->i2c_dev, reg, &val, 1);
-}
+static inline esp_err_t write_reg(bmp280_dev_t *dev, uint8_t reg, uint8_t val) { return i2c_dev_write_reg(&dev->i2c_dev, reg, &val, 1); }
 
 /**
  * Read one or more bytes starting at reg.
@@ -59,8 +57,7 @@ static esp_err_t read_calibration(bmp280_dev_t *dev) {
     c->dig_P8 = (int16_t)((raw[21] << 8) | raw[20]);
     c->dig_P9 = (int16_t)((raw[23] << 8) | raw[22]);
 
-    ESP_LOGD(TAG, "Calibration: T1=%u T2=%d T3=%d | P1=%u P2=%d", c->dig_T1, c->dig_T2, c->dig_T3, c->dig_P1,
-             c->dig_P2);
+    ESP_LOGD(TAG, "Calibration: T1=%u T2=%d T3=%d | P1=%u P2=%d", c->dig_T1, c->dig_T2, c->dig_T3, c->dig_P1, c->dig_P2);
 
     return ESP_OK;
 }
@@ -76,8 +73,7 @@ static int32_t compensate_temperature(bmp280_dev_t *dev, int32_t adc_T) {
     int32_t var1, var2;
 
     var1 = ((((adc_T >> 3) - ((int32_t)c->dig_T1 << 1))) * ((int32_t)c->dig_T2)) >> 11;
-    var2 = (((((adc_T >> 4) - (int32_t)c->dig_T1) * ((adc_T >> 4) - (int32_t)c->dig_T1)) >> 12) * (int32_t)c->dig_T3) >>
-           14;
+    var2 = (((((adc_T >> 4) - (int32_t)c->dig_T1) * ((adc_T >> 4) - (int32_t)c->dig_T1)) >> 12) * (int32_t)c->dig_T3) >> 14;
 
     dev->t_fine = var1 + var2;
     return (dev->t_fine * 5 + 128) >> 8; /* °C × 100 */
@@ -122,7 +118,7 @@ esp_err_t bmp280_init_desc(bmp280_dev_t *dev, i2c_port_t port, uint8_t addr, gpi
     dev->i2c_dev.addr = addr;
     dev->i2c_dev.cfg.sda_io_num = sda_gpio;
     dev->i2c_dev.cfg.scl_io_num = scl_gpio;
-    dev->i2c_dev.cfg.master.clk_speed = 400000; /* 400 kHz — BMP280 max */
+    dev->i2c_dev.cfg.master.clk_speed = 100000;
 
     return i2c_dev_create_mutex(&dev->i2c_dev);
 }
@@ -184,8 +180,8 @@ esp_err_t bmp280_set_config(bmp280_dev_t *dev, const bmp280_config_t *config) {
      *
      * Registers must be written while sensor is in sleep mode.
      */
-    uint8_t ctrl_meas = ((config->oversampling_temperature & 0x07) << 5) |
-                        ((config->oversampling_pressure & 0x07) << 2) | (BMP280_MODE_SLEEP & 0x03);
+    uint8_t ctrl_meas =
+        ((config->oversampling_temperature & 0x07) << 5) | ((config->oversampling_pressure & 0x07) << 2) | (BMP280_MODE_SLEEP & 0x03);
 
     uint8_t config_reg = ((config->standby & 0x07) << 5) | ((config->filter & 0x07) << 2);
 

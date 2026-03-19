@@ -12,7 +12,7 @@
 
 static bool is_i2c_init = false;
 
-static void init_i2c(void) {
+static inline void init_i2c(void) {
     if (is_i2c_init) {
         return;
     }

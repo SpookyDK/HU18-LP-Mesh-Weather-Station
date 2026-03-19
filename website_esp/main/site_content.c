@@ -48,6 +48,28 @@ static esp_err_t get_handler_code(httpd_req_t *req) {
 }
 static httpd_uri_t uri_get_code = {.uri = "/code.js", .method = HTTP_GET, .handler = get_handler_code, .user_ctx = NULL};
 
+static esp_err_t get_handler_viewer(httpd_req_t *req) {
+    // clang-format off
+    static const char *resp_str = 
+    "<!DOCTYPE html><html lang='en'><head><style> p { white-space: pre-wrap; line-height: 1.05; } body { font-family: monospace; } </style><meta name='color-scheme' content='light dark'></head><body>"
+    "<h1>The ESP32 full status thingy</h1>"
+    "<span style='font-size: 16px'><ol id='my_list'>  </ol></span>"
+    "</body></html>";
+    // clang-format on
+    httpd_resp_set_type(req, "text/html");
+    httpd_resp_send(req, resp_str, HTTPD_RESP_USE_STRLEN);
+    return ESP_OK;
+}
+static httpd_uri_t uri_get_viewer = {.uri = "/viewer", .method = HTTP_GET, .handler = get_handler_viewer, .user_ctx = NULL};
+
+static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
+    httpd_resp_set_type(req, "application/octet-stream");
+    httpd_resp_send(req, (const char *)&big_data_packet, sizeof(full_packet_t));
+    // TODO: Make it websocket
+    return ESP_OK;
+}
+static httpd_uri_t uri_get_dataviewer = {.uri = "/dataviewer", .method = HTTP_GET, .handler = get_handler_dataviewer, .user_ctx = NULL};
+
 httpd_handle_t start_webserver(void) {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     httpd_handle_t server = NULL;
@@ -58,6 +80,7 @@ httpd_handle_t start_webserver(void) {
         httpd_register_uri_handler(server, &uri_get_favicon);
         httpd_register_uri_handler(server, &uri_get_data);
         httpd_register_uri_handler(server, &uri_get_code);
+        httpd_register_uri_handler(server, &uri_get_viewer);
         ESP_LOGI("webserver", "Registred all uri");
         return server;
     }

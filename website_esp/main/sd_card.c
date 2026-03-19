@@ -3,12 +3,16 @@
 #include "driver/spi_master.h"
 #include "esp_err.h"
 #include "esp_log.h"
+#include "esp_timer.h"
 #include "esp_vfs_fat.h"
 #include "freertos/idf_additions.h"
 #include "freertos/projdefs.h"
 #include "hal/spi_types.h"
+#include "packet_def.h"
 #include "sd_card.h"
+#include "sd_protocol_types.h"
 #include "sdmmc_cmd.h"
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/param.h>
@@ -29,14 +33,15 @@ static esp_err_t s_write_file(const char *path, char *data) {
     return ESP_OK;
 }
 
-static esp_err_t s_append_file(const char *path, char *data) {
+esp_err_t b_append_file(const char *path, full_packet_t data[], uint8_t count) {
     ESP_LOGI(TAG, "Opening file to append, '%s'", path);
-    FILE *f = fopen(path, "a");
+    FILE *f = fopen(path, "ab");
     if (f == NULL) {
         ESP_LOGE(TAG, "Failed to open file, '%s'", path);
         return ESP_FAIL;
     }
-    fprintf(f, "%s", data);
+    fwrite((uint8_t *)&count, sizeof(uint8_t), 1, f);
+    fwrite(data, sizeof(full_packet_t), count, f);
     fclose(f);
     return ESP_OK;
 }
@@ -63,10 +68,16 @@ static esp_err_t s_read_file(const char *path, char *result) {
 
 static sdmmc_card_t *card;
 void init_sd_card() {
-    // The sd card needs some power before starting
-    vTaskDelay(pdMS_TO_TICKS(2000));
-
+    ESP_LOGI(TAG, "Initializing SD Card");
     esp_err_t ret;
+
+    sdmmc_host_t host = SDSPI_HOST_DEFAULT();
+    host.slot = SPI2_HOST;
+    host.max_freq_khz = SDMMC_FREQ_PROBING;
+
+    sdspi_device_config_t slot_cfg = SDSPI_DEVICE_CONFIG_DEFAULT();
+    slot_cfg.gpio_cs = PIN_CS;
+    slot_cfg.host_id = host.slot;
 
     esp_vfs_fat_sdmmc_mount_config_t mount_cfg = {
         .format_if_mount_failed = false,
@@ -74,35 +85,19 @@ void init_sd_card() {
         .allocation_unit_size = 16 * 1024,
     };
 
-    ESP_LOGI(TAG, "Initializing SD Card");
-    ESP_LOGI(TAG, "Using SPI");
-
-    sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-    spi_device_handle_t dev_handle;
-    spi_device_interface_config_t dev_cfg = {
-        .clock_speed_hz = 9000000, .mode = 0, .spics_io_num = PIN_CS, .queue_size = 1, .flags = 0, .pre_cb = NULL};
-
-    ret = spi_bus_add_device(SPI2_HOST, &dev_cfg, &dev_handle);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to add Device to SPI bus");
-        return;
-    }
-
-    sdspi_device_config_t slot_cfg = SDSPI_DEVICE_CONFIG_DEFAULT();
-    slot_cfg.gpio_cs = PIN_CS;
-    slot_cfg.host_id = host.slot;
-
     ESP_LOGI(TAG, "Mounting file system");
-    ret = esp_vfs_fat_sdspi_mount(MOUNT_POINT, &host, &slot_cfg, &mount_cfg, &card);
-
-    if (ret == ESP_OK) {
-        ESP_LOGI(TAG, "Filesystem mounted");
-    } else if (ret == ESP_FAIL) {
-        ESP_LOGE(TAG, "Failed to mount filesystem");
-        return;
-    } else {
-        ESP_LOGE(TAG, "Failed to init the card (%s)", esp_err_to_name(ret));
-        return;
+    uint8_t attempts = 0;
+    while (attempts++ < 5) {
+        ret = esp_vfs_fat_sdspi_mount(MOUNT_POINT, &host, &slot_cfg, &mount_cfg, &card);
+        if (ret == ESP_OK) {
+            ESP_LOGI(TAG, "Filesystem mounted");
+            break;
+        } else if (ret == ESP_FAIL) {
+            ESP_LOGE(TAG, "Failed to mount filesystem");
+        } else {
+            ESP_LOGE(TAG, "Failed to init the card (%s)", esp_err_to_name(ret));
+        }
+        vTaskDelay(pdMS_TO_TICKS(500));
     }
     sdmmc_card_print_info(stdout, card);
     return;

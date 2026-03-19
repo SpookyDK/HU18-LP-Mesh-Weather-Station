@@ -10,7 +10,7 @@
 
 const char *TAG = "main";
 
-static void init_my_spi() {
+static inline void init_my_spi() {
     spi_bus_config_t bus_cfg = {
         .mosi_io_num = 4,
         .miso_io_num = 5,
@@ -29,11 +29,12 @@ void app_main(void) {
     ESP_LOGI(TAG, "Starting Data Collection");
     start_receive_task();
 
-    ESP_LOGI(TAG, "Starting Wi-Fi as Access Point");
-    wifi_init_softap();
-
+    // For no apparant reason this has to be called after receive task
     ESP_LOGI(TAG, "Starting SD Card");
     init_sd_card();
+
+    ESP_LOGI(TAG, "Starting Wi-Fi as Access Point");
+    wifi_init_softap();
 
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(60000));

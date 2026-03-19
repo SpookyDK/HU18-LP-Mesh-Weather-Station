@@ -25,20 +25,26 @@ function parsePayload(bytes) {
   return data;
 }
 
-setInterval(function () {
-  fetch("/data").then((response) =>
-    response.arrayBuffer().then((byte_array) => {
-      for (const [key, value] of Object.entries(parsePayload(byte_array))) {
-        if (key === "soil_temps") {
-          document.getElementById(key).innerHTML = value
-            .map((temp) => {
-              return `<li>${temp} °C</li>`;
-            })
-            .join("");
-        } else {
-          document.getElementById(key).innerText = value;
+function start_root() {
+  setInterval(function () {
+    fetch("/data").then((response) =>
+      response.arrayBuffer().then((byte_array) => {
+        for (const [key, value] of Object.entries(parsePayload(byte_array))) {
+          if (key === "soil_temps") {
+            document.getElementById(key).innerHTML = value
+              .map((temp) => {
+                return `<li>${temp} °C</li>`;
+              })
+              .join("");
+          } else {
+            document.getElementById(key).innerText = value;
+          }
         }
-      }
-    }),
-  );
-}, 1000);
+      }),
+    );
+  }, 1000);
+}
+
+function start_viewer() {
+  fetch("/dataviewer").then((response) => response);
+}

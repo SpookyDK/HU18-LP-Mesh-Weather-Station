@@ -1,6 +1,7 @@
 #include "big_data.h"
 #include "driver/gpio.h"
 #include "esp_attr.h"
+#include "esp_err.h"
 #include "esp_log.h"
 #include "esp_random.h"
 #include "freertos/FreeRTOS.h"
@@ -12,12 +13,15 @@
 #include "packet_def.h"
 #include "pin_config.h"
 #include "portmacro.h"
+#include "sd_card.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
 static const char *TAG = "RxTask";
+
+#define PACKET_FILE MOUNT_POINT "/packets.bin"
 
 static TaskHandle_t lora_task_handle = NULL;
 
@@ -46,20 +50,25 @@ void init_dio0_interrupt() {
     gpio_isr_handler_add(LORA_DIO0_GPIO, lora_isr_handler, NULL);
 }
 
-#define CACHE_SIZE 32
-#define CACHE_MASK (CACHE_SIZE - 1)
+#define CACHE_SIZE 16
 
-uint16_t packet_cache[CACHE_SIZE];
-uint8_t write_index = 0;
+full_packet_t packet_cache[CACHE_SIZE];
+uint8_t cache_len = 0;
 
-static bool is_duplicate(uint16_t id) {
-    for (int i = 0; i < CACHE_SIZE; i++) {
-        if (packet_cache[i] == id) {
-            return true;
+static bool is_duplicate(full_packet_t pack) {
+    for (int i = 0; i < cache_len; i++) {
+        if (packet_cache[i].head.orig_node_id == pack.head.orig_node_id) {
+            if (packet_cache[i].head.packet_id == pack.head.packet_id) {
+                return true;
+            }
+            if (b_append_file(PACKET_FILE, packet_cache, cache_len) == ESP_OK) {
+                ESP_LOGI(TAG, "Stored buffer to SD card item_count: '%d'", cache_len);
+                cache_len = 0;
+            }
         }
     }
-    packet_cache[write_index] = id;
-    write_index = (write_index + 1) & CACHE_MASK;
+    memcpy(&packet_cache[cache_len], &pack, sizeof(full_packet_t));
+    cache_len++;
     return false;
 }
 
@@ -91,7 +100,7 @@ static void receive_task(void *p) {
                 ESP_LOGI(TAG, "Ignoring packet from other network '%d'", temp_packet.head.network_id);
                 continue;
             }
-            if (is_duplicate(temp_packet.head.packet_id)) {
+            if (is_duplicate(temp_packet)) {
                 ESP_LOGI(TAG, "Ignoring Duplicate packet id='%d'", temp_packet.head.packet_id);
                 continue;
             }
