@@ -7,6 +7,10 @@
 #include "sd_card.h"
 #include "web_server.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <sys/_timeval.h>
+#include <sys/time.h>
+#include <time.h>
 
 const char *TAG = "main";
 
@@ -23,6 +27,14 @@ static inline void init_my_spi() {
 }
 
 void app_main(void) {
+    // This is a static time for testing
+    setenv("TZ", "CET-1CEST,M3.5.0,M10.5.0/3", 1);
+    tzset();
+    struct tm tm;
+    strptime(__DATE__ " " __TIME__, "%b %d %Y %H:%M:%S", &tm);
+    struct timespec ts = {.tv_sec = mktime(&tm), .tv_nsec = 0};
+    clock_settime(CLOCK_REALTIME, &ts);
+
     ESP_LOGI(TAG, "Starting SPI");
     init_my_spi();
 

@@ -8,6 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+static const char *TAG = "webserver";
 
 static esp_err_t get_handler_root(httpd_req_t *req) {
     extern const uint8_t index_html_start[] asm("_binary_index_html_start");
@@ -63,12 +67,36 @@ static esp_err_t get_handler_viewer(httpd_req_t *req) {
 static httpd_uri_t uri_get_viewer = {.uri = "/viewer", .method = HTTP_GET, .handler = get_handler_viewer, .user_ctx = NULL};
 
 static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
+    if (req->method == HTTP_GET) {
+        ESP_LOGI(TAG, "Handshake done, client connected");
+        return ESP_OK;
+    }
+    httpd_ws_frame_t ws_pkt = {0};
+    uint8_t *buf = NULL;
+    // memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
+    esp_err_t ret = httpd_ws_recv_frame(req, &ws_pkt, 0);
+    if (ret != ESP_OK)
+        return ret;
+
+    if (ws_pkt.len > 0) {
+        buf = (uint8_t *)calloc(1, ws_pkt.len + 1);
+        ws_pkt.payload = buf;
+        ret = httpd_ws_recv_frame(req, &ws_pkt, ws_pkt.len);
+    }
+
+    if (ret == ESP_OK && ws_pkt.type == HTTPD_WS_TYPE_TEXT) {
+        ESP_LOGI(TAG, "Received: %s", (char *)buf);
+    }
+    free(buf);
+    return ret;
+
     httpd_resp_set_type(req, "application/octet-stream");
     httpd_resp_send(req, (const char *)&big_data_packet, sizeof(full_packet_t));
     // TODO: Make it websocket
     return ESP_OK;
 }
-static httpd_uri_t uri_get_dataviewer = {.uri = "/dataviewer", .method = HTTP_GET, .handler = get_handler_dataviewer, .user_ctx = NULL};
+static httpd_uri_t uri_get_dataviewer = {
+    .uri = "/dataviewer", .method = HTTP_GET, .handler = get_handler_dataviewer, .user_ctx = NULL, .is_websocket = true};
 
 httpd_handle_t start_webserver(void) {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -81,8 +109,10 @@ httpd_handle_t start_webserver(void) {
         httpd_register_uri_handler(server, &uri_get_data);
         httpd_register_uri_handler(server, &uri_get_code);
         httpd_register_uri_handler(server, &uri_get_viewer);
+        httpd_register_uri_handler(server, &uri_get_dataviewer);
         ESP_LOGI("webserver", "Registred all uri");
         return server;
     }
+    ESP_LOGE("webserver", "Failed to start server");
     return NULL;
 }

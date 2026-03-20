@@ -18,6 +18,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/_timeval.h>
+#include <sys/time.h>
+#include <time.h>
 
 static const char *TAG = "RxTask";
 
@@ -83,6 +86,9 @@ static void receive_task(void *p) {
 
     int packet_len;
     full_packet_t temp_packet;
+    struct timespec ts_now = {0};
+    struct tm timeinfo = {0};
+    char strtime_buf[64] = {0};
 
     lora_receive();
     while (1) {
@@ -104,7 +110,12 @@ static void receive_task(void *p) {
                 ESP_LOGI(TAG, "Ignoring Duplicate packet id='%d'", temp_packet.head.packet_id);
                 continue;
             }
-            ESP_LOGI(TAG, "Received packet id='%d' from '%d'", temp_packet.head.packet_id, temp_packet.head.orig_node_id);
+            clock_gettime(CLOCK_REALTIME, &ts_now);
+            localtime_r(&ts_now.tv_sec, &timeinfo);
+            strftime(strtime_buf, sizeof(strtime_buf), "%c", &timeinfo);
+
+            ESP_LOGI(TAG, "Received packet id='%d' from '%d' at %s", temp_packet.head.packet_id, temp_packet.head.orig_node_id,
+                     strtime_buf);
             memcpy(&big_data_packet, (uint8_t *)&temp_packet, packet_len);
         }
         vTaskDelay(pdMS_TO_TICKS(10));

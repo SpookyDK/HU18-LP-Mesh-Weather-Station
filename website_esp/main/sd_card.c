@@ -12,6 +12,7 @@
 #include "sd_card.h"
 #include "sd_protocol_types.h"
 #include "sdmmc_cmd.h"
+#include "time.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -40,6 +41,13 @@ esp_err_t b_append_file(const char *path, full_packet_t data[], uint8_t count) {
         ESP_LOGE(TAG, "Failed to open file, '%s'", path);
         return ESP_FAIL;
     }
+    // Get the current time
+    struct timespec ts_now = {0};
+    struct tm timeinfo = {0};
+    clock_gettime(CLOCK_REALTIME, &ts_now);
+    localtime_r(&ts_now.tv_sec, &timeinfo);
+
+    fwrite((uint8_t *)&ts_now.tv_sec, sizeof(&ts_now.tv_sec), 1, f);
     fwrite((uint8_t *)&count, sizeof(uint8_t), 1, f);
     fwrite(data, sizeof(full_packet_t), count, f);
     fclose(f);
@@ -73,7 +81,7 @@ void init_sd_card() {
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
     host.slot = SPI2_HOST;
-    host.max_freq_khz = SDMMC_FREQ_PROBING;
+    // host.max_freq_khz = SDMMC_FREQ_PROBING;
 
     sdspi_device_config_t slot_cfg = SDSPI_DEVICE_CONFIG_DEFAULT();
     slot_cfg.gpio_cs = PIN_CS;
