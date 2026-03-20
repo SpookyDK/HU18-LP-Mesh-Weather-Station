@@ -1,4 +1,5 @@
 #include "bmp280.h"
+#include "driver/i2c_master.h"
 #include "esp_err.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
@@ -26,12 +27,17 @@ static inline void init_i2c(void) {
  * Example 1: if the value is "1136" the proces to get the actual pressure is: 1136 + 100000 = 101136 Pa
  */
 int16_t bmp_shared_pressure = 0;
+// static const char *TAG = "Bar";
 
 void barometer_task(void *duty_cycle_ms) {
     init_i2c();
 
     bmp280_dev_t bmp = {0};
     ESP_ERROR_CHECK(bmp280_init_desc(&bmp, I2C_MASTER_NUM, BMP280_I2C_ADDR_SDO_LOW, I2C_MASTER_SDA_IO, I2C_MASTER_SCL_IO));
+    if (i2c_dev_check_present(&bmp.i2c_dev) != ESP_OK) {
+        ESP_LOGE("Bar", "Failed to find dev");
+        vTaskDelete(NULL);
+    }
 
     bmp280_config_t bmp_cfg = {
         .mode = BMP280_MODE_NORMAL,
@@ -68,6 +74,7 @@ void barometer_task(void *duty_cycle_ms) {
 }
 
 uint16_t tsl_shared_spectrum = 0;
+static const char *TAG = "Light";
 
 void light_sensor_task(void *duty_cycle_ms) {
     // Ensure I2C is stated
@@ -76,8 +83,12 @@ void light_sensor_task(void *duty_cycle_ms) {
     light_sensor_dev.i2c_dev.cfg.master.clk_speed = 100000;
 
     ESP_ERROR_CHECK(tsl2591_init_desc(&light_sensor_dev, I2C_MASTER_NUM, I2C_MASTER_SDA_IO, I2C_MASTER_SCL_IO));
-    ESP_ERROR_CHECK(tsl2591_init(&light_sensor_dev));
+    if (i2c_dev_check_present(&light_sensor_dev.i2c_dev) != ESP_OK) {
+        ESP_LOGE(TAG, "Could not find device");
+        vTaskDelete(NULL);
+    }
 
+    ESP_ERROR_CHECK(tsl2591_init(&light_sensor_dev));
     ESP_ERROR_CHECK(tsl2591_set_power_status(&light_sensor_dev, TSL2591_POWER_ON));
     ESP_ERROR_CHECK(tsl2591_set_als_status(&light_sensor_dev, TSL2591_ALS_ON));
 
@@ -89,9 +100,9 @@ void light_sensor_task(void *duty_cycle_ms) {
     while (1) {
         if ((res = tsl2591_get_channel_data(&light_sensor_dev, &cha0_full, &cha1_ir)) == ESP_OK) {
             tsl_shared_spectrum = cha0_full;
-            ESP_LOGI("Light", "Full: %d shared_spectrum = %d  IR reading: %d", cha0_full, tsl_shared_spectrum, cha1_ir);
+            ESP_LOGI(TAG, "Full: %d shared_spectrum = %d  IR reading: %d", cha0_full, tsl_shared_spectrum, cha1_ir);
         } else {
-            ESP_LOGW("Light", "Cound not read Lux value: %d", res);
+            ESP_LOGW(TAG, "Cound not read Lux value: %d", res);
         }
 
         vTaskDelay(pdMS_TO_TICKS((uint32_t)duty_cycle_ms));

@@ -24,7 +24,7 @@
 
 static const char *TAG = "main";
 
-#define DUTY_CYCLES_MS 30000
+#define DUTY_CYCLES_MS 300000 // This should be 5 min
 #define PACKET_TIME_TO_LIVE 3
 #define NVS_NAMESPACE "lora_conf"
 #define NVS_NETWORK_KEY "network_key"
