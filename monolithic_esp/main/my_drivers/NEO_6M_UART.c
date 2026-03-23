@@ -6,6 +6,7 @@
 #include "hal/gpio_types.h"
 #include "nvs.h"
 #include "nvs_flash.h"
+#include "pin_config.h"
 #include "portmacro.h"
 #include <driver/uart.h>
 #include <inttypes.h>
@@ -327,8 +328,10 @@ void gpsInitUart() {
         nvs_flash_init();
     }
 
+#ifdef GPS_DISABLE_PIN
     gpio_set_direction(GPS_DISABLE_PIN, GPIO_MODE_OUTPUT);
     gpio_set_level(GPS_DISABLE_PIN, 0);
+#endif
 
     const uart_config_t uart_config = {
         .baud_rate = 9600,
@@ -391,7 +394,9 @@ void gps_task() {
 
     while (1) {
         ESP_LOGI("GPS", "Reading frame");
+#ifdef GPS_DISABLE_PIN
         gpio_set_level(GPS_DISABLE_PIN, 0);
+#endif
 
         vTaskDelay(pdMS_TO_TICKS(2000));
 
@@ -408,7 +413,9 @@ void gps_task() {
         frame_free(frame);
 
         ESP_LOGI("GPS", "Going to sleep after %d ms", pdTICKS_TO_MS(xTaskGetTickCount() - last_wake));
+#ifdef GPS_DISABLE_PIN
         gpio_set_level(GPS_DISABLE_PIN, 1);
+#endif
         vTaskDelayUntil(&last_wake, gps_polling_rate);
     }
     ESP_LOGW("GPS", "Leaving Task");

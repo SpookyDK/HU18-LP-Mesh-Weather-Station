@@ -97,7 +97,7 @@ static void communication_task(void *p) {
     // Wait a little to hope some data has been generated
     vTaskDelay(pdMS_TO_TICKS(10000));
 
-    TickType_t last_send = xTaskGetTickCount();
+    TickType_t last_send = xTaskGetTickCount(), reading;
     const TickType_t interval = pdMS_TO_TICKS(DUTY_CYCLES_MS);
     const char *tag = "comTask";
     int buffer_len;
@@ -128,6 +128,7 @@ static void communication_task(void *p) {
                 ESP_LOGI(tag, "Ignoring received Own Packet id='%d'", temp_packet.head.packet_id);
                 continue;
             }
+            // TODO: Drop cached packets, cache the ppackets it sent
 
             block_if_receiving();
             lora_send_packet((uint8_t *)&temp_packet, buffer_len);
@@ -135,12 +136,14 @@ static void communication_task(void *p) {
         }
 
         // Is it time to send own packet?
-        if ((xTaskGetTickCount() - last_send) >= interval) {
+
+        reading = xTaskGetTickCount();
+        if ((reading - last_send) >= interval) {
             prepare_packet();
             block_if_receiving();
             lora_send_packet((uint8_t *)&packet, sizeof(packet));
             ESP_LOGI("TXtask", "Sent Packet with id: '%d'", packet.head.packet_id);
-            last_send = xTaskGetTickCount();
+            last_send = reading;
             lora_receive();
         }
 
@@ -205,7 +208,7 @@ void app_main(void) {
     }
     load_config_nvs();
 
-    ESP_LOGI(TAG, "Starting Tempeture Task");
+    /* ESP_LOGI(TAG, "Starting Tempeture Task");
     xTaskCreate(temp_task, "tempTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
 
     ESP_LOGI(TAG, "Starting Soil Moisture Reading Task");
@@ -218,7 +221,7 @@ void app_main(void) {
     xTaskCreate(light_sensor_task, "lightTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
 
     ESP_LOGI(TAG, "Starting Wind and Rain Sensor Task");
-    xTaskCreate(pcnt_task, "windTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
+    xTaskCreate(pcnt_task, "windTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL); */
 
     ESP_LOGI(TAG, "Starting GPS Task");
     xTaskCreate(gps_task, "gpsTask", 4096, NULL, 0, NULL);

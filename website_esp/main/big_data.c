@@ -24,8 +24,6 @@
 
 static const char *TAG = "RxTask";
 
-#define PACKET_FILE MOUNT_POINT "/packets.bin"
-
 static TaskHandle_t lora_task_handle = NULL;
 
 // This should be set somewhere else, but prototype it fine

@@ -13,6 +13,8 @@
 #include "sd_protocol_types.h"
 #include "sdmmc_cmd.h"
 #include "time.h"
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -54,24 +56,39 @@ esp_err_t b_append_file(const char *path, full_packet_t data[], uint8_t count) {
     return ESP_OK;
 }
 
-static esp_err_t s_read_file(const char *path, char *result) {
-    ESP_LOGI(TAG, "Opening file for reading, '%s'", path);
-    FILE *f = fopen(path, "r");
+READ_RETURN_STATE b_read_file(const char *path, size_t start_idx, size_t *len, uint8_t *result) {
+    ESP_LOGD(TAG, "Opening file for reading, '%s'", path);
+    FILE *f = fopen(path, "rb");
     if (f == NULL) {
         ESP_LOGE(TAG, "Failed to open file for reading, %s", path);
-        return ESP_FAIL;
+        return READ_FAILURE;
     }
-    char line[MAX_BUF_SIZE];
-    fgets(line, sizeof(line), f);
+    fseek(f, start_idx, SEEK_SET);
+    size_t cur_idx = 0, max_size = *len;
+    READ_RETURN_STATE return_state;
+    while (true) {
+        // Reading the time stamp, which is ignored
+        size_t bytes_read = fread(&result[cur_idx], sizeof(uint8_t), 4, f);
+        if (bytes_read == 0) {
+            return_state = READ_DONE;
+            *len = cur_idx;
+            break;
+        }
+        cur_idx += bytes_read;
+        // Reading the number of packets to read
+        uint8_t count;
+        fread(&count, sizeof(uint8_t), 1, f);
+        result[cur_idx++] = count;
+        // Ensuring there is enough space in buffer before reading
+        if (cur_idx + sizeof(full_packet_t) * count >= max_size) {
+            return_state = READ_NOT_DONE;
+            break;
+        }
+        cur_idx += fread(&result[cur_idx], sizeof(uint8_t), sizeof(full_packet_t) * count, f);
+        *len = cur_idx;
+    }
     fclose(f);
-
-    char *pos = strchr(line, '\n');
-    if (pos) {
-        *pos = '\0';
-    }
-    ESP_LOGI(TAG, "Read from file: '%s'", line);
-    memcpy(result, line, strlen(line));
-    return ESP_OK;
+    return return_state;
 }
 
 static sdmmc_card_t *card;
@@ -90,7 +107,6 @@ void init_sd_card() {
     esp_vfs_fat_sdmmc_mount_config_t mount_cfg = {
         .format_if_mount_failed = false,
         .max_files = 5,
-        .allocation_unit_size = 16 * 1024,
     };
 
     ESP_LOGI(TAG, "Mounting file system");
@@ -118,7 +134,7 @@ void init_sd_card() {
     ESP_ERROR_CHECK(ret);
 
     char read_data[MAX_BUF_SIZE];
-    ret = s_read_file(file_hello, read_data);
+    // ret = s_read_file(file_hello, read_data);
     ESP_LOGI(TAG, "Retrieved string: %s", read_data);
 
     ESP_LOGI(TAG, "Unmounting Filesystem");

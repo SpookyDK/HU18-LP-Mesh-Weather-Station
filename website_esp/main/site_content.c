@@ -1,9 +1,9 @@
-#include "big_data.h"
 #include "esp_err.h"
 #include "esp_http_server.h"
 #include "esp_log.h"
 #include "http_parser.h"
 #include "packet_def.h"
+#include "sd_card.h"
 #include "site_content.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -58,6 +58,7 @@ static esp_err_t get_handler_viewer(httpd_req_t *req) {
     "<!DOCTYPE html><html lang='en'><head><style> p { white-space: pre-wrap; line-height: 1.05; } body { font-family: monospace; } </style><meta name='color-scheme' content='light dark'></head><body>"
     "<h1>The ESP32 full status thingy</h1>"
     "<span style='font-size: 16px'><ol id='my_list'>  </ol></span>"
+    "<script src='code.js'></script><script>window.onload = start_viewer</script>"
     "</body></html>";
     // clang-format on
     httpd_resp_set_type(req, "text/html");
@@ -66,6 +67,38 @@ static esp_err_t get_handler_viewer(httpd_req_t *req) {
 }
 static httpd_uri_t uri_get_viewer = {.uri = "/viewer", .method = HTTP_GET, .handler = get_handler_viewer, .user_ctx = NULL};
 
+static void send_ws_data(httpd_req_t *req, httpd_ws_frame_t ws_pkt, size_t start_idx) {
+    ESP_LOGI(TAG, "Starting Transmission, '%d'", start_idx);
+    ws_pkt.type = HTTPD_WS_TYPE_BINARY;
+    esp_err_t ret;
+    const size_t max_chunk = 512;
+    uint8_t *buf = (uint8_t *)malloc(sizeof(uint8_t) * max_chunk);
+    // It is set to max, and is later set by the b_read_file
+    size_t len = max_chunk;
+    READ_RETURN_STATE read_ret;
+    while ((read_ret = b_read_file(PACKET_FILE, start_idx, &len, buf)) == READ_NOT_DONE) {
+        if (len == 0) {
+            break;
+        }
+        ws_pkt.len = len;
+        ws_pkt.payload = buf;
+        ESP_LOGD(TAG, "Found %d bytes to send", ws_pkt.len);
+        ret = httpd_ws_send_frame(req, &ws_pkt);
+        if (ret != ESP_OK) {
+            ESP_LOGW(TAG, "WS stream error: %s", esp_err_to_name(ret));
+            break;
+        }
+        start_idx += len;
+        len = max_chunk;
+    }
+    ESP_LOGI(TAG, "Sending end of Transmission flag");
+    ws_pkt.type = HTTPD_WS_TYPE_TEXT;
+    snprintf((char *)buf, max_chunk, "END_OF_TRANSMISSION:%d", start_idx);
+    ws_pkt.payload = buf;
+    ws_pkt.len = strlen((char *)buf);
+    httpd_ws_send_frame(req, &ws_pkt);
+    free(buf);
+}
 static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
     if (req->method == HTTP_GET) {
         ESP_LOGI(TAG, "Handshake done, client connected");
@@ -73,10 +106,11 @@ static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
     }
     httpd_ws_frame_t ws_pkt = {0};
     uint8_t *buf = NULL;
-    // memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
     esp_err_t ret = httpd_ws_recv_frame(req, &ws_pkt, 0);
-    if (ret != ESP_OK)
+    if (ret != ESP_OK) {
+        ESP_LOGW(TAG, "Failed to get ws packet len");
         return ret;
+    }
 
     if (ws_pkt.len > 0) {
         buf = (uint8_t *)calloc(1, ws_pkt.len + 1);
@@ -85,15 +119,18 @@ static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
     }
 
     if (ret == ESP_OK && ws_pkt.type == HTTPD_WS_TYPE_TEXT) {
-        ESP_LOGI(TAG, "Received: %s", (char *)buf);
+        const char *target = "START_SD_STREAM";
+        if (ws_pkt.len == strlen(target) && strcmp((char *)buf, target) == 0) { // Completely new
+            send_ws_data(req, ws_pkt, 0);
+        } else if (strncmp((char *)buf, target, strlen(target)) == 0) { // Continue of this point
+            ESP_LOGI(TAG, "Continuing with: '%s'", (char *)buf);
+            send_ws_data(req, ws_pkt, atoi((char *)&buf[strlen(target + 1)]));
+        } else {
+            ESP_LOGI(TAG, "Received: %s", (char *)buf);
+        }
     }
     free(buf);
     return ret;
-
-    httpd_resp_set_type(req, "application/octet-stream");
-    httpd_resp_send(req, (const char *)&big_data_packet, sizeof(full_packet_t));
-    // TODO: Make it websocket
-    return ESP_OK;
 }
 static httpd_uri_t uri_get_dataviewer = {
     .uri = "/dataviewer", .method = HTTP_GET, .handler = get_handler_dataviewer, .user_ctx = NULL, .is_websocket = true};

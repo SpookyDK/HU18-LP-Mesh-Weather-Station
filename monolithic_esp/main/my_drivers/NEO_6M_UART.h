@@ -4,11 +4,6 @@
 #include <stdint.h>
 
 #define GPS_UART_NUM UART_NUM_1
-#define GPS_DISABLE_PIN 25
-// Note these are from the perspective of the ESP
-// Meaning that TX shall connect to RX on the GPS
-#define GPS_TX_PIN 2
-#define GPS_RX_PIN 3
 #define BUF_SIZE 1024
 
 void gps_task();
