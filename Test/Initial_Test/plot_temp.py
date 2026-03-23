@@ -29,7 +29,7 @@ plt.figure(figsize=(16,10))
 plt.xlabel('Time', fontsize = 24)
 plt.ylabel('Temperature (°C)', fontsize = 24)
 plt.title('Air and Soil Temperatures Over Time For Initial Test Compared to DMI', fontsize = 25)
-plt.plot(our['TIME'], our['LIGHT'], label='LIGHT', color='gold', linewidth=2)
+plt.plot(our['TIME'], our['LIGHT'], label=' Relative LIGHT', color='gold', linewidth=2)
 plt.fill_between(our['TIME'], our['LIGHT'], color='yellow', alpha=0.2)  # alpha = transparency
 plt.plot(our['TIME'], our['AIR TEMP'], label='Air Temp', color='orange', linewidth=4)
 plt.fill_between(our['TIME'], temp_min, temp_max, color='lightblue', alpha=0.7, label='Soil Temp Range')
