@@ -14,10 +14,11 @@
 static const char *TAG = "webserver";
 
 static esp_err_t get_handler_root(httpd_req_t *req) {
-    extern const uint8_t index_html_start[] asm("_binary_index_html_start");
-    extern const uint8_t index_html_end[] asm("_binary_index_html_end");
+    extern const uint8_t index_html_start[] asm("_binary_index_html_gz_start");
+    extern const uint8_t index_html_end[] asm("_binary_index_html_gz_end");
     const size_t index_html_size = (index_html_end - index_html_start);
     httpd_resp_set_type(req, "text/html; charset=utf-8");
+    httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
     httpd_resp_send(req, (const char *)index_html_start, index_html_size);
     return ESP_OK;
 }
@@ -43,26 +44,23 @@ static esp_err_t get_handler_data(httpd_req_t *req) {
 static httpd_uri_t uri_get_data = {.uri = "/data", .method = HTTP_GET, .handler = get_handler_data, .user_ctx = NULL};
 
 static esp_err_t get_handler_code(httpd_req_t *req) {
-    extern const uint8_t code_js_start[] asm("_binary_code_js_start");
-    extern const uint8_t code_js_end[] asm("_binary_code_js_end");
+    extern const uint8_t code_js_start[] asm("_binary_code_js_gz_start");
+    extern const uint8_t code_js_end[] asm("_binary_code_js_gz_end");
     const size_t code_js_size = (code_js_end - code_js_start);
     httpd_resp_set_type(req, "text/jscript");
+    httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
     httpd_resp_send(req, (const char *)code_js_start, code_js_size);
     return ESP_OK;
 }
 static httpd_uri_t uri_get_code = {.uri = "/code.js", .method = HTTP_GET, .handler = get_handler_code, .user_ctx = NULL};
 
 static esp_err_t get_handler_viewer(httpd_req_t *req) {
-    // clang-format off
-    static const char *resp_str = 
-    "<!DOCTYPE html><html lang='en'><head><style> p { white-space: pre-wrap; line-height: 1.05; } body { font-family: monospace; } </style><meta name='color-scheme' content='light dark'></head><body>"
-    "<h1>The ESP32 full status thingy</h1>"
-    "<span style='font-size: 16px'><ol id='my_list'>  </ol></span>"
-    "<script src='code.js'></script><script>window.onload = start_viewer</script>"
-    "</body></html>";
-    // clang-format on
-    httpd_resp_set_type(req, "text/html");
-    httpd_resp_send(req, resp_str, HTTPD_RESP_USE_STRLEN);
+    extern const uint8_t viewer_html_gz_start[] asm("_binary_viewer_html_gz_start");
+    extern const uint8_t viewer_html_gz_end[] asm("_binary_viewer_html_gz_end");
+    const size_t viewer_html_gz_size = (viewer_html_gz_end - viewer_html_gz_start);
+    httpd_resp_set_type(req, "text/html; charset=utf-8");
+    httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
+    httpd_resp_send(req, (const char *)viewer_html_gz_start, viewer_html_gz_size);
     return ESP_OK;
 }
 static httpd_uri_t uri_get_viewer = {.uri = "/viewer", .method = HTTP_GET, .handler = get_handler_viewer, .user_ctx = NULL};
@@ -124,7 +122,7 @@ static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
             send_ws_data(req, ws_pkt, 0);
         } else if (strncmp((char *)buf, target, strlen(target)) == 0) { // Continue of this point
             ESP_LOGI(TAG, "Continuing with: '%s'", (char *)buf);
-            send_ws_data(req, ws_pkt, atoi((char *)&buf[strlen(target + 1)]));
+            send_ws_data(req, ws_pkt, atoi((char *)&buf[strlen(target) + 1]));
         } else {
             ESP_LOGI(TAG, "Received: %s", (char *)buf);
         }

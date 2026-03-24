@@ -76,6 +76,27 @@ static void prepare_packet() {
     packet.payload = payload;
 }
 
+#define CACHE_SIZE 16
+#define CACHE_MASK (CACHE_SIZE - 1)
+
+typedef struct {
+    uint16_t packet_id;
+    uint8_t node_id;
+} packet_signature_t;
+
+packet_signature_t packet_cache[CACHE_SIZE];
+uint8_t write_idx = 0;
+
+static bool is_duplicate(packet_header_t head) {
+    for (int i = 0; i < CACHE_SIZE; i++) {
+        if (packet_cache[i].node_id == head.orig_node_id && packet_cache[i].packet_id == head.packet_id) {
+            return true;
+        }
+    }
+    write_idx = (write_idx + 1) & CACHE_MASK;
+    return false;
+}
+
 static void communication_task(void *p) {
     esp_err_t ret;
 
@@ -136,14 +157,12 @@ static void communication_task(void *p) {
         }
 
         // Is it time to send own packet?
-
-        reading = xTaskGetTickCount();
-        if ((reading - last_send) >= interval) {
+        if ((xTaskGetTickCount() - last_send) >= interval) {
             prepare_packet();
             block_if_receiving();
             lora_send_packet((uint8_t *)&packet, sizeof(packet));
             ESP_LOGI("TXtask", "Sent Packet with id: '%d'", packet.head.packet_id);
-            last_send = reading;
+            last_send += interval;
             lora_receive();
         }
 

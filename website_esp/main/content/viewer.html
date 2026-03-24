@@ -1,0 +1,81 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Sensor Viewer</title><style>
+body{font:13px monospace;margin:8px}table{border-collapse:collapse;font:12px monospace}
+th,td{border:1px solid #222;padding:2px 4px;white-space:nowrap}th{cursor:pointer;background:#444}
+input,select{font:12px monospace;padding:2px}button{font:12px monospace;padding:2px 6px}
+#s{font-weight:bold}
+</style><meta name="color-scheme" content="light dark"/></head><body>
+<b>Sensor Viewer</b> &nbsp;
+<span id="s">Connecting...</span><br><br>
+Node:<input id="fn" size="4" oninput="render()">
+Sort:<select id="sc" onchange="render()"><option value="t">Time</option><option value="orig_node_id">Node</option><option value="air_temp">Temp</option><option value="wind_speed">Wind</option><option value="lux">Lux</option></select>
+<select id="sd" onchange="render()"><option value="d">Desc</option><option value="a">Asc</option></select>
+Max:<select id="mr" onchange="render()"><option>100</option><option>500</option><option>0</option></select>
+<button onclick="rows=[];render()">Clear</button>
+<button onclick="exportCSV()">CSV</button>
+&nbsp;<span id="cnt"></span>
+<div style="overflow-x:auto;margin-top:6px"><table><thead><tr>
+<th onclick="sort('t')">Time</th><th onclick="sort('orig_node_id')">Node</th><th onclick="sort('packet_id')">PktID</th>
+<th onclick="sort('hop_count')">Hops</th><th onclick="sort('latitude')">Lat</th><th onclick="sort('longitude')">Lon</th>
+<th onclick="sort('air_temp')">Temp°C</th><th onclick="sort('air_humidity')">Hum%</th><th onclick="sort('pressure')">hPa</th>
+<th onclick="sort('soil_moisture')">SoilM</th><th onclick="sort('soil_temps')">SoilT°C</th>
+<th onclick="sort('lux')">Lux</th><th onclick="sort('precipitation')">Precip</th><th onclick="sort('wind_speed')">Wind</th><th onclick="sort('flags')">Flags</th>
+</tr></thead><tbody id="tb"></tbody></table></div>
+<script>
+var rows=[],sc='t',sd='d';
+function pp(buf){
+var v=new DataView(buf),o=0,r={};
+r.network_id=v.getUint8(o++);r.orig_node_id=v.getUint8(o++);
+r.packet_id=v.getUint16(o,1);o+=2;r.hop_count=v.getUint8(o++);r.flags=v.getUint8(o++);
+r.longitude=v.getInt32(o,1)/1e7;o+=4;r.latitude=v.getInt32(o,1)/1e7;o+=4;
+r.air_humidity=v.getUint8(o++);r.air_temp=v.getInt16(o,1)/10;o+=2;
+r.soil_temps=[];for(var i=0;i<4;i++){r.soil_temps.push(v.getInt16(o,1)/16);o+=2;}
+r.soil_moisture=v.getUint8(o++);r.pressure=(v.getInt16(o,1)+100000)/100;o+=2;
+r.lux=v.getUint16(o,1);o+=2;r.precipitation=v.getUint16(o,1)/10;o+=2;
+r.wind_speed=v.getUint16(o,1)/1000;
+return r; }
+function handleData(b) { const v = new DataView(b); let po = 0;
+while (po < b.byteLength) { const t = v.getInt32(po, true) * 1000,
+c = v.getUint8(po + 4); po += 5; for (let i = 0; i < c; i++) {
+const p = pp(b.slice(po, po + 34)); p.t = t; rows.push(p);
+po += 34; } } render(); }
+function sort(c){if(sc===c)sd=sd==='d'?'a':'d';else{sc=c;sd='d';}render();}
+function render(){
+var fn=document.getElementById('fn').value;
+var mr=parseInt(document.getElementById('mr').value)||Infinity;
+var col=sc||document.getElementById('sc').value;
+var dir=sd||document.getElementById('sd').value;
+var r=rows.slice();
+if(fn)r=r.filter(function(x){return String(x.orig_node_id).indexOf(fn)>=0;});
+r.sort(function(a,b){var av=a[col],bv=b[col];return av<bv?(dir==='a'?-1:1):av>bv?(dir==='a'?1:-1):0;});
+if(mr!==Infinity)r=r.slice(0,mr);
+document.getElementById('cnt').textContent=rows.length+' rows';
+if(!r.length){document.getElementById('tb').innerHTML='<tr><td colspan="15">No data</td></tr>';return;}
+document.getElementById('tb').innerHTML=r.map(function(x){
+return'<tr><td>'+new Date(x.t).toLocaleString()+'</td><td>'+x.orig_node_id+'</td><td>'+x.packet_id+'</td><td>'+x.hop_count+'</td>'+
+'<td>'+x.latitude.toFixed(5)+'</td><td>'+x.longitude.toFixed(5)+'</td>'+
+'<td>'+x.air_temp.toFixed(1)+'</td><td>'+x.air_humidity+'</td><td>'+x.pressure.toFixed(1)+'</td>'+
+'<td>'+x.soil_moisture+'</td><td>'+x.soil_temps.map(function(t){return t.toFixed(1);}).join('/')+'</td>'+
+'<td>'+x.lux+'</td><td>'+x.precipitation.toFixed(1)+'</td><td>'+x.wind_speed.toFixed(3)+'</td>'+
+'<td>0x'+x.flags.toString(16).padStart(2,'0')+'</td></tr>';}).join('');
+}
+function exportCSV(){
+if(!rows.length)return;
+var h='time,node,network,packet_id,hops,flags,lat,lon,air_temp,humidity,pressure,soil_moist,soil_t1,soil_t2,soil_t3,soil_t4,lux,precip,wind\n';
+var b=rows.map(function(r){return[new Date(r.t).toISOString(),r.orig_node_id,r.network_id,r.packet_id,r.hop_count,'0x'+r.flags.toString(16),r.latitude,r.longitude,r.air_temp,r.air_humidity,r.pressure,r.soil_moisture].concat(r.soil_temps).concat([r.lux,r.precipitation,r.wind_speed]).join(',');}).join('\n');
+var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h+b],{type:'text/csv'}));
+a.download='sensors.csv';a.click();
+}
+var ws,idx=0;
+function conn(){
+document.getElementById('s').textContent='Connecting...';
+ws=new WebSocket('ws://'+location.hostname+'/dataviewer');
+ws.binaryType='arraybuffer';
+ws.onopen=function(){document.getElementById('s').textContent='Connected';ws.send(idx?'START_SD_STREAM:'+idx:'START_SD_STREAM');};
+ws.onclose=function(){document.getElementById('s').textContent='Disconnected';setTimeout(conn,2000);};
+ws.onmessage=function(e){
+if(e.data instanceof ArrayBuffer){handleData(e.data);}
+else if(e.data.indexOf('END_OF_TRANSMISSION')===0){idx=Number(e.data.split(':')[1]);}
+};
+}
+conn();
+</script></body></html>

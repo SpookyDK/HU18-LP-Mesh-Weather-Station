@@ -24,7 +24,6 @@ function parsePayload(bytes) {
   };
   return data;
 }
-
 function start_root() {
   setInterval(function () {
     fetch("/data").then((response) =>
@@ -43,63 +42,4 @@ function start_root() {
       }),
     );
   }, 1000);
-}
-
-function start_viewer() {
-  const gateway = `ws://${window.location.hostname}/dataviewer`;
-  let websocket;
-  let last_known_idx = 0;
-
-  function initWebsocket() {
-    console.log("Trying to open WebSocket connection...");
-    websocket = new WebSocket(gateway);
-    websocket.binaryType = "arraybuffer";
-
-    websocket.onopen = onOpen;
-    websocket.onclose = onClose;
-    websocket.onmessage = onMessage;
-  }
-  function onOpen(event) {
-    console.log("Connection opened");
-    if (last_known_idx === 0) websocket.send("START_SD_STREAM");
-    else websocket.send("START_SD_STREAM:" + last_known_idx);
-  }
-  function onClose(event) {
-    console.log("Connection closed");
-    setTimeout(initWebsocket, 2000);
-  }
-  function onMessage(event) {
-    if (event.data instanceof ArrayBuffer) {
-      handleData(event.data);
-    } else {
-      const target = "END_OF_TRANSMISSION";
-      if (event.data.startsWith(target)) {
-        last_known_idx = Number(event.data.split(":")[1]);
-      }
-      console.log("Received text: " + event.data);
-    }
-  }
-
-  function handleData(buffer) {
-    //TODO: The buffer contains more than one packet, interpret it
-    const view = new DataView(buffer);
-    const time = new Date(view.getInt32(0, true) * 1000);
-    const count = view.getUint8(4);
-    if (count < 1) {
-      return;
-    }
-    let offset = 5;
-    let stuff = `<li> ${time} <ul>`;
-    for (let index = 0; index < count; index++) {
-      const vals = parsePayload(buffer.slice(offset, offset + 34));
-      stuff += `<li> ${vals["orig_node_id"]}`;
-      stuff += `</li>`;
-      offset += 34;
-    }
-    stuff += "</ul></li>";
-
-    let elm = document.getElementById("my_list");
-    elm.innerHTML = stuff + elm.innerHTML;
-  }
-  initWebsocket();
 }
