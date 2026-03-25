@@ -24,7 +24,7 @@
 
 static const char *TAG = "main";
 
-#define DUTY_CYCLES_MS 30000 // This should be 5 min
+#define DUTY_CYCLES_MS 30000
 #define PACKET_TIME_TO_LIVE 3
 #define NVS_NAMESPACE "lora_conf"
 #define NVS_NETWORK_KEY "network_key"
@@ -180,9 +180,7 @@ static void communication_task(void *p) {
 
 static void print_runtime_stats(void) {
     char buffer[1024];
-
     vTaskGetRunTimeStats(buffer);
-
     printf("Task Name\tRuntime\t\tCPU %%\n");
     printf("%s", buffer);
 }

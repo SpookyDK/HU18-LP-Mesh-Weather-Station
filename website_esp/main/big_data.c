@@ -57,21 +57,24 @@ void init_dio0_interrupt() {
 full_packet_t packet_cache[CACHE_SIZE];
 uint8_t cache_len = 0;
 
-static bool is_duplicate(full_packet_t pack) {
+typedef enum {
+    CACHE_NEW_ITEM,
+    CACHE_DUPLICATE_PACKET,
+    CACHE_RECURRING_NODE,
+} cache_ret_state;
+
+static cache_ret_state is_duplicate(full_packet_t pack) {
     for (int i = 0; i < cache_len; i++) {
         if (packet_cache[i].head.orig_node_id == pack.head.orig_node_id) {
             if (packet_cache[i].head.packet_id == pack.head.packet_id) {
-                return true;
+                return CACHE_DUPLICATE_PACKET;
             }
-            if (b_append_file(PACKET_FILE, packet_cache, cache_len) == ESP_OK) {
-                ESP_LOGI(TAG, "Stored buffer to SD card item_count: '%d'", cache_len);
-                cache_len = 0;
-            }
+            return CACHE_RECURRING_NODE;
         }
     }
     memcpy(&packet_cache[cache_len], &pack, sizeof(full_packet_t));
     cache_len = (cache_len + 1) & CACHE_MASK;
-    return false;
+    return CACHE_NEW_ITEM;
 }
 
 full_packet_t big_data_packet = {0};
@@ -93,31 +96,41 @@ static void receive_task(void *p) {
     while (1) {
         lora_receive();
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
-        if (lora_received()) {
-            packet_len = lora_receive_packet(buffer, sizeof(buffer));
-            if (packet_len != sizeof(full_packet_t)) {
-                ESP_LOGW(TAG, "Unkown packet with len='%d'", packet_len);
-                continue;
-            }
-            memcpy(&temp_packet, buffer, sizeof(full_packet_t));
-            if (temp_packet.head.network_id != NETWORK_ID) {
-                ESP_LOGI(TAG, "Ignoring packet from other network '%d'", temp_packet.head.network_id);
-                continue;
-            }
-            if (is_duplicate(temp_packet)) {
-                ESP_LOGI(TAG, "Ignoring Duplicate packet id='%d'", temp_packet.head.packet_id);
-                continue;
-            }
-            clock_gettime(CLOCK_REALTIME, &ts_now);
-            localtime_r(&ts_now.tv_sec, &timeinfo);
-            strftime(strtime_buf, sizeof(strtime_buf), "%c", &timeinfo);
-
-            ESP_LOGI(TAG, "Received packet id='%d' from '%d' at %s", temp_packet.head.packet_id, temp_packet.head.orig_node_id,
-                     strtime_buf);
-            memcpy(&big_data_packet, (uint8_t *)&temp_packet, packet_len);
+        if (!lora_received()) {
+            vTaskDelay(pdMS_TO_TICKS(10));
+            continue;
         }
-        vTaskDelay(pdMS_TO_TICKS(10));
+        packet_len = lora_receive_packet(buffer, sizeof(buffer));
+        if (packet_len != sizeof(full_packet_t)) {
+            ESP_LOGW(TAG, "Unkown packet with len='%d'", packet_len);
+            continue;
+        }
+        memcpy(&temp_packet, buffer, sizeof(full_packet_t));
+        if (temp_packet.head.network_id != NETWORK_ID) {
+            ESP_LOGI(TAG, "Ignoring packet from other network '%d'", temp_packet.head.network_id);
+            continue;
+        }
+        cache_ret_state state = is_duplicate(temp_packet);
+        if (state == CACHE_DUPLICATE_PACKET) {
+            ESP_LOGI(TAG, "Ignoring Duplicate packet id='%d'", temp_packet.head.packet_id);
+            continue;
+        }
+
+        clock_gettime(CLOCK_REALTIME, &ts_now);
+        localtime_r(&ts_now.tv_sec, &timeinfo);
+        strftime(strtime_buf, sizeof(strtime_buf), "%c", &timeinfo);
+
+        ESP_LOGI(TAG, "Received packet id='%d' from '%d' at %s", temp_packet.head.packet_id, temp_packet.head.orig_node_id, strtime_buf);
+        memcpy(&big_data_packet, (uint8_t *)&temp_packet, packet_len);
+        if (state == CACHE_RECURRING_NODE) {
+            if (b_append_file(PACKET_FILE, packet_cache, cache_len) == ESP_OK) {
+                ESP_LOGI(TAG, "Stored buffer to SD card item_count: '%d'", cache_len);
+                memcpy(&packet_cache[0], &temp_packet, sizeof(full_packet_t));
+                cache_len = 1;
+            } else {
+                ESP_LOGW(TAG, "Failed to store packet cache");
+            }
+        }
     }
     ESP_LOGW(TAG, "Left task");
 }

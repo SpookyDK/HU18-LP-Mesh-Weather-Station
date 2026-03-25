@@ -45,8 +45,8 @@ typedef struct __attribute__((packed)) {
     uint16_t spectrum;
     uint16_t precipitation; // Can be 0, how would i check? Should i base it wheter its been initated?
     uint16_t wind_speed;    // Can be 0, --//--
-    /* uint8_t solar_output;
-    int8_t bat_voltage; */
+    uint8_t solar_output;
+    int8_t bat_voltage;
 } sensor_payload_t;
 
 /**

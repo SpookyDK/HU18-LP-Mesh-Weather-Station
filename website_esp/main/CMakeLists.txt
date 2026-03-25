@@ -11,7 +11,7 @@ set(GZ_DIR ${CMAKE_CURRENT_BINARY_DIR}/gz)
 file(MAKE_DIRECTORY ${GZ_DIR})
 
 set(GZ_FILES "")
-foreach(SRC_FILE IN ITEMS viewer.html index.html code.js)
+foreach(SRC_FILE IN ITEMS viewer.html index.html)
   set(GZ_OUT ${GZ_DIR}/${SRC_FILE}.gz)
   add_custom_command(
         OUTPUT ${GZ_OUT}
