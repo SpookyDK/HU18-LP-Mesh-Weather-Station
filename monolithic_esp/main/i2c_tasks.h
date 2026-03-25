@@ -8,5 +8,6 @@
 
 void barometer_task(void *duty_cycle_ms);
 void light_sensor_task(void *duty_cycle_ms);
+void power_sensor_task(void *sensor_cnt);
 
 #endif // !I2C_TASKS
