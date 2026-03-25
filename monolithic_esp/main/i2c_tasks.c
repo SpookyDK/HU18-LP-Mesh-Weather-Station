@@ -94,7 +94,6 @@ void light_sensor_task(void *duty_cycle_ms) {
         ESP_LOGE(TAG, "Could not find device");
         vTaskDelete(NULL);
     }
-
     ESP_ERROR_CHECK(tsl2591_init(&light_sensor_dev));
     ESP_ERROR_CHECK(tsl2591_set_power_status(&light_sensor_dev, TSL2591_POWER_ON));
     ESP_ERROR_CHECK(tsl2591_set_als_status(&light_sensor_dev, TSL2591_ALS_ON));
@@ -114,4 +113,68 @@ void light_sensor_task(void *duty_cycle_ms) {
 
         vTaskDelay(pdMS_TO_TICKS((uint32_t)duty_cycle_ms));
     }
+}
+
+#define INA219_REG_CONFIG (0x00)                    ///< Config register
+#define INA219_CONFIG_RESET (0x8000)                ///< Config reset register
+#define INA219_CONFIG_BUSVOLTAGERANGE_MASK (0x2000) ///< Config bus voltage range
+#define INA219_REG_SHUNTVOLTAGE (0x01)              ///< Shunt Voltage Register
+#define INA219_REG_BUSVOLTAGE (0x02)                ///< Bus Voltage Register
+#define INA219_REG_POWER (0x03)                     ///< Power Register
+#define INA219_REG_CURRENT (0x04)                   ///< Current Register
+#define INA219_REG_CALIBRATION                                                                                                             \
+    (0x05) ///< Register Calibration
+           ///
+#define INA219_CALIBRATION_VALUE 4096
+#define INA219_CURRENT_LSB_MA 1 // 1mA per LSB
+#define INA219_POWER_LSB_MW 20  // 20x current LSB = 20mW per LSB
+static inline uint16_t i2c_swap16(uint16_t val) { return (val >> 8) | (val << 8); }
+void power_sensor_task(void *sensor_cnt) {
+    init_i2c();
+
+    i2c_dev_t power_sensor_1 = {
+        .addr = 0x40,
+        .port = I2C_MASTER_NUM,
+        .cfg.scl_io_num = I2C_MASTER_SCL_IO,
+        .cfg.sda_io_num = I2C_MASTER_SDA_IO,
+        .cfg.master.clk_speed = 100 * 1000,
+        .timeout_ticks = 1000,
+    };
+
+    int ret = i2c_dev_check_present(&power_sensor_1);
+    printf("Device present: %d\n", ret);
+
+    // Write calibration register FIRST — without this, current/power always read 0
+    uint16_t cal = i2c_swap16(INA219_CALIBRATION_VALUE);
+    i2c_dev_write_reg(&power_sensor_1, INA219_REG_CALIBRATION, &cal, 2);
+
+    while (1) {
+        uint16_t raw_voltage = 0;
+        uint16_t raw_current = 0;
+        uint16_t raw_power = 0;
+
+        i2c_dev_read_reg(&power_sensor_1, INA219_REG_BUSVOLTAGE, &raw_voltage, 2);
+        i2c_dev_read_reg(&power_sensor_1, INA219_REG_CURRENT, &raw_current, 2);
+        i2c_dev_read_reg(&power_sensor_1, INA219_REG_POWER, &raw_power, 2);
+
+        // Fix endianness
+        raw_voltage = i2c_swap16(raw_voltage);
+        raw_current = i2c_swap16(raw_current);
+        raw_power = i2c_swap16(raw_power);
+
+        // Bus voltage: bits [15:3], LSB = 4mV
+        uint32_t voltage_mv = (raw_voltage >> 3) * 4;
+
+        // Current: signed 16-bit, LSB = 1mA
+        int16_t current_ma = (int16_t)raw_current * INA219_CURRENT_LSB_MA;
+
+        // Power: unsigned, LSB = 20mW
+        uint32_t power_mw = raw_power * INA219_POWER_LSB_MW;
+
+        ESP_LOGE("POWER", "Voltage: %" PRIu32 "mV, Current: %dmA, Power: %" PRIu32 "mW", voltage_mv, current_ma, power_mw);
+
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+
+    vTaskDelete(NULL);
 }

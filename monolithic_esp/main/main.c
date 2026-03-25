@@ -254,9 +254,11 @@ void app_main(void) {
     ESP_LOGI(TAG, "Starting Communication Task");
     xTaskCreate(communication_task, "TxRxTask", 4096, NULL, 5, NULL);
 
+    ESP_LOGE(TAG, "Starting power Task");
+    xTaskCreate(power_sensor_task, "powerTask", 4096, NULL, 5, NULL);
     ESP_LOGI(TAG, "Finished starting all tasks");
     while (1) {
-        /* print_runtime_stats(); */
+        print_runtime_stats();
         vTaskDelay(pdMS_TO_TICKS(DUTY_CYCLES_MS));
     }
 }

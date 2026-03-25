@@ -9,7 +9,7 @@ pagella_path = '/usr/share/texmf/fonts/opentype/public/tex-gyre/texgyrepagella-r
 fm.fontManager.addfont(pagella_path)
 plt.rcParams['font.family'] = 'TeX Gyre Pagella'
 # Read CSV correctly
-our = pd.read_csv('Collected.csv', sep=',', decimal=',')  # comma as separator, comma as decimal
+our = pd.read_csv('CollectedLargeFormatted.csv', sep=',', decimal=',')  # comma as separator, comma as decimal
 
 dmi = pd.read_csv('DMI_TEMP.csv', sep=',', decimal='.')  # comma as separator, comma as decimal
 our.columns = our.columns.str.strip()  # clean extra spaces
@@ -18,17 +18,20 @@ our.columns = our.columns.str.strip()  # clean extra spaces
 our['TIME'] = pd.to_datetime(our['TIME'])
 our['LIGHT'] = our['LIGHT']/10000
 dmi['DateTime'] = pd.to_datetime(dmi['DateTime'])
-print(our.all)
-print(dmi.all)
+print(our.dtypes)
+print(dmi.dtypes)
 temp_cols = ['SOIL TEMP1', 'SOIL TEMP2', 'SOIL TEMP3', 'SOIL TEMP4']
-
+cols_to_float = ['SOIL TEMP1', 'SOIL TEMP2', 'SOIL TEMP3', 'SOIL TEMP4', 'AIR TEMP', 'LIGHT']
+# Convert each column to float
+for col in cols_to_float:
+    our[col] = pd.to_numeric(our[col], errors='coerce')  # invalid values become NaN
 # Calculate row-wise min and max
 temp_min = our[temp_cols].min(axis=1)
 temp_max = our[temp_cols].max(axis=1)
 plt.figure(figsize=(16,10))
-plt.xlabel('Time', fontsize = 24)
-plt.ylabel('Temperature (°C)', fontsize = 24)
-plt.title('Air and Soil Temperatures Over Time For Initial Test Compared to DMI', fontsize = 25)
+plt.xlabel('Time', fontsize = 30)
+plt.ylabel('Temperature (°C)', fontsize = 30)
+plt.title('Air and Soil Temperatures Over Time For Initial Test Compared to DMI', fontsize = 32)
 plt.plot(our['TIME'], our['LIGHT'], label=' Relative LIGHT', color='gold', linewidth=2)
 plt.fill_between(our['TIME'], our['LIGHT'], color='yellow', alpha=0.2)  # alpha = transparency
 plt.plot(our['TIME'], our['AIR TEMP'], label='Air Temp', color='orange', linewidth=4)
@@ -41,17 +44,18 @@ plt.plot(our['TIME'], our[temp_cols].mean(axis=1), color='blue', label='Average 
 # plt.plot(our['TIME'], our['SOIL TEMP3'], label='Soil Temp 3', color='orange')
 # plt.plot(our['TIME'], our['SOIL TEMP4'], label='Soil Temp 4', color='purple')
 
+plt.fill_between(dmi['DateTime'], dmi['Low'], dmi['High'], color='lightgreen', alpha=0.2, label='DMI max min range')
 plt.plot(dmi['DateTime'], dmi['Low'], label='DMI Low', color='lime', linewidth = 2)
 plt.plot(dmi['DateTime'], dmi['High'], label='DMI High', color='lightgreen', linewidth = 2)
 plt.plot(dmi['DateTime'], dmi['Avg'], label='DMI Avg', color='green', linewidth = 4)
 plt.axhline()
 plt.gca().xaxis.set_major_locator(mdates.HourLocator(interval=2))  # every 2 hours
 plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%a:%H:%M')) # show HH:MM
-plt.xticks(rotation=45, fontsize=20)  # x-axis values
-plt.yticks(fontsize=20)               # y-axis values
-plt.subplots_adjust(left=0.05, right=0.98, top=0.95, bottom=0.07, hspace=0.3)
+plt.xticks(rotation=45, fontsize=28)  # x-axis values
+plt.yticks(fontsize=28)               # y-axis values
+plt.subplots_adjust(left=0.05, right=0.98, top=0.95, bottom=0.09, hspace=0.3)
 plt.legend(
-    fontsize=20,           # font size
+    fontsize=28,           # font size
     loc='upper right',     # legend position
     frameon=True,          # show box around legend
     shadow=True,           # shadow effect
