@@ -11,13 +11,17 @@
 #include <driver/uart.h>
 #include <inttypes.h>
 #include <math.h>
+#include <reent.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/_timeval.h>
 #include <sys/param.h>
+#include <sys/time.h>
+#include <time.h>
 
 #define DEFINE_ALL_BYTE_ARRAYS
 #include "NEO_6M_UART.h"
@@ -150,7 +154,7 @@ static const char *human_readable_name(uint16_t msg_id) {
     case 0x2406:
         return "CFG-NAV5";
     default:
-        ESP_LOGW("HRN", "Unkown msg_id:  %04x", msg_id);
+        ESP_LOGW("gps_HRN", "Unkown msg_id:  %04x", msg_id);
         return "Unkown";
     }
 }
@@ -194,9 +198,12 @@ int32_t gps_shared_longitude = 0.0f;
 int32_t gps_shared_latitude = 0.0f;
 
 static void evaluate_frame(ubx_frame_t *frame) {
-    uint16_t offset, msg_id, year;
+    uint16_t offset, msg_id;
     int32_t nano;
-    uint8_t month, day, hour, min, sec;
+    struct tm time, time_local;
+    time_t t;
+    struct timespec ts;
+    char time_buffer[80];
     for (int f = 0; f < frame->frame_count; f++) {
         offset = frame->frame_offsets[f];
         msg_id = *(uint16_t *)&frame->data[offset + 2];
@@ -230,17 +237,24 @@ static void evaluate_frame(ubx_frame_t *frame) {
             break;
         case 0x2101: // NAV-TIMEUTC
             nano = *(int32_t *)&frame->data[offset + 14];
-            year = *(uint16_t *)&frame->data[offset + 18];
-            month = frame->data[offset + 20];
-            day = frame->data[offset + 21];
-            hour = frame->data[offset + 22];
-            min = frame->data[offset + 23];
-            sec = frame->data[offset + 24];
-            // clang-format off
-            ESP_LOGI("GPS",
-                     "UTC:  %04" PRIu16    "-%02" PRIu8    "-%02" PRIu8    "T%02" PRIu8    ":%02" PRIu8    ":%02" PRIu8    ".%" PRId32  " UTC",
-                            year,            month,          day,           hour,           min,            sec,            nano);
-            // clang-format on
+            time.tm_year = *(uint16_t *)&frame->data[offset + 18] - 1900;
+            time.tm_mon = frame->data[offset + 20] - 1;
+            time.tm_mday = frame->data[offset + 21];
+            time.tm_hour = frame->data[offset + 22];
+            time.tm_min = frame->data[offset + 23];
+            time.tm_sec = frame->data[offset + 24];
+            time.tm_isdst = -1;
+            setenv("TZ", "UTC", 1);
+            tzset();
+            t = mktime(&time);
+            setenv("TZ", "CET-1CEST,M3.5.0,M10.5.0/3", 1);
+            tzset();
+            ts.tv_sec = t;
+            ts.tv_nsec = nano;
+            clock_settime(CLOCK_REALTIME, &ts);
+            localtime_r(&t, &time_local);
+            strftime(time_buffer, sizeof(time_buffer), "%c", &time_local);
+            ESP_LOGI("GPS", "%s", time_buffer);
             break;
         case 0x3b06: // CFG-PM2
             print_frame(frame);
@@ -321,12 +335,16 @@ void ensure_gps_fix() {
     }
 }
 
-void gpsInitUart() {
+static void gps_init_uart() {
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         nvs_flash_erase();
         nvs_flash_init();
     }
+
+    // Set enviroment to use correct timezone
+    setenv("TZ", "CET-1CEST,M3.5.0,M10.5.0/3", 1);
+    tzset();
 
 #ifdef GPS_DISABLE_PIN
     gpio_set_direction(GPS_DISABLE_PIN, GPIO_MODE_OUTPUT);
@@ -384,7 +402,7 @@ void gpsInitUart() {
 }
 
 void gps_task() {
-    gpsInitUart();
+    gps_init_uart();
 
     ubx_frame_t *frame;
     TickType_t last_wake = xTaskGetTickCount();
@@ -396,12 +414,9 @@ void gps_task() {
         ESP_LOGI("GPS", "Reading frame");
 #ifdef GPS_DISABLE_PIN
         gpio_set_level(GPS_DISABLE_PIN, 0);
-#endif
-
         vTaskDelay(pdMS_TO_TICKS(2000));
-
         ensure_gps_fix();
-
+#endif
         uart_write_bytes(GPS_UART_NUM, (const void *)nav_posllh_poll, sizeof(nav_posllh_poll));
         uart_write_bytes(GPS_UART_NUM, (const void *)nav_timeutc_poll, sizeof(nav_timeutc_poll));
 
@@ -412,11 +427,13 @@ void gps_task() {
         evaluate_frame(frame);
         frame_free(frame);
 
-        ESP_LOGI("GPS", "Going to sleep after %d ms", pdTICKS_TO_MS(xTaskGetTickCount() - last_wake));
 #ifdef GPS_DISABLE_PIN
+        ESP_LOGI("GPS", "Going to sleep after %d ms", pdTICKS_TO_MS(xTaskGetTickCount() - last_wake));
         gpio_set_level(GPS_DISABLE_PIN, 1);
-#endif
         vTaskDelayUntil(&last_wake, gps_polling_rate);
+#else
+        vTaskDelay(pdMS_TO_TICKS(10000));
+#endif
     }
     ESP_LOGW("GPS", "Leaving Task");
 }

@@ -228,7 +228,7 @@ int lora_init(void) {
     lora_write_reg(REG_FIFO_TX_BASE_ADDR, 0);
     lora_write_reg(REG_LNA, lora_read_reg(REG_LNA) | 0x03);
     lora_write_reg(REG_MODEM_CONFIG_3, 0x04);
-    lora_set_tx_power(17);
+    // lora_set_tx_power(17);
 
     lora_idle();
 
@@ -239,7 +239,7 @@ int lora_init(void) {
     lora_set_coding_rate(5);
     lora_set_preamble_length(8);
     lora_set_sync_word(0x12);
-    lora_set_tx_power(2);
+    lora_set_tx_power(17);
     lora_enable_crc();
 
     return 1;

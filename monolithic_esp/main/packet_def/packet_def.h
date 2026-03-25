@@ -20,7 +20,7 @@ typedef struct __attribute__((packed)) {
 
 /**
  * Main Struct
- * @version 3
+ * @version 4
  * @param longitude Is scaled with 1e-7
  * @param latitude Is scaled with 1e-7
  * @param air_humidity From 0 to 100%RH
@@ -31,18 +31,22 @@ typedef struct __attribute__((packed)) {
  * @param spectrum spectrum including both Lux and Ir
  * @param precipitation Gives the amount since last reading/packet, scaled with 10
  * @param wind_speed In mili meters per second
+ * @param solar_output Solar panel power production in mA scaled with 4
+ * @param bat_voltage The diff from 3.7 V in 0.01 V increments
  */
 typedef struct __attribute__((packed)) {
     int32_t longitude;
     int32_t latitude;
     uint8_t air_humidity;
-    int16_t air_tempeture;
-    int16_t soil_tempeture[4];
-    uint8_t soil_moisture;
-    int16_t pressure;
+    int16_t air_tempeture;     // Can be 0, Will just send a warning
+    int16_t soil_tempeture[4]; // Can be 0, Will just send a warning
+    uint8_t soil_moisture;     // Can be 0
+    int16_t pressure;          // Can be 0, Might work
     uint16_t spectrum;
-    uint16_t precipitation;
-    uint16_t wind_speed;
+    uint16_t precipitation; // Can be 0, how would i check? Should i base it wheter its been initated?
+    uint16_t wind_speed;    // Can be 0, --//--
+    /* uint8_t solar_output;
+    int8_t bat_voltage; */
 } sensor_payload_t;
 
 /**

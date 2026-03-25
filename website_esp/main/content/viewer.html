@@ -6,9 +6,7 @@ input,select{font:12px monospace;padding:2px}button{font:12px monospace;padding:
 </style><meta name="color-scheme" content="light dark"/></head><body>
 <b>Sensor Viewer</b> &nbsp;
 <span id="s">Connecting...</span><br><br>
-Node:<input id="fn" size="4" oninput="render()">
-Sort:<select id="sc" onchange="render()"><option value="t">Time</option><option value="orig_node_id">Node</option><option value="air_temp">Temp</option><option value="wind_speed">Wind</option><option value="lux">Lux</option></select>
-<select id="sd" onchange="render()"><option value="d">Desc</option><option value="a">Asc</option></select>
+Node:<input id="fn" size="4" oninput="render()"> Flag: <input id="ff" size="8" oninput="render()">
 Max:<select id="mr" onchange="render()"><option>100</option><option>500</option><option>0</option></select>
 <button onclick="rows=[];render()">Clear</button>
 <button onclick="exportCSV()">CSV</button>
@@ -32,20 +30,20 @@ r.soil_temps=[];for(var i=0;i<4;i++){r.soil_temps.push(v.getInt16(o,1)/16);o+=2;
 r.soil_moisture=v.getUint8(o++);r.pressure=(v.getInt16(o,1)+100000)/100;o+=2;
 r.lux=v.getUint16(o,1);o+=2;r.precipitation=v.getUint16(o,1)/10;o+=2;
 r.wind_speed=v.getUint16(o,1)/1000;
-return r; }
-function handleData(b) { const v = new DataView(b); let po = 0;
-while (po < b.byteLength) { const t = v.getInt32(po, true) * 1000,
-c = v.getUint8(po + 4); po += 5; for (let i = 0; i < c; i++) {
-const p = pp(b.slice(po, po + 34)); p.t = t; rows.push(p);
-po += 34; } } render(); }
+return r;}
+function handleData(b){const v=new DataView(b);let po=0;
+while(po<b.byteLength){const t=v.getInt32(po,true)*1000,
+c=v.getUint8(po+4);po+=5;for(let i=0;i<c;i++){
+const p=pp(b.slice(po,po+34));p.t=t;rows.push(p);
+po+=34;}}render();}
 function sort(c){if(sc===c)sd=sd==='d'?'a':'d';else{sc=c;sd='d';}render();}
 function render(){
 var fn=document.getElementById('fn').value;
+var ff=document.getElementById('ff').value;
 var mr=parseInt(document.getElementById('mr').value)||Infinity;
-var col=sc||document.getElementById('sc').value;
-var dir=sd||document.getElementById('sd').value;
-var r=rows.slice();
+var col=sc,dir=sd,r=rows.slice();
 if(fn)r=r.filter(function(x){return String(x.orig_node_id).indexOf(fn)>=0;});
+if(ff)r=r.filter(function(x){return String(x.flags.toString(2).padStart(8,"0")).indexOf(ff.startsWith("0b")?ff.slice(2):ff)>=0;});
 r.sort(function(a,b){var av=a[col],bv=b[col];return av<bv?(dir==='a'?-1:1):av>bv?(dir==='a'?1:-1):0;});
 if(mr!==Infinity)r=r.slice(0,mr);
 document.getElementById('cnt').textContent=rows.length+' rows';
@@ -56,7 +54,7 @@ return'<tr><td>'+new Date(x.t).toLocaleString()+'</td><td>'+x.orig_node_id+'</td
 '<td>'+x.air_temp.toFixed(1)+'</td><td>'+x.air_humidity+'</td><td>'+x.pressure.toFixed(1)+'</td>'+
 '<td>'+x.soil_moisture+'</td><td>'+x.soil_temps.map(function(t){return t.toFixed(1);}).join('/')+'</td>'+
 '<td>'+x.lux+'</td><td>'+x.precipitation.toFixed(1)+'</td><td>'+x.wind_speed.toFixed(3)+'</td>'+
-'<td>0x'+x.flags.toString(16).padStart(2,'0')+'</td></tr>';}).join('');
+'<td>0b'+x.flags.toString(2).padStart(8,'0')+'</td></tr>';}).join('');
 }
 function exportCSV(){
 if(!rows.length)return;

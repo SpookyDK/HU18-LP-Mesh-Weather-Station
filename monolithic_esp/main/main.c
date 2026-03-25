@@ -24,7 +24,7 @@
 
 static const char *TAG = "main";
 
-#define DUTY_CYCLES_MS 300000 // This should be 5 min
+#define DUTY_CYCLES_MS 30000 // This should be 5 min
 #define PACKET_TIME_TO_LIVE 3
 #define NVS_NAMESPACE "lora_conf"
 #define NVS_NETWORK_KEY "network_key"
@@ -59,13 +59,17 @@ static void prepare_payload() {
     payload.wind_speed = wind_shared_speed;
 }
 
+extern bool dht_shared_air_tempeture_status;
+extern bool ds18b20_shared_status;
+extern bool bmp_shared_status;
+
 packet_header_t header = {0};
 static void prepare_header() {
     header.network_id = NETWORK_ID;
     header.orig_node_id = NODE_ID;
     esp_fill_random(&header.packet_id, sizeof(header.packet_id));
     header.hop_count = PACKET_TIME_TO_LIVE;
-    header.flags = 1;
+    header.flags = 1 ^ (dht_shared_air_tempeture_status << 2) ^ (ds18b20_shared_status << 3) ^ (bmp_shared_status << 7);
 }
 
 full_packet_t packet = {0};
@@ -118,14 +122,12 @@ static void communication_task(void *p) {
     // Wait a little to hope some data has been generated
     vTaskDelay(pdMS_TO_TICKS(10000));
 
-    TickType_t last_send = xTaskGetTickCount(), reading;
+    TickType_t last_send = xTaskGetTickCount();
     const TickType_t interval = pdMS_TO_TICKS(DUTY_CYCLES_MS);
     const char *tag = "comTask";
     int buffer_len;
     uint8_t buffer[256] = {0};
     full_packet_t temp_packet = {0};
-
-    lora_receive();
 
     while (1) {
         lora_receive();
@@ -149,7 +151,11 @@ static void communication_task(void *p) {
                 ESP_LOGI(tag, "Ignoring received Own Packet id='%d'", temp_packet.head.packet_id);
                 continue;
             }
-            // TODO: Drop cached packets, cache the ppackets it sent
+            if (is_duplicate(temp_packet.head)) {
+                ESP_LOGI(tag, "Ignoring received cached packet id='%d' node='%d'", temp_packet.head.packet_id,
+                         temp_packet.head.orig_node_id);
+                continue;
+            }
 
             block_if_receiving();
             lora_send_packet((uint8_t *)&temp_packet, buffer_len);

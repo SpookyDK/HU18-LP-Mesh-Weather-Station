@@ -7,6 +7,7 @@
 #include "onewire_device.h"
 #include "onewire_types.h"
 #include "tempeture.h"
+#include <stdbool.h>
 #include <stdint.h>
 
 static const char *TAG = "temp_task";
@@ -14,11 +15,14 @@ static const char *TAG = "temp_task";
 static onewire_bus_handle_t bus = NULL;
 static int8_t ds18b20_device_num = 0;
 static ds18b20_device_handle_t ds18b20s[ONEWIRE_MAX_DEVS];
-static onewire_device_iter_handle_t iter = NULL;
-static onewire_device_t next_onewire_device;
-static esp_err_t search_result = ESP_OK;
+
+bool dht_shared_air_tempeture_status = true;
+bool ds18b20_shared_status = true;
 
 static void init_tempeture() {
+    esp_err_t search_result;
+    onewire_device_t next_onewire_device;
+    onewire_device_iter_handle_t iter = NULL;
     onewire_bus_config_t bus_config = {
         .bus_gpio_num = ONEWIRE_BUS_GPIO,
         .flags = {.en_pull_up = true},
@@ -34,8 +38,7 @@ static void init_tempeture() {
         if (search_result == ESP_OK) {
             ds18b20_config_t ds_config = {};
             onewire_device_address_t address;
-            if (ds18b20_new_device_from_enumeration(&next_onewire_device, &ds_config, &ds18b20s[ds18b20_device_num]) ==
-                ESP_OK) {
+            if (ds18b20_new_device_from_enumeration(&next_onewire_device, &ds_config, &ds18b20s[ds18b20_device_num]) == ESP_OK) {
                 ds18b20_get_device_address(ds18b20s[ds18b20_device_num], &address);
                 ESP_LOGI(TAG, "Found a ds18b20[%d], address: %016llx", ds18b20_device_num, address);
                 ds18b20_device_num++;
@@ -50,7 +53,7 @@ static void init_tempeture() {
     } while (search_result != ESP_ERR_NOT_FOUND);
 
     ESP_ERROR_CHECK(onewire_del_device_iter(iter));
-    ESP_LOGI(TAG, "Searching over, %d ds18b20 devices found", ds18b20_device_num);
+    ESP_LOGI(TAG, "Search over, %d ds18b20 devices found", ds18b20_device_num);
 }
 
 uint8_t dht_shared_air_humidity = 0;
@@ -58,7 +61,7 @@ int16_t dht_shared_air_tempeture = 0;
 /*
  * Note this value is raw and needs to be shifted 4 times, Like: val >> 4
  */
-int16_t ds18b20_shared_soil_tempeture[ONEWIRE_MAX_DEVS] = {0}; // It is fairly important this remains 4 for later
+int16_t ds18b20_shared_soil_tempeture[4] = {0};
 
 void temp_task(void *duty_cycle_ms) {
     init_tempeture();
@@ -68,17 +71,24 @@ void temp_task(void *duty_cycle_ms) {
         if (dht_read_data(CONFIG_DHT11_PIN, &dht11_humidity, &dht11_tempeture) == ESP_OK) {
             dht_shared_air_humidity = (uint8_t)(dht11_humidity / 10);
             dht_shared_air_tempeture = dht11_tempeture;
+            dht_shared_air_tempeture_status = false;
             ESP_LOGI("DHT11", "Temperature: %d  Humidity: %d", dht11_tempeture, dht11_humidity);
         } else {
+            dht_shared_air_tempeture_status = true;
             ESP_LOGW("DHT11", "Failed to read");
         }
 
         ESP_ERROR_CHECK(ds18b20_trigger_temperature_conversion_for_all(bus));
         for (int i = 0; i < ds18b20_device_num; i++) {
-            ESP_ERROR_CHECK(ds18b20_get_temperature(ds18b20s[i], &ds18b20_temperature));
-            ds18b20_shared_soil_tempeture[i] = ds18b20_temperature;
-            ESP_LOGI("DS18B20", "[%d] [Temperature]> %.2f, Shared> %d", i, ds18b20_temperature / 16.0f,
-                     ds18b20_shared_soil_tempeture[i]);
+            if (ds18b20_get_temperature(ds18b20s[i], &ds18b20_temperature) == ESP_OK) {
+                ds18b20_shared_soil_tempeture[i] = ds18b20_temperature;
+                ESP_LOGI("DS18B20", "[%d] [Temperature]> %.2f, Shared> %d", i, ds18b20_temperature / 16.0f,
+                         ds18b20_shared_soil_tempeture[i]);
+                ds18b20_shared_status = false;
+            } else {
+                ds18b20_shared_status = true;
+                ESP_LOGW("DS18B20", "Failed to read");
+            }
         }
         vTaskDelay(pdMS_TO_TICKS((uint32_t)duty_cycle_ms));
     }

@@ -12,5 +12,6 @@
 //  Meaning that TX shall connect to RX on the GPS
 #define GPS_TX_PIN 19
 #define GPS_RX_PIN 18
+#define GPS_WEBSITE
 
 #endif // !PIN_CONFIG_H

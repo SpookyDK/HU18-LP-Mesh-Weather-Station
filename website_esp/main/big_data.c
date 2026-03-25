@@ -52,6 +52,7 @@ void init_dio0_interrupt() {
 }
 
 #define CACHE_SIZE 16
+#define CACHE_MASK (CACHE_SIZE - 1)
 
 full_packet_t packet_cache[CACHE_SIZE];
 uint8_t cache_len = 0;
@@ -69,7 +70,7 @@ static bool is_duplicate(full_packet_t pack) {
         }
     }
     memcpy(&packet_cache[cache_len], &pack, sizeof(full_packet_t));
-    cache_len++;
+    cache_len = (cache_len + 1) & CACHE_MASK;
     return false;
 }
 

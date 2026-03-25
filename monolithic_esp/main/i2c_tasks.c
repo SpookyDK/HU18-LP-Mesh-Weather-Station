@@ -27,6 +27,7 @@ static inline void init_i2c(void) {
  * Example 1: if the value is "1136" the proces to get the actual pressure is: 1136 + 100000 = 101136 Pa
  */
 int16_t bmp_shared_pressure = 0;
+bool bmp_shared_status = true;
 // static const char *TAG = "Bar";
 
 void barometer_task(void *duty_cycle_ms) {
@@ -34,10 +35,16 @@ void barometer_task(void *duty_cycle_ms) {
 
     bmp280_dev_t bmp = {0};
     ESP_ERROR_CHECK(bmp280_init_desc(&bmp, I2C_MASTER_NUM, BMP280_I2C_ADDR_SDO_LOW, I2C_MASTER_SDA_IO, I2C_MASTER_SCL_IO));
-    if (i2c_dev_check_present(&bmp.i2c_dev) != ESP_OK) {
+    uint8_t attempts = 0;
+    while (i2c_dev_check_present(&bmp.i2c_dev) != ESP_OK && ++attempts < 3) {
+        if (attempts == 3) {
+            ESP_LOGW("Bar", "Giving up on task, Terminating");
+            bmp_shared_status = true;
+            vTaskDelete(NULL);
+        }
         ESP_LOGE("Bar", "Failed to find dev");
-        vTaskDelete(NULL);
     }
+    bmp_shared_status = false;
 
     bmp280_config_t bmp_cfg = {
         .mode = BMP280_MODE_NORMAL,
