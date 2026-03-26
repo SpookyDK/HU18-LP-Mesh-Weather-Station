@@ -81,9 +81,9 @@ void barometer_task(void *duty_cycle_ms) {
 }
 
 uint16_t tsl_shared_spectrum = 0;
-static const char *TAG = "Light";
 
 void light_sensor_task(void *duty_cycle_ms) {
+    const char *TAG = "Light";
     // Ensure I2C is stated
     init_i2c();
     tsl2591_t light_sensor_dev = {0};
@@ -115,21 +115,6 @@ void light_sensor_task(void *duty_cycle_ms) {
     }
 }
 
-#define INA219_REG_CONFIG (0x00)                    ///< Config register
-#define INA219_CONFIG_RESET (0x8000)                ///< Config reset register
-#define INA219_CONFIG_BUSVOLTAGERANGE_MASK (0x2000) ///< Config bus voltage range
-#define INA219_REG_SHUNTVOLTAGE (0x01)              ///< Shunt Voltage Register
-#define INA219_REG_BUSVOLTAGE (0x02)                ///< Bus Voltage Register
-#define INA219_REG_POWER (0x03)                     ///< Power Register
-#define INA219_REG_CURRENT (0x04)                   ///< Current Register
-#define INA219_REG_CALIBRATION                                                                                                             \
-    (0x05) ///< Register Calibration
-           ///
-#define INA219_CALIBRATION_VALUE 4096
-#define INA219_CURRENT_LSB_MA 1 // 1mA per LSB
-#define INA219_POWER_LSB_MW                                                                                                                \
-    20 // 20x current LSB = 20mW per LSB
-       //
 static inline uint16_t i2c_swap16(uint16_t val) { return (val >> 8) | (val << 8); }
 uint8_t power_sensor_addresses[4] = {0x40, 0x41, 0x44, 0x45};
 struct power_sensor_value {
@@ -140,7 +125,8 @@ struct power_sensor_value {
 
 struct power_sensor_value power_sensor_values[4];
 
-void power_sensor_task(void *sensor_cnt) {
+void power_sensor_task(void *duty_cycle_ms) {
+    const char *TAG = "POWER";
     init_i2c();
 
     i2c_dev_t power_sensor_base = {
@@ -152,36 +138,36 @@ void power_sensor_task(void *sensor_cnt) {
         .timeout_ticks = 2000,
     };
 
+    esp_err_t ret;
     for (int i = 0; i < 4; i++) {
         power_sensor_base.addr = power_sensor_addresses[i];
-        int ret = i2c_dev_check_present(&power_sensor_base);
-        if (ret != 0) {
-            ESP_LOGI("POWER_SENSOR", "Try 1 No sensor at %x", power_sensor_addresses[i]);
+        ret = i2c_dev_check_present(&power_sensor_base);
+        if (ret != ESP_OK) {
+            ESP_LOGW(TAG, "Try 1 No sensor at %02x", power_sensor_addresses[i]);
             ret = i2c_dev_check_present(&power_sensor_base);
-            if (ret != 0) {
-                ESP_LOGI("POWER_SENSOR", "Try 2 No sensor at %x", power_sensor_addresses[i]);
+            if (ret != ESP_OK) {
+                ESP_LOGE(TAG, "Try 2 No sensor at %02x", power_sensor_addresses[i]);
                 power_sensor_addresses[i] = 0;
                 continue;
             }
         }
-        ESP_LOGI("POWER_SENSOR", "Found a sensor at %x", power_sensor_addresses[i]);
+        ESP_LOGI("POWER_SENSOR", "Found a sensor at %02x", power_sensor_addresses[i]);
     }
 
+    // write to the calibration register which is required or the device returns nothing.
+    uint16_t cal = i2c_swap16(INA219_CALIBRATION_VALUE);
     for (int i = 0; i < 4; i++) {
-        // write to the calibration register which is required or the device returns nothing.
         if (power_sensor_addresses[i] == 0) {
             continue;
         }
         power_sensor_base.addr = power_sensor_addresses[i];
-        uint16_t cal = i2c_swap16(INA219_CALIBRATION_VALUE);
         i2c_dev_write_reg(&power_sensor_base, INA219_REG_CALIBRATION, &cal, 2);
     }
 
+    uint16_t raw_voltage = 0;
+    uint16_t raw_current = 0;
+    uint16_t raw_power = 0;
     while (1) {
-
-        uint16_t raw_voltage = 0;
-        uint16_t raw_current = 0;
-        uint16_t raw_power = 0;
         for (int i = 0; i < 4; i++) {
             // write to the calibration register which is required or the device returns nothing.
             if (power_sensor_addresses[i] == 0) {
@@ -193,17 +179,16 @@ void power_sensor_task(void *sensor_cnt) {
             i2c_dev_read_reg(&power_sensor_base, INA219_REG_CURRENT, &raw_current, 2);
             i2c_dev_read_reg(&power_sensor_base, INA219_REG_POWER, &raw_power, 2);
 
-            // Fix endianness
+            // The first 2 bits are information flags, which are discarded
             power_sensor_values[i].voltage = (i2c_swap16(raw_voltage) >> 3) * 4;
             power_sensor_values[i].current = (int16_t)i2c_swap16(raw_current) * INA219_CURRENT_LSB_MA;
             power_sensor_values[i].power = i2c_swap16(raw_power) * INA219_POWER_LSB_MW;
 
-            ESP_LOGE("POWER", "ADDR = %x Voltage: %" PRIu32 "mV, Current: %dmA, Power: %" PRIu32 "mW", power_sensor_addresses[i],
+            ESP_LOGE("POWER", "ADDR = %x Voltage: %d mV, Current: %d mA, Power: %d mW", power_sensor_addresses[i],
                      power_sensor_values[i].voltage, power_sensor_values[i].current, power_sensor_values[i].power);
         }
-
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS((uint32_t *)duty_cycle_ms));
     }
-
+    ESP_LOGE(TAG, "Task ended");
     vTaskDelete(NULL);
 }
