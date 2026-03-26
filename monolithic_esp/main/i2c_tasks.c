@@ -9,7 +9,9 @@
 #include "i2cdev.h"
 #include "my_drivers/bmp280.h"
 #include "tsl2591.h"
+#include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 static bool is_i2c_init = false;
 
@@ -116,76 +118,75 @@ void light_sensor_task(void *duty_cycle_ms) {
 }
 
 static inline uint16_t i2c_swap16(uint16_t val) { return (val >> 8) | (val << 8); }
-uint8_t power_sensor_addresses[4] = {0x40, 0x41, 0x44, 0x45};
-struct power_sensor_value {
-    uint16_t voltage;
-    int16_t current;
-    uint16_t power;
-};
+static void any_device_present(int device_count, bool devices[]) {
+    for (int i = 0; i < device_count; i++) {
+        if (devices[i])
+            return;
+    }
+    ESP_LOGE(pcTaskGetName(NULL), "Did not find any valid sensor, terminating task...");
+    vTaskDelete(NULL);
+}
 
-struct power_sensor_value power_sensor_values[4];
+uint8_t power_shared_solar_production = 0;
+int8_t power_shared_bat_volatage = 0;
+
+#define DEVICE_COUNT 2
+static i2c_dev_t devices[DEVICE_COUNT];
+static bool devices_state[DEVICE_COUNT];
 
 void power_sensor_task(void *duty_cycle_ms) {
     const char *TAG = "POWER";
     init_i2c();
 
-    i2c_dev_t power_sensor_base = {
-        .addr = 0x40,
-        .port = I2C_MASTER_NUM,
-        .cfg.scl_io_num = I2C_MASTER_SCL_IO,
-        .cfg.sda_io_num = I2C_MASTER_SDA_IO,
-        .cfg.master.clk_speed = 100 * 1000,
-        .timeout_ticks = 2000,
-    };
-
-    esp_err_t ret;
-    for (int i = 0; i < 4; i++) {
-        power_sensor_base.addr = power_sensor_addresses[i];
-        ret = i2c_dev_check_present(&power_sensor_base);
-        if (ret != ESP_OK) {
-            ESP_LOGW(TAG, "Try 1 No sensor at %02x", power_sensor_addresses[i]);
-            ret = i2c_dev_check_present(&power_sensor_base);
-            if (ret != ESP_OK) {
-                ESP_LOGE(TAG, "Try 2 No sensor at %02x", power_sensor_addresses[i]);
-                power_sensor_addresses[i] = 0;
-                continue;
-            }
+    for (uint8_t i = 0; i < DEVICE_COUNT; i++) {
+        devices[i].addr = 0x40 + i;
+        devices[i].port = I2C_MASTER_NUM;
+        devices[i].cfg.scl_io_num = I2C_MASTER_SCL_IO;
+        devices[i].cfg.sda_io_num = I2C_MASTER_SDA_IO;
+        devices[i].cfg.master.clk_speed = 100 * 1000;
+        devices[i].timeout_ticks = 2000;
+        if (i2c_dev_check_present(&devices[i]) == ESP_OK) {
+            ESP_LOGI(TAG, "Found Power Sensor device addr='%02x'", devices[i].addr);
+            devices_state[i] = true;
+        } else {
+            ESP_LOGE(TAG, "Failed to find Power Sensor device addr='%02x'", devices[i].addr);
+            devices_state[i] = false;
         }
-        ESP_LOGI("POWER_SENSOR", "Found a sensor at %02x", power_sensor_addresses[i]);
     }
+
+    // Kill task if there isnt any devices
+    any_device_present(DEVICE_COUNT, devices_state);
 
     // write to the calibration register which is required or the device returns nothing.
     uint16_t cal = i2c_swap16(INA219_CALIBRATION_VALUE);
-    for (int i = 0; i < 4; i++) {
-        if (power_sensor_addresses[i] == 0) {
+    for (int i = 0; i < DEVICE_COUNT; i++) {
+        if (!devices_state[i])
             continue;
-        }
-        power_sensor_base.addr = power_sensor_addresses[i];
-        i2c_dev_write_reg(&power_sensor_base, INA219_REG_CALIBRATION, &cal, 2);
+        i2c_dev_write_reg(&devices[i], INA219_REG_CALIBRATION, &cal, 2);
     }
 
-    uint16_t raw_voltage = 0;
-    uint16_t raw_current = 0;
-    uint16_t raw_power = 0;
+    uint16_t raw_voltage = 0, raw_current = 0, raw_power = 0, voltage = 0, power = 0;
+    int16_t current = 0;
     while (1) {
-        for (int i = 0; i < 4; i++) {
-            // write to the calibration register which is required or the device returns nothing.
-            if (power_sensor_addresses[i] == 0) {
+        for (int i = 0; i < DEVICE_COUNT; i++) {
+            if (!devices_state[i])
                 continue;
+            i2c_dev_read_reg(&devices[i], INA219_REG_BUSVOLTAGE, &raw_voltage, 2);
+            i2c_dev_read_reg(&devices[i], INA219_REG_CURRENT, &raw_current, 2);
+            i2c_dev_read_reg(&devices[i], INA219_REG_POWER, &raw_power, 2);
+
+            // The first 2 bits of voltage is information flags, which are discarded
+            voltage = (i2c_swap16(raw_voltage) >> 3) * 4;
+            current = (int16_t)(i2c_swap16(raw_current) * INA219_CURRENT_LSB_MA);
+            power = i2c_swap16(raw_power) * INA219_POWER_LSB_MW;
+
+            ESP_LOGI(TAG, "ADDR = %x Voltage: %d mV, Current: %d mA, Power: %d mW", devices[i].addr, voltage, current, power);
+            // TODO: Pack those bytes some better or ensure they can be transported as is
+            if (devices[i].addr == POWER_ADDR_SOLAR) {
+                power_shared_solar_production = (int8_t)current;
+            } else if (devices[i].addr == POWER_ADDR_BATTERY) {
+                power_shared_bat_volatage = (uint8_t)voltage;
             }
-            power_sensor_base.addr = power_sensor_addresses[i];
-
-            i2c_dev_read_reg(&power_sensor_base, INA219_REG_BUSVOLTAGE, &raw_voltage, 2);
-            i2c_dev_read_reg(&power_sensor_base, INA219_REG_CURRENT, &raw_current, 2);
-            i2c_dev_read_reg(&power_sensor_base, INA219_REG_POWER, &raw_power, 2);
-
-            // The first 2 bits are information flags, which are discarded
-            power_sensor_values[i].voltage = (i2c_swap16(raw_voltage) >> 3) * 4;
-            power_sensor_values[i].current = (int16_t)i2c_swap16(raw_current) * INA219_CURRENT_LSB_MA;
-            power_sensor_values[i].power = i2c_swap16(raw_power) * INA219_POWER_LSB_MW;
-
-            ESP_LOGE("POWER", "ADDR = %x Voltage: %d mV, Current: %d mA, Power: %d mW", power_sensor_addresses[i],
-                     power_sensor_values[i].voltage, power_sensor_values[i].current, power_sensor_values[i].power);
         }
         vTaskDelay(pdMS_TO_TICKS((uint32_t *)duty_cycle_ms));
     }

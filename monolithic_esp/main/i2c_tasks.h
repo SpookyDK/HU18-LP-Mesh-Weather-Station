@@ -17,6 +17,8 @@
 #define INA219_CALIBRATION_VALUE 4096
 #define INA219_CURRENT_LSB_MA 1 // 1mA per LSB
 #define INA219_POWER_LSB_MW 20  // 20x current LSB = 20mW per LSB
+#define POWER_ADDR_SOLAR 0x40
+#define POWER_ADDR_BATTERY 0x41
 
 void barometer_task(void *duty_cycle_ms);
 void light_sensor_task(void *duty_cycle_ms);

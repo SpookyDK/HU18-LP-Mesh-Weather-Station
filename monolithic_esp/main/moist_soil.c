@@ -48,6 +48,7 @@ void moist_task(void *duty_cycle_ms) {
         .atten = MOISTURE_ADC_ATTEN,
         .bitwidth = ADC_BITWIDTH_12,
     };
+
     if (adc_cali_create_scheme_curve_fitting(&cali_cfg, &cali_handle) == ESP_OK) {
         ESP_LOGI(TAG, "ADC calibration enabled");
     } else {

@@ -42,6 +42,8 @@ extern uint8_t moist_shared_percentage;
 extern int16_t bmp_shared_pressure;
 extern uint16_t tsl_shared_spectrum;
 extern uint16_t wind_shared_speed;
+extern uint8_t power_shared_solar_production;
+extern int8_t power_shared_bat_volatage;
 
 sensor_payload_t payload = {0};
 static void prepare_payload() {
@@ -246,7 +248,7 @@ void app_main(void) {
     ESP_LOGI(TAG, "Starting Wind and Rain Sensor Task");
     xTaskCreate(pcnt_task, "windTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL); */
 
-    ESP_LOGE(TAG, "Starting power Task");
+    ESP_LOGI(TAG, "Starting power Task");
     xTaskCreate(power_sensor_task, "powerTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
 
     ESP_LOGI(TAG, "Starting GPS Task");
