@@ -1,5 +1,6 @@
 #include "NEO_6M_UART.h"
 #include "driver/spi_master.h"
+#include "esp_bit_defs.h"
 #include "esp_err.h"
 #include "esp_log.h"
 #include "esp_random.h"
@@ -32,6 +33,7 @@ static const char *TAG = "main";
 
 static uint8_t NETWORK_ID = 1;
 static uint8_t NODE_ID = 1;
+static uint8_t PACKET_ID = 0;
 
 extern int32_t gps_shared_longitude;
 extern int32_t gps_shared_latitude;
@@ -59,19 +61,29 @@ static void prepare_payload() {
     payload.spectrum = tsl_shared_spectrum;
     payload.precipitation = get_rain();
     payload.wind_speed = wind_shared_speed;
+    payload.solar_output = power_shared_solar_production;
+    payload.bat_voltage = power_shared_bat_volatage;
 }
 
 extern bool dht_shared_air_tempeture_status;
 extern bool ds18b20_shared_status;
+extern bool moist_shared_status;
 extern bool bmp_shared_status;
+extern bool power_shared_solar_state;
 
 packet_header_t header = {0};
 static void prepare_header() {
     header.network_id = NETWORK_ID;
     header.orig_node_id = NODE_ID;
-    esp_fill_random(&header.packet_id, sizeof(header.packet_id));
+    header.packet_id = PACKET_ID++;
     header.hop_count = PACKET_TIME_TO_LIVE;
-    header.flags = 1 ^ (dht_shared_air_tempeture_status << 2) ^ (ds18b20_shared_status << 3) ^ (bmp_shared_status << 7);
+    header.flags = 1 ^ (dht_shared_air_tempeture_status << 2) ^ (ds18b20_shared_status << 3) ^ (moist_shared_status << 4) ^
+                   (bmp_shared_status << 6) ^ (power_shared_solar_state << 7);
+
+    if (PACKET_ID >= 255) {
+        PACKET_ID = 0;
+        ESP_LOGI(TAG, "Packet ID reached max and returned to 0");
+    }
 }
 
 full_packet_t packet = {0};
@@ -86,7 +98,7 @@ static void prepare_packet() {
 #define CACHE_MASK (CACHE_SIZE - 1)
 
 typedef struct {
-    uint16_t packet_id;
+    uint8_t packet_id;
     uint8_t node_id;
 } packet_signature_t;
 
@@ -234,19 +246,19 @@ void app_main(void) {
     load_config_nvs();
 
     /* ESP_LOGI(TAG, "Starting Tempeture Task");
-    xTaskCreate(temp_task, "tempTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
+    xTaskCreate(temp_task, "tempTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL); */
 
     ESP_LOGI(TAG, "Starting Soil Moisture Reading Task");
     xTaskCreate(moist_task, "moistTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
 
-    ESP_LOGI(TAG, "Starting Barometer Task");
-    xTaskCreate(barometer_task, "barTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
+    /* ESP_LOGI(TAG, "Starting Barometer Task");
+    xTaskCreate(barometer_task, "barTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL); */
 
-    ESP_LOGI(TAG, "Starting Light Sensor Task");
-    xTaskCreate(light_sensor_task, "lightTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
+    /* ESP_LOGI(TAG, "Starting Light Sensor Task");
+    xTaskCreate(light_sensor_task, "lightTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL); */
 
     ESP_LOGI(TAG, "Starting Wind and Rain Sensor Task");
-    xTaskCreate(pcnt_task, "windTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL); */
+    xTaskCreate(pcnt_task, "windTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
 
     ESP_LOGI(TAG, "Starting power Task");
     xTaskCreate(power_sensor_task, "powerTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);

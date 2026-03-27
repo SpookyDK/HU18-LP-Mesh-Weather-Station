@@ -91,8 +91,8 @@ body{font-family:monospace;} </style>
 function parsePayload(bytes){
 const v=new DataView(bytes);
 let o=0,d={};
-d.network_id=v.getUint8(o++); d.orig_node_id=v.getUint8(o++);
-d.packet_id=v.getUint16(o,1);o+=2; d.hop_count=v.getUint8(o++);
+d.network_id=v.getUint8(o++);d.orig_node_id=v.getUint8(o++);
+d.packet_id=v.getUint8(o++);d.hop_count=v.getUint8(o++);
 d.flags=v.getUint8(o++);
 d.longitude=v.getInt32(o,1)/1e7;o+=4; d.latitude=v.getInt32(o,1)/1e7;o+=4;
 d.air_humidity=v.getUint8(o++); d.air_temp=v.getInt16(o,1)/10.0;o+=2;

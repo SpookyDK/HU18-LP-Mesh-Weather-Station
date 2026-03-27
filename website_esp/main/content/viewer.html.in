@@ -24,20 +24,20 @@ var rows=[],sc='t',sd='d';
 function pp(buf){
 var v=new DataView(buf),o=0,r={};
 r.network_id=v.getUint8(o++);r.orig_node_id=v.getUint8(o++);
-r.packet_id=v.getUint16(o,1);o+=2;r.hop_count=v.getUint8(o++);r.flags=v.getUint8(o++);
+r.packet_id=v.getUint8(o++);;r.hop_count=v.getUint8(o++);r.flags=v.getUint8(o++);
 r.longitude=v.getInt32(o,1)/1e7;o+=4;r.latitude=v.getInt32(o,1)/1e7;o+=4;
 r.air_humidity=v.getUint8(o++);r.air_temp=v.getInt16(o,1)/10;o+=2;
 r.soil_temps=[];for(var i=0;i<4;i++){r.soil_temps.push(v.getInt16(o,1)/16);o+=2;}
 r.soil_moisture=v.getUint8(o++);r.pressure=(v.getInt16(o,1)+100000)/100;o+=2;
 r.lux=v.getUint16(o,1);o+=2;r.precipitation=v.getUint16(o,1)/10;o+=2;
 r.wind_speed=v.getUint16(o,1)/1000;o+=2;
-r.solar_output=v.getUint8(o++)*4;r.bat_voltage=v.getInt8(o)/100+3.7;
+r.solar_output=v.getUint8(o++)*4;r.bat_voltage=v.getUint8(o)/250+3.5;
 return r;}
 function handleData(b){const v=new DataView(b);let po=0;
 while(po<b.byteLength){const t=v.getInt32(po,true)*1000,
 c=v.getUint8(po+4);po+=5;for(let i=0;i<c;i++){
-const p=pp(b.slice(po,po+36));p.t=t;rows.push(p);
-po+=36;}}render();}
+const p=pp(b.slice(po,po+@FULL_PACKET@));p.t=t;rows.push(p);
+po+=@FULL_PACKET@;}}render();}
 function sort(c){if(sc===c)sd=sd==='d'?'a':'d';else{sc=c;sd='d';}render();}
 function render(){
 var fn=document.getElementById('fn').value;
@@ -56,7 +56,7 @@ return'<tr><td>'+new Date(x.t).toLocaleString()+'</td><td>'+x.orig_node_id+'</td
 '<td>'+x.air_temp.toFixed(1)+'</td><td>'+x.air_humidity+'</td><td>'+x.pressure.toFixed(1)+'</td>'+
 '<td>'+x.soil_moisture+'</td><td>'+x.soil_temps.map(function(t){return t.toFixed(1);}).join('/')+'</td>'+
 '<td>'+x.lux+'</td><td>'+x.precipitation.toFixed(1)+'</td><td>'+x.wind_speed.toFixed(3)+'</td>'+
-'<td>'+x.solar_output+'</td><td>'+x.bat_voltage+'</td>'+
+'<td>'+x.solar_output+'</td><td>'+x.bat_voltage.toFixed(2)+'</td>'+
 '<td>0b'+x.flags.toString(2).padStart(8,'0')+'</td></tr>';}).join('');
 }
 function exportCSV(){

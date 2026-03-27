@@ -14,7 +14,8 @@
 #define INA219_REG_POWER (0x03)                     ///< Power Register
 #define INA219_REG_CURRENT (0x04)                   ///< Current Register
 #define INA219_REG_CALIBRATION (0x05)               ///< Register Calibration
-#define INA219_CALIBRATION_VALUE 4096
+#define INA219_CALIBRATION_VALUE 4000
+#define INA219_VOLTAGE_LSB_MV 4 // 4mV per LSB
 #define INA219_CURRENT_LSB_MA 1 // 1mA per LSB
 #define INA219_POWER_LSB_MW 20  // 20x current LSB = 20mW per LSB
 #define POWER_ADDR_SOLAR 0x40

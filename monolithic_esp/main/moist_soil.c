@@ -11,6 +11,7 @@
 #include <stdio.h>
 
 static const char *TAG = "moisture-soil";
+bool moist_shared_status = true;
 
 // Calibration values - measure once, change and forget
 #define ADC_DRY_VALUE 2700 // Dry reference achieved by placing sensor in Very Dry dirt
@@ -20,12 +21,15 @@ static const char *TAG = "moisture-soil";
 static inline uint8_t raw_to_percent(int32_t raw) {
     if (raw >= ADC_DRY_VALUE) {
         ESP_LOGW(TAG, "The measured dryness reached or exceeded expected values, Expected=%d, Got=%d", ADC_DRY_VALUE, raw);
+        moist_shared_status = false;
         return 0;
     }
     if (raw <= ADC_WET_VALUE) {
         ESP_LOGW(TAG, "The measured wetness is equal to or lower than expected values, Expected=%d, Got=%d", ADC_WET_VALUE, raw);
+        moist_shared_status = false;
         return 100;
     }
+    moist_shared_status = true;
     return (uint8_t)((ADC_DRY_VALUE - raw) * 100 / (ADC_DRY_VALUE - ADC_WET_VALUE));
 }
 

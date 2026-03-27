@@ -128,7 +128,8 @@ static void any_device_present(int device_count, bool devices[]) {
 }
 
 uint8_t power_shared_solar_production = 0;
-int8_t power_shared_bat_volatage = 0;
+bool power_shared_solar_state = true;
+uint8_t power_shared_bat_volatage = 0;
 
 #define DEVICE_COUNT 2
 static i2c_dev_t devices[DEVICE_COUNT];
@@ -148,6 +149,9 @@ void power_sensor_task(void *duty_cycle_ms) {
         if (i2c_dev_check_present(&devices[i]) == ESP_OK) {
             ESP_LOGI(TAG, "Found Power Sensor device addr='%02x'", devices[i].addr);
             devices_state[i] = true;
+            if (devices[i].addr == POWER_ADDR_SOLAR) {
+                power_shared_solar_state = false;
+            }
         } else {
             ESP_LOGE(TAG, "Failed to find Power Sensor device addr='%02x'", devices[i].addr);
             devices_state[i] = false;
@@ -176,16 +180,23 @@ void power_sensor_task(void *duty_cycle_ms) {
             i2c_dev_read_reg(&devices[i], INA219_REG_POWER, &raw_power, 2);
 
             // The first 2 bits of voltage is information flags, which are discarded
-            voltage = (i2c_swap16(raw_voltage) >> 3) * 4;
+            voltage = (i2c_swap16(raw_voltage) >> 3) * INA219_VOLTAGE_LSB_MV;
             current = (int16_t)(i2c_swap16(raw_current) * INA219_CURRENT_LSB_MA);
             power = i2c_swap16(raw_power) * INA219_POWER_LSB_MW;
 
             ESP_LOGI(TAG, "ADDR = %x Voltage: %d mV, Current: %d mA, Power: %d mW", devices[i].addr, voltage, current, power);
-            // TODO: Pack those bytes some better or ensure they can be transported as is
             if (devices[i].addr == POWER_ADDR_SOLAR) {
-                power_shared_solar_production = (int8_t)current;
+                if (current < 0)
+                    power_shared_solar_production = 0;
+                else
+                    power_shared_solar_production = (uint8_t)(current >> 2);
+                ESP_LOGI(TAG, "Shared solar '%d'", power_shared_solar_production);
             } else if (devices[i].addr == POWER_ADDR_BATTERY) {
-                power_shared_bat_volatage = (uint8_t)voltage;
+                if (voltage < 3500)
+                    power_shared_bat_volatage = 0;
+                else
+                    power_shared_bat_volatage = (uint8_t)((voltage - 3500) >> 2);
+                ESP_LOGI(TAG, "Shared battery '%d'", power_shared_bat_volatage);
             }
         }
         vTaskDelay(pdMS_TO_TICKS((uint32_t *)duty_cycle_ms));
