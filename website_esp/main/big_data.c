@@ -14,6 +14,7 @@
 #include "pin_config.h"
 #include "portmacro.h"
 #include "sd_card.h"
+#include "site_content.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -127,6 +128,8 @@ static void receive_task(void *p) {
                 ESP_LOGI(TAG, "Stored buffer to SD card item_count: '%d'", cache_len);
                 memcpy(&packet_cache[0], &temp_packet, sizeof(full_packet_t));
                 cache_len = 1;
+                // Notify site_content.c that it needs to send new data through websocket
+                notify_ws_new_sd_data();
             } else {
                 ESP_LOGW(TAG, "Failed to store packet cache");
             }

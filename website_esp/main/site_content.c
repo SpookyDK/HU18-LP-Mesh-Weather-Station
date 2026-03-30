@@ -2,10 +2,13 @@
 #include "esp_http_server.h"
 #include "esp_log.h"
 #include "freertos/idf_additions.h"
+#include "freertos/projdefs.h"
 #include "http_parser.h"
 #include "packet_def.h"
+#include "portmacro.h"
 #include "sd_card.h"
 #include "site_content.h"
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -16,6 +19,57 @@ static const char *TAG = "webserver";
 TaskHandle_t g_websocket_task = NULL;
 static httpd_handle_t s_server = NULL;
 static int s_ws_fd = 0;
+
+static void ws_push_task(void *arg) {
+    ws_pash_args_t *a = (ws_pash_args_t *)arg;
+    httpd_handle_t hd = a->hd;
+    int fd = a->fd;
+    size_t sd_tail_idx = a->start_idx;
+    free(a);
+
+    uint8_t *buf = (uint8_t *)malloc(WS_PUSH_CHUNK);
+    if (!buf) {
+        ESP_LOGE(TAG, "Push task: OOM, exiting");
+        g_websocket_task = NULL;
+        vTaskDelete(NULL);
+        return;
+    }
+    ESP_LOGI(TAG, "WS push task started, fd='%d' start_idx='%d'", fd, sd_tail_idx);
+    httpd_ws_frame_t ws_pkt = {.type = HTTPD_WS_TYPE_BINARY, .payload = buf};
+
+    while (1) {
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        size_t len = WS_PUSH_CHUNK;
+        READ_RETURN_STATE read_ret;
+        while ((read_ret = b_read_file(PACKET_FILE, sd_tail_idx, &len, buf)) != READ_FAILURE) {
+            if (len == 0)
+                break;
+            ws_pkt.type = HTTPD_WS_TYPE_BINARY;
+            ws_pkt.len = len;
+            ws_pkt.payload = buf;
+            esp_err_t ret = httpd_ws_send_frame_async(hd, fd, &ws_pkt);
+            if (ret != ESP_OK) {
+                ESP_LOGW(TAG, "WS push: send error %s, client gone", esp_err_to_name(ret));
+                goto cleanup;
+            }
+            sd_tail_idx += len;
+            len = WS_PUSH_CHUNK;
+            if (read_ret == READ_DONE)
+                break;
+        }
+    }
+cleanup:
+    ESP_LOGI(TAG, "WS push: Task Exiting, fd='%d'", fd);
+    free(buf);
+    g_websocket_task = NULL;
+    vTaskDelete(NULL);
+}
+
+void notify_ws_new_sd_data(void) {
+    if (g_websocket_task != NULL) {
+        xTaskNotifyGive(g_websocket_task);
+    }
+}
 
 static esp_err_t get_handler_root(httpd_req_t *req) {
     extern const uint8_t index_html_start[] asm("_binary_index_html_gz_start");
@@ -58,13 +112,14 @@ static esp_err_t get_handler_viewer(httpd_req_t *req) {
 }
 static httpd_uri_t uri_get_viewer = {.uri = "/viewer", .method = HTTP_GET, .handler = get_handler_viewer, .user_ctx = NULL};
 
-static size_t send_ws_data(httpd_req_t *req, httpd_ws_frame_t ws_pkt, size_t start_idx) {
+static size_t send_ws_data(httpd_req_t *req, size_t start_idx) {
     ESP_LOGI(TAG, "Starting Transmission, '%d'", start_idx);
-    ws_pkt.type = HTTPD_WS_TYPE_BINARY;
+    httpd_ws_frame_t ws_pkt = {.type = HTTPD_WS_TYPE_BINARY};
     esp_err_t ret;
-    const size_t max_chunk = 512;
-    uint8_t *buf = (uint8_t *)malloc(sizeof(uint8_t) * max_chunk);
-    // It is set to max, and is later set by the b_read_file
+    const size_t max_chunk = WS_PUSH_CHUNK;
+    uint8_t *buf = (uint8_t *)malloc(max_chunk);
+    if (!buf)
+        return start_idx;
     size_t len = max_chunk;
     READ_RETURN_STATE read_ret;
     while ((read_ret = b_read_file(PACKET_FILE, start_idx, &len, buf)) != READ_FAILURE) {
@@ -83,17 +138,16 @@ static size_t send_ws_data(httpd_req_t *req, httpd_ws_frame_t ws_pkt, size_t sta
         if (read_ret == READ_DONE)
             break;
     }
-    ESP_LOGI(TAG, "Sending end of Transmission flag");
-    ws_pkt.type = HTTPD_WS_TYPE_TEXT;
-    snprintf((char *)buf, max_chunk, "END_OF_TRANSMISSION:%d", start_idx);
-    ws_pkt.payload = buf;
-    ws_pkt.len = strlen((char *)buf);
-    httpd_ws_send_frame(req, &ws_pkt);
     free(buf);
     return start_idx;
 }
 static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
     if (req->method == HTTP_GET) {
+        if (g_websocket_task != NULL) {
+            ESP_LOGI(TAG, "New WS handshake - Killing stale push task");
+            vTaskDelete(g_websocket_task);
+            g_websocket_task = NULL;
+        }
         s_ws_fd = httpd_req_to_sockfd(req);
         ESP_LOGI(TAG, "Handshake done, client connected fd'%d'", s_ws_fd);
         return ESP_OK;
@@ -105,26 +159,58 @@ static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
         ESP_LOGW(TAG, "Failed to get ws packet len");
         return ret;
     }
+    if (ws_pkt.type == HTTPD_WS_TYPE_PONG || ws_pkt.type == HTTPD_WS_TYPE_CLOSE) {
+        free(buf);
+        return ESP_OK;
+    }
     if (ws_pkt.len > 0) {
         buf = (uint8_t *)calloc(1, ws_pkt.len + 1);
+        if (!buf)
+            return ESP_ERR_NO_MEM;
         ws_pkt.payload = buf;
         ret = httpd_ws_recv_frame(req, &ws_pkt, ws_pkt.len);
     }
-    if (!(ret == ESP_OK && ws_pkt.type == HTTPD_WS_TYPE_TEXT)) {
-        ESP_LOGW(TAG, "Invalid thing");
+    if (ret != ESP_OK) {
+        ESP_LOGW(TAG, "Failed to receive WS frame: %s", esp_err_to_name(ret));
         free(buf);
         return ret;
     }
-    size_t read_from = 0;
+    if (ws_pkt.type != HTTPD_WS_TYPE_TEXT) {
+        ESP_LOGD(TAG, "Ignoring non-text WS frame type=%d", ws_pkt.type);
+        free(buf);
+        return ESP_OK;
+    }
 
     const char *target = "START_SD_STREAM";
-    if (ws_pkt.len == strlen(target) && strcmp((char *)buf, target) == 0) { // Completely new
-        read_from = send_ws_data(req, ws_pkt, 0);
-    } else if (strncmp((char *)buf, target, strlen(target)) == 0) { // Continue of this point
-        ESP_LOGI(TAG, "Continuing with: '%s'", (char *)buf);
-        read_from = send_ws_data(req, ws_pkt, atoi((char *)&buf[strlen(target) + 1]));
+    if (ws_pkt.len >= strlen(target) && strncmp((char *)buf, target, strlen(target)) == 0) {
+        size_t resume_idx = 0;
+        if (ws_pkt.len > strlen(target) && buf[strlen(target)] == ':') {
+            resume_idx = (size_t)atoi((char *)&buf[strlen(target) + 1]);
+            ESP_LOGI(TAG, "Resuming SD stream from byte %d", resume_idx);
+        } else {
+            ESP_LOGI(TAG, "Starting fresh SD stream");
+        }
+
+        size_t sd_tail = send_ws_data(req, resume_idx);
+
+        char end_msg[48];
+        snprintf(end_msg, sizeof(end_msg), "END_OF_TRANSMISSION:%d", sd_tail);
+        httpd_ws_frame_t end_pkt = {.type = HTTPD_WS_TYPE_TEXT, .payload = (uint8_t *)end_msg, .len = strlen(end_msg)};
+        httpd_ws_send_frame(req, &end_pkt);
+
+        ws_pash_args_t *args = (ws_pash_args_t *)malloc(sizeof(ws_pash_args_t));
+        if (args) {
+            args->hd = req->handle;
+            args->fd = httpd_req_to_sockfd(req);
+            args->start_idx = sd_tail;
+            if (xTaskCreate(ws_push_task, "ws_push", 4096, args, 5, &g_websocket_task) != pdPASS) {
+                ESP_LOGE(TAG, "Failed to create WS push task");
+                free(args);
+                g_websocket_task = NULL;
+            }
+        }
     } else {
-        ESP_LOGI(TAG, "Received: %s", (char *)buf);
+        ESP_LOGI(TAG, "WS Received: %s", (char *)buf);
     }
     free(buf);
     return ESP_OK;
@@ -135,7 +221,7 @@ static httpd_uri_t uri_get_dataviewer = {
 httpd_handle_t start_webserver(void) {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     config.keep_alive_enable = true;
-    config.keep_alive_interval = 3;
+    config.keep_alive_interval = 10;
 
     if (httpd_start(&s_server, &config) == ESP_OK) {
         ESP_LOGI("webserver", "Registring uri");

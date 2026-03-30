@@ -50,7 +50,7 @@ uint16_t get_rain() {
     ESP_ERROR_CHECK(pcnt_unit_get_count(rain_pcnt_unit, &rain_cnt));
     ESP_ERROR_CHECK(pcnt_unit_clear_count(rain_pcnt_unit));
 
-    ESP_LOGI(TAG, "Rain = %d  * 0.1mm", rain_cnt);
+    ESP_LOGI(TAG, "Rain='%.1f'mm   pulses='%d'", rain_cnt * 0.2f, rain_cnt);
     return (uint16_t)rain_cnt;
 }
 

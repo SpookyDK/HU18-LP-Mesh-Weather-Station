@@ -2,8 +2,8 @@
 body{font:13px monospace;margin:8px}table{border-collapse:collapse;font:12px monospace}
 th,td{border:1px solid #222;padding:2px 4px;white-space:nowrap}th{cursor:pointer;background:#444}
 input,select{font:12px monospace;padding:2px}button{font:12px monospace;padding:2px 6px}
-#s{font-weight:bold}
-</style><meta name="color-scheme" content="light dark"/></head><body>
+#s{font-weight:bold}</style>
+<meta name="color-scheme" content="light dark"/></head><body>
 <b>Sensor Viewer</b> &nbsp;
 <span id="s">Connecting...</span><br><br>
 Node:<input id="fn" size="4" oninput="render()">Flag:<input id="ff" size="8" oninput="render()">
@@ -11,7 +11,8 @@ Max:<select id="mr" onchange="render()"><option>100</option><option>200</option>
 <button onclick="idx=0;rows=[];render()">Clear</button><button onclick="ws.send('START_SD_STREAM:'+idx);render()">Get New</button>
 <button onclick="exportCSV()">CSV</button>
 &nbsp;<span id="cnt"></span>
-<div style="overflow-x:auto;margin-top:6px"><table><thead><tr>
+<div style="display: flex; align-items: flex-start; gap: 10px; margin-top: 6px;">
+<div style="overflow-x:auto;flex-shrink:0;"><table><thead><tr>
 <th onclick="sort('t')">Time</th><th onclick="sort('orig_node_id')">Node</th><th onclick="sort('packet_id')">PktID</th>
 <th onclick="sort('hop_count')">Hops</th><th onclick="sort('latitude')">Lat</th><th onclick="sort('longitude')">Lon</th>
 <th onclick="sort('air_temp')">Temp°C</th><th onclick="sort('air_humidity')">Hum%</th><th onclick="sort('pressure')">hPa</th>
@@ -19,6 +20,11 @@ Max:<select id="mr" onchange="render()"><option>100</option><option>200</option>
 <th onclick="sort('lux')">Lux</th><th onclick="sort('precipitation')">Precip</th><th onclick="sort('wind_speed')">Wind</th>
 <th onclick="sort('solar_output')">Gen mA</th><th onclick="sort('bat_voltage')">Bat V</th><th onclick="sort('flags')">Flags</th>
 </tr></thead><tbody id="tb"></tbody></table></div>
+<div style="flex-grow:1;min-width:0;">
+<video style="width:100%;height:auto;display:block;" autoplay muted loop>
+<source src="https://media.tenor.com/lHUl-0nKsmUAAAPo/cocio-rolling.mp4" type="video/mp4"></video>
+<!-- <iframe style="width:100%;height:100vh;display:block;" src="https://www.youtube.com/embed/zZ7AimPACzc?autoplay=1&mute=1&loop=1&controls=0"></iframe> -->
+</div></div>
 <script>
 var rows=[],sc='t',sd='d';
 function pp(buf){
@@ -66,7 +72,12 @@ var b=rows.map(function(r){return[new Date(r.t).toISOString(),r.orig_node_id,r.n
 var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h+b],{type:'text/csv'}));
 a.download='sensors.csv';a.click();
 }
-var ws,idx=0;
+var ws,idx=0,heartbeatTimer;
+function resetHeartbeat(){
+clearTimeout(heartbeatTimer);
+heartbeatTimer = setTimeout(()=>{
+console.warn("Heartbeat lost. Closing Conn");
+if (ws) ws.close(); },10000); }
 function conn(){
 document.getElementById('s').textContent='Connecting...';
 ws=new WebSocket('ws://'+location.hostname+'/dataviewer');
@@ -75,6 +86,7 @@ ws.onopen=function(){document.getElementById('s').textContent='Connected';ws.sen
 ws.onclose=function(){document.getElementById('s').textContent='Disconnected';setTimeout(conn,2000);};
 ws.onmessage=function(e){
 if(e.data instanceof ArrayBuffer){handleData(e.data);}
-else if(e.data.startsWith('END_OF_TRANSMISSION')){idx=Number(e.data.split(':')[1]);}
+    else if(e.data.startsWith('END_OF_TRANSMISSION')){idx=Number(e.data.split(':')[1]);}
+    else{console.log("Received unkown packet:"+e)}
 };}conn();
 </script></body></html>

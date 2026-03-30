@@ -106,6 +106,10 @@ void light_sensor_task(void *duty_cycle_ms) {
     uint16_t cha0_full, cha1_ir;
     esp_err_t res;
     while (1) {
+        if (i2c_dev_check_present(&light_sensor_dev.i2c_dev) != ESP_OK) {
+            ESP_LOGE(TAG, "Light sensor disapperad and is dead");
+            vTaskDelete(NULL);
+        }
         if ((res = tsl2591_get_channel_data(&light_sensor_dev, &cha0_full, &cha1_ir)) == ESP_OK) {
             tsl_shared_spectrum = cha0_full;
             ESP_LOGI(TAG, "Full: %d shared_spectrum = %d  IR reading: %d", cha0_full, tsl_shared_spectrum, cha1_ir);

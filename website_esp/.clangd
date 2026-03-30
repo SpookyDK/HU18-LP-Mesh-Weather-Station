@@ -1,0 +1,10 @@
+CompileFlags:
+  Remove:
+    [
+      -fno-shrink-wrap,
+      -fstrict-volatile-bitfields,
+      -fno-tree-switch-conversion,
+      -mfix-esp32-erratum-308,
+      -fno-tree-copy-prop,
+      -fno-tree-sink,
+    ]
