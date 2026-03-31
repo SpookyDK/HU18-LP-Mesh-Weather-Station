@@ -64,6 +64,7 @@ void uart_reader_task(void *args) {
             ESP_LOGW("GPS_UART", "Buffer overflow, flushing");
             uart_flush_input(GPS_UART_NUM);
             xQueueReset(uart_event_queue);
+            left_over_buffer_len = 0;
             continue;
         }
 
@@ -96,7 +97,7 @@ void uart_reader_task(void *args) {
 
                 if (i + frame_len > frame->len) {
                     left_over_buffer_len = frame->len - i;
-                    if (left_over_buffer_len <= UBX_FRAME_BUF_SIZE) {
+                    if (left_over_buffer_len < UBX_FRAME_BUF_SIZE) {
                         memcpy(left_over_buffer, &frame->data[i], left_over_buffer_len);
                         ESP_LOGW("GPS_UART", "Saved %d bytes for next frame", left_over_buffer_len);
                     } else {
@@ -108,7 +109,6 @@ void uart_reader_task(void *args) {
                 if (frame->frame_count < 4) {
                     frame->frame_offsets[frame->frame_count++] = i;
                 }
-
                 i += frame_len - 1;
             }
         }

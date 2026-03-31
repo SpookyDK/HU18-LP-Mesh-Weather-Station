@@ -73,17 +73,16 @@ extern bool power_shared_solar_state;
 
 packet_header_t header = {0};
 static void prepare_header() {
+    if (PACKET_ID >= 255) {
+        PACKET_ID = 0;
+        ESP_LOGI(TAG, "Packet ID reached max and returned to 0");
+    }
     header.network_id = NETWORK_ID;
     header.orig_node_id = NODE_ID;
     header.packet_id = PACKET_ID++;
     header.hop_count = PACKET_TIME_TO_LIVE;
     header.flags = 1 ^ (dht_shared_air_tempeture_status << 2) ^ (ds18b20_shared_status << 3) ^ (moist_shared_status << 4) ^
                    (bmp_shared_status << 6) ^ (power_shared_solar_state << 7);
-
-    if (PACKET_ID > 255) {
-        PACKET_ID = 0;
-        ESP_LOGI(TAG, "Packet ID reached max and returned to 0");
-    }
 }
 
 full_packet_t packet = {0};
