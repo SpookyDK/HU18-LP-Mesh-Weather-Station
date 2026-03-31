@@ -1,4 +1,4 @@
-set(EXTERNAL_LIBS "../../monolithic_esp/main/my_drivers")
+set(EXTERNAL_LIBS "../../weather_node/main/my_drivers")
 
 idf_component_register(SRCS "main.c" "site_content.c" "web_server.c" "big_data.c" "sd_card.c" "${EXTERNAL_LIBS}/lora.c" "${EXTERNAL_LIBS}/NEO_6M_UART.c"
   INCLUDE_DIRS "." "${EXTERNAL_LIBS}/../packet_def" "${EXTERNAL_LIBS}/"

@@ -10,7 +10,7 @@ typedef struct {
     httpd_handle_t hd;
     int fd;
     size_t start_idx;
-} ws_pash_args_t;
+} ws_push_args_t;
 
 #define NOTIFY_NEW_DATA BIT(0)
 #define NOTIFY_FLUSH_NOW BIT(1)
