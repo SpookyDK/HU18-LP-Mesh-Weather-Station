@@ -29,15 +29,7 @@ static EventGroupHandle_t s_wifi_event_group;
 
 httpd_handle_t start_webserver(void);
 
-static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
-    if (event_id == WIFI_EVENT_AP_STACONNECTED) {
-        wifi_event_ap_staconnected_t *event = (wifi_event_ap_staconnected_t *)event_data;
-        ESP_LOGI("wifi", "Station " MACSTR " join, AID=%d", MAC2STR(event->mac), event->aid);
-    } else if (event_id == WIFI_EVENT_AP_STADISCONNECTED) {
-        wifi_event_ap_stadisconnected_t *event = (wifi_event_ap_stadisconnected_t *)event_data;
-        ESP_LOGI("wifi", "Station " MACSTR " leave, AID=%d, REASON=%d", MAC2STR(event->mac), event->aid, event->reason);
-    }
-}
+static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {}
 
 void wifi_init_softap(void) {
     esp_err_t ret = nvs_flash_init();

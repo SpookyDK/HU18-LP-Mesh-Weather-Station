@@ -168,7 +168,7 @@ static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
         if (args) {
             args->hd = req->handle;
             args->fd = httpd_req_to_sockfd(req);
-            args->start_idx = 0;
+            args->start_idx = resume_idx;
             if (xTaskCreate(ws_push_task, "ws_push", 4096, args, 5, &g_websocket_task) != pdPASS) {
                 ESP_LOGE(TAG, "Failed to create WS push task");
                 free(args);

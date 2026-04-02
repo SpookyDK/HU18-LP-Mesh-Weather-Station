@@ -23,6 +23,7 @@ typedef enum {
 
 esp_err_t b_append_file(const char *path, full_packet_t data[], uint8_t count);
 READ_RETURN_STATE b_read_file(const char *path, size_t start_idx, size_t *len, uint8_t *result);
+esp_err_t b_read_last_packet(const char *path, full_packet_t *result);
 void init_sd_card();
 
 #endif // !SD_CARD_MINE

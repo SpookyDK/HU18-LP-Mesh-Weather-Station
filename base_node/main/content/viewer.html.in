@@ -1,14 +1,15 @@
 <!DOCTYPE html><html><head><meta charset="UTF-8"><title>Sensor Viewer</title><style>
 body{font:13px monospace;margin:8px}table{border-collapse:collapse;font:12px monospace}
 th,td{border:1px solid #222;padding:2px 4px;white-space:nowrap}th{cursor:pointer;background:#444}
-input,select{font:12px monospace;padding:2px}button{font:12px monospace;padding:2px 6px}
+input,select{font:12px monospace;padding:4px 4px}button{font:12px monospace;padding:4px 4px}
 #s{font-weight:bold}</style>
 <meta name="color-scheme" content="light dark"/></head><body>
 <b>Sensor Viewer</b> &nbsp;
 <span id="s">Connecting...</span><br><br>
 Node:<input id="fn" size="4" oninput="render()">Flag:<input id="ff" size="8" oninput="render()">
 Max:<select id="mr" onchange="render()"><option>100</option><option>200</option><option>500</option><option>0</option></select>
-<button onclick="idx=0;rows=[];render()">Clear</button>
+Page:<input id="pg" size="2" type="number" min="0" onchange="render()">
+<button onclick="idx=0;rows=[];render()">Clear</button><button onclick="ws.send('START_SD_STREAM:'+idx);render()">Get New</button>
 <button onclick="exportCSV()">CSV</button>
 &nbsp;<span id="cnt"></span>
 <div style="display: flex; align-items: flex-start; gap: 10px; margin-top: 6px;">
@@ -47,12 +48,13 @@ function sort(c){if(sc===c)sd=sd==='d'?'a':'d';else{sc=c;sd='d';}render();}
 function render(){
 var fn=document.getElementById('fn').value;
 var ff=document.getElementById('ff').value;
+var pg=document.getElementById('pg').value;
 var mr=parseInt(document.getElementById('mr').value)||Infinity;
 var col=sc,dir=sd,r=rows.slice();
 if(fn)r=r.filter(function(x){return String(x.orig_node_id).indexOf(fn)>=0;});
 if(ff)r=r.filter(function(x){return String(x.flags.toString(2).padStart(8,"0")).indexOf(ff.startsWith("0b")?ff.slice(2):ff)>=0;});
 r.sort(function(a,b){var av=a[col],bv=b[col];return av<bv?(dir==='a'?-1:1):av>bv?(dir==='a'?1:-1):0;});
-if(mr!==Infinity)r=r.slice(0,mr);
+if(mr!==Infinity)r=r.slice(pg*mr,pg*mr+mr);
 document.getElementById('cnt').textContent=rows.length+' rows';
 if(!r.length){document.getElementById('tb').innerHTML='<tr><td colspan="15">No data</td></tr>';return;}
 document.getElementById('tb').innerHTML=r.map(function(x){

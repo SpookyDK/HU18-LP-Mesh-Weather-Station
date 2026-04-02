@@ -1,9 +1,6 @@
 #include "driver/sdspi_host.h"
-#include "driver/spi_common.h"
-#include "driver/spi_master.h"
 #include "esp_err.h"
 #include "esp_log.h"
-#include "esp_timer.h"
 #include "esp_vfs_fat.h"
 #include "freertos/idf_additions.h"
 #include "freertos/projdefs.h"
@@ -23,18 +20,6 @@
 static const char *TAG = "SD_CARD";
 
 #define MAX_BUF_SIZE 64
-
-static esp_err_t s_write_file(const char *path, char *data) {
-    ESP_LOGI(TAG, "Opening file for writing, '%s'", path);
-    FILE *f = fopen(path, "w");
-    if (f == NULL) {
-        ESP_LOGE(TAG, "Failed to open file, '%s'", path);
-        return ESP_FAIL;
-    }
-    fprintf(f, "%s", data);
-    fclose(f);
-    return ESP_OK;
-}
 
 esp_err_t b_append_file(const char *path, full_packet_t data[], uint8_t count) {
     ESP_LOGI(TAG, "Opening file to append, '%s'", path);
@@ -90,6 +75,19 @@ READ_RETURN_STATE b_read_file(const char *path, size_t start_idx, size_t *len, u
     fclose(f);
     return return_state;
 }
+esp_err_t b_read_last_packet(const char *path, full_packet_t *result) {
+    FILE *f = fopen(path, "rb");
+    if (f == NULL)
+        return ESP_ERR_NOT_FOUND;
+    fseek(f, 0, SEEK_END);
+    if (ftell(f) < sizeof(full_packet_t))
+        return ESP_ERR_INVALID_SIZE;
+    fseek(f, -sizeof(full_packet_t), SEEK_END);
+    size_t read = fread(result, 1, sizeof(full_packet_t), f);
+    if (read != sizeof(full_packet_t))
+        return ESP_FAIL;
+    return ESP_OK;
+}
 
 static sdmmc_card_t *card;
 void init_sd_card() {
@@ -125,19 +123,4 @@ void init_sd_card() {
     }
     sdmmc_card_print_info(stdout, card);
     return;
-    // The rest Is demonstration not indended for actual work
-
-    const char *file_hello = MOUNT_POINT "/hello.txt";
-    char data[MAX_BUF_SIZE];
-    snprintf(data, MAX_BUF_SIZE, "Hello %s", card->cid.name);
-    ret = s_write_file(file_hello, data);
-    ESP_ERROR_CHECK(ret);
-
-    char read_data[MAX_BUF_SIZE];
-    // ret = s_read_file(file_hello, read_data);
-    ESP_LOGI(TAG, "Retrieved string: %s", read_data);
-
-    ESP_LOGI(TAG, "Unmounting Filesystem");
-    esp_vfs_fat_sdcard_unmount(MOUNT_POINT, card);
-    ESP_LOGI(TAG, "Card Unmounted");
 }

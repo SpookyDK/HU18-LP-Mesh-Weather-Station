@@ -94,7 +94,6 @@ static void receive_task(void *p) {
     struct tm timeinfo = {0};
     char strtime_buf[64] = {0};
 
-    lora_receive();
     while (1) {
         lora_receive();
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
@@ -140,3 +139,12 @@ static void receive_task(void *p) {
 }
 
 void start_receive_task() { xTaskCreate(receive_task, TAG, 4096, NULL, 5, &lora_task_handle); }
+
+void read_last_packet() {
+    // Read last packet to compare to
+    esp_err_t ret;
+    if ((ret = b_read_last_packet(PACKET_FILE, &big_data_packet)) == ESP_OK) {
+        is_duplicate(big_data_packet);
+        ESP_LOGI(TAG, "Read last packet, node_id='%d'  packet_id='%d'", big_data_packet.head.orig_node_id, big_data_packet.head.packet_id);
+    }
+}

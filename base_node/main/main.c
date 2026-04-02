@@ -52,6 +52,9 @@ void app_main(void) {
     ESP_LOGI(TAG, "Starting GPS task");
     xTaskCreate(gps_task, "gpsTask", 4096, NULL, 0, NULL);
 
+    // Dont use It will save the loaded packet again, and im not refactoring that much
+    // read_last_packet();
+
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(60000));
     }
