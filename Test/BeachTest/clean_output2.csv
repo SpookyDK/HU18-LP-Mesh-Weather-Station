@@ -1,17 +1,17 @@
-I (26481) TXtask: Sent Packet with id: '0'
-I (40531) TXtask: Sent Packet with id: '1'
-I (55481) TXtask: Sent Packet with id: '2'
-I (70531) TXtask: Sent Packet with id: '3'
-I (85481) TXtask: Sent Packet with id: '4'
-I (100531) TXtask: Sent Packet with id: '5'
-I (115481) TXtask: Sent Packet with id: '6'
-I (130531) TXtask: Sent Packet with id: '7'
-I (145481) TXtask: Sent Packet with id: '8'
-I (160531) TXtask: Sent Packet with id: '9'
-I (175481) TXtask: Sent Packet with id: '10'
-I (190531) TXtask: Sent Packet with id: '11'
-I (205481) TXtask: Sent Packet with id: '12'
-I (220531) TXtask: Sent Packet with id: '13'
-I (235481) TXtask: Sent Packet with id: '14'
-I (250531) TXtask: Sent Packet with id: '15'
-I (265481) TXtask: Sent Packet with id: '16'
+26481,sent,0,
+40531,sent,1,
+55481,sent,2,57.3025589,9.6348919[0m
+70531,sent,3,57.3025589,9.6348919[0m
+85481,sent,4,57.3025093,9.6350388[0m
+100531,sent,5,57.3025093,9.6350388[0m
+115481,sent,6,57.3024979,9.6350772[0m
+130531,sent,7,57.3024979,9.6350772[0m
+145481,sent,8,57.3024902,9.6350986[0m
+160531,sent,9,57.3024902,9.6350986[0m
+175481,sent,10,57.3024712,9.6351119[0m
+190531,sent,11,57.3024712,9.6351119[0m
+205481,sent,12,57.3025665,9.6349253[0m
+220531,sent,13,57.3025665,9.6349253[0m
+235481,sent,14,57.3026161,9.6346751[0m
+250531,sent,15,57.3026161,9.6346751[0m
+265481,sent,16,57.3027077,9.6344290[0m

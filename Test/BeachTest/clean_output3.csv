@@ -1,354 +1,354 @@
-I (26361) TXtask: Sent Packet with id: '0'
-I (41431) TXtask: Sent Packet with id: '1'
-I (56401) TXtask: Sent Packet with id: '2'
-I (71371) TXtask: Sent Packet with id: '3'
-I (86441) TXtask: Sent Packet with id: '4'
-I (101411) TXtask: Sent Packet with id: '5'
-I (116381) TXtask: Sent Packet with id: '6'
-I (131451) TXtask: Sent Packet with id: '7'
-I (146421) TXtask: Sent Packet with id: '8'
-I (147521) comTask: Ignoring received Own Packet id='8'
-I (159591) comTask: Bouncing packet from node='170' id='0'
-I (161361) TXtask: Sent Packet with id: '9'
-I (162461) comTask: Ignoring received Own Packet id='9'
-I (174531) comTask: Bouncing packet from node='170' id='1'
-I (176401) TXtask: Sent Packet with id: '10'
-I (189671) comTask: Bouncing packet from node='170' id='2'
-I (191441) TXtask: Sent Packet with id: '11'
-I (204611) comTask: Bouncing packet from node='170' id='3'
-I (206381) TXtask: Sent Packet with id: '12'
-W (218581) comTask: Unknown packet, with len='0'
-I (221451) TXtask: Sent Packet with id: '13'
-W (233651) comTask: Unknown packet, with len='0'
-I (236421) TXtask: Sent Packet with id: '14'
-I (237521) comTask: Ignoring received Own Packet id='14'
-W (248621) comTask: Unknown packet, with len='0'
-I (251391) TXtask: Sent Packet with id: '15'
-W (252491) comTask: Unknown packet, with len='0'
-W (263691) comTask: Unknown packet, with len='0'
-I (266361) TXtask: Sent Packet with id: '16'
-I (267461) comTask: Ignoring received Own Packet id='16'
-W (278561) comTask: Unknown packet, with len='0'
-I (281431) TXtask: Sent Packet with id: '17'
-I (294601) comTask: Bouncing packet from node='170' id='9'
-I (296371) TXtask: Sent Packet with id: '18'
-W (297471) comTask: Unknown packet, with len='0'
-W (308571) comTask: Unknown packet, with len='0'
-I (311441) TXtask: Sent Packet with id: '19'
-I (312441) comTask: Ignoring received Own Packet id='19'
-I (324611) comTask: Bouncing packet from node='170' id='11'
-I (326381) TXtask: Sent Packet with id: '20'
-I (327381) comTask: Ignoring received Own Packet id='20'
-I (339551) comTask: Bouncing packet from node='170' id='12'
-I (341421) TXtask: Sent Packet with id: '21'
-I (342421) comTask: Ignoring received Own Packet id='21'
-I (354591) comTask: Bouncing packet from node='170' id='13'
-I (356361) TXtask: Sent Packet with id: '22'
-I (369531) comTask: Bouncing packet from node='170' id='14'
-I (371401) TXtask: Sent Packet with id: '23'
-I (372501) comTask: Ignoring received Own Packet id='23'
-I (384571) comTask: Bouncing packet from node='170' id='15'
-I (386441) TXtask: Sent Packet with id: '24'
-I (387541) comTask: Ignoring received Own Packet id='24'
-I (399611) comTask: Bouncing packet from node='170' id='16'
-I (401381) TXtask: Sent Packet with id: '25'
-I (402481) comTask: Ignoring received Own Packet id='25'
-I (414551) comTask: Bouncing packet from node='170' id='17'
-I (416421) TXtask: Sent Packet with id: '26'
-W (428621) comTask: Unknown packet, with len='0'
-I (431391) TXtask: Sent Packet with id: '27'
-I (446361) TXtask: Sent Packet with id: '28'
-W (458561) comTask: Unknown packet, with len='0'
-I (461431) TXtask: Sent Packet with id: '29'
-I (476401) TXtask: Sent Packet with id: '30'
-I (491371) TXtask: Sent Packet with id: '31'
-I (506441) TXtask: Sent Packet with id: '32'
-I (521411) TXtask: Sent Packet with id: '33'
-W (533611) comTask: Unknown packet, with len='0'
-I (536381) TXtask: Sent Packet with id: '34'
-I (537381) comTask: Ignoring received Own Packet id='34'
-W (548581) comTask: Unknown packet, with len='0'
-I (551451) TXtask: Sent Packet with id: '35'
-W (552551) comTask: Unknown packet, with len='0'
-W (563651) comTask: Unknown packet, with len='0'
-I (566421) TXtask: Sent Packet with id: '36'
-I (579591) comTask: Bouncing packet from node='170' id='28'
-I (581361) TXtask: Sent Packet with id: '37'
-I (582461) comTask: Ignoring received Own Packet id='37'
-I (594631) comTask: Bouncing packet from node='170' id='29'
-I (596401) TXtask: Sent Packet with id: '38'
-I (597501) comTask: Ignoring received Own Packet id='38'
-W (608701) comTask: Unknown packet, with len='0'
-I (611371) TXtask: Sent Packet with id: '39'
-I (612471) comTask: Ignoring received Own Packet id='39'
-I (624541) comTask: Bouncing packet from node='170' id='31'
-I (626411) TXtask: Sent Packet with id: '40'
-I (627511) comTask: Ignoring received Own Packet id='40'
-I (639581) comTask: Bouncing packet from node='170' id='32'
-I (641451) TXtask: Sent Packet with id: '41'
-I (642551) comTask: Ignoring received Own Packet id='41'
-W (653551) comTask: Unknown packet, with len='0'
-I (656421) TXtask: Sent Packet with id: '42'
-I (657421) comTask: Ignoring received Own Packet id='42'
-I (669591) comTask: Bouncing packet from node='170' id='34'
-I (671361) TXtask: Sent Packet with id: '43'
-I (672361) comTask: Ignoring received Own Packet id='43'
-I (684631) comTask: Bouncing packet from node='170' id='35'
-I (686401) TXtask: Sent Packet with id: '44'
-I (687401) comTask: Ignoring received Own Packet id='44'
-I (699571) comTask: Bouncing packet from node='170' id='36'
-I (701441) TXtask: Sent Packet with id: '45'
-W (713541) comTask: Unknown packet, with len='0'
-I (716411) TXtask: Sent Packet with id: '46'
-W (717411) comTask: Unknown packet, with len='0'
-I (731381) TXtask: Sent Packet with id: '47'
-I (746451) TXtask: Sent Packet with id: '48'
-I (761421) TXtask: Sent Packet with id: '49'
-I (776391) TXtask: Sent Packet with id: '50'
-I (791361) TXtask: Sent Packet with id: '51'
-I (806431) TXtask: Sent Packet with id: '52'
-I (821401) TXtask: Sent Packet with id: '53'
-I (836371) TXtask: Sent Packet with id: '54'
-I (851441) TXtask: Sent Packet with id: '55'
-I (866411) TXtask: Sent Packet with id: '56'
-I (881381) TXtask: Sent Packet with id: '57'
-I (896451) TXtask: Sent Packet with id: '58'
-I (911421) TXtask: Sent Packet with id: '59'
-I (926391) TXtask: Sent Packet with id: '60'
-W (938591) comTask: Unknown packet, with len='0'
-I (941361) TXtask: Sent Packet with id: '61'
-W (942461) comTask: Unknown packet, with len='0'
-I (956431) TXtask: Sent Packet with id: '62'
-I (969601) comTask: Bouncing packet from node='170' id='54'
-I (971371) TXtask: Sent Packet with id: '63'
-I (972471) comTask: Ignoring received Own Packet id='63'
-I (986441) TXtask: Sent Packet with id: '64'
-I (999611) comTask: Bouncing packet from node='170' id='56'
-I (1001381) TXtask: Sent Packet with id: '65'
-W (1013581) comTask: Unknown packet, with len='0'
-I (1016451) TXtask: Sent Packet with id: '66'
-W (1028651) comTask: Unknown packet, with len='0'
-I (1031421) TXtask: Sent Packet with id: '67'
-I (1046391) TXtask: Sent Packet with id: '68'
-W (1058691) comTask: Unknown packet, with len='0'
-I (1061361) TXtask: Sent Packet with id: '69'
-W (1073661) comTask: Unknown packet, with len='0'
-I (1076431) TXtask: Sent Packet with id: '70'
-W (1077531) comTask: Unknown packet, with len='0'
-I (1089501) comTask: Bouncing packet from node='170' id='62'
-I (1091371) TXtask: Sent Packet with id: '71'
-I (1104641) comTask: Bouncing packet from node='170' id='63'
-I (1106411) TXtask: Sent Packet with id: '72'
-I (1107511) comTask: Ignoring received Own Packet id='72'
-W (1118611) comTask: Unknown packet, with len='0'
-I (1121381) TXtask: Sent Packet with id: '73'
-W (1133681) comTask: Unknown packet, with len='0'
-I (1136451) TXtask: Sent Packet with id: '74'
-W (1137551) comTask: Unknown packet, with len='0'
-I (1149521) comTask: Bouncing packet from node='170' id='66'
-I (1151391) TXtask: Sent Packet with id: '75'
-I (1152491) comTask: Ignoring received Own Packet id='75'
-I (1166361) TXtask: Sent Packet with id: '76'
-I (1179531) comTask: Bouncing packet from node='170' id='68'
-I (1181401) TXtask: Sent Packet with id: '77'
-I (1182501) comTask: Ignoring received Own Packet id='77'
-I (1194571) comTask: Bouncing packet from node='170' id='69'
-I (1196441) TXtask: Sent Packet with id: '78'
-I (1197541) comTask: Ignoring received Own Packet id='78'
-I (1209511) comTask: Bouncing packet from node='170' id='70'
-I (1211381) TXtask: Sent Packet with id: '79'
-I (1212481) comTask: Ignoring received Own Packet id='79'
-I (1224551) comTask: Bouncing packet from node='170' id='71'
-I (1226421) TXtask: Sent Packet with id: '80'
-W (1238621) comTask: Unknown packet, with len='0'
-I (1241391) TXtask: Sent Packet with id: '81'
-W (1253591) comTask: Unknown packet, with len='0'
-I (1256361) TXtask: Sent Packet with id: '82'
-I (1269531) comTask: Bouncing packet from node='170' id='74'
-I (1271401) TXtask: Sent Packet with id: '83'
-I (1272501) comTask: Ignoring received Own Packet id='83'
-W (1283601) comTask: Unknown packet, with len='0'
-I (1286371) TXtask: Sent Packet with id: '84'
-W (1298571) comTask: Unknown packet, with len='0'
-I (1301441) TXtask: Sent Packet with id: '85'
-W (1313541) comTask: Unknown packet, with len='0'
-I (1316411) TXtask: Sent Packet with id: '86'
-I (1331381) TXtask: Sent Packet with id: '87'
-I (1346451) TXtask: Sent Packet with id: '88'
-I (1361421) TXtask: Sent Packet with id: '89'
-I (1376391) TXtask: Sent Packet with id: '90'
-I (1391361) TXtask: Sent Packet with id: '91'
-I (1406431) TXtask: Sent Packet with id: '92'
-I (1421401) TXtask: Sent Packet with id: '93'
-W (1433601) comTask: Unknown packet, with len='0'
-I (1436371) TXtask: Sent Packet with id: '94'
-W (1448571) comTask: Unknown packet, with len='0'
-I (1451441) TXtask: Sent Packet with id: '95'
-W (1452441) comTask: Unknown packet, with len='0'
-W (1463641) comTask: Unknown packet, with len='0'
-I (1466411) TXtask: Sent Packet with id: '96'
-I (1467511) comTask: Ignoring received Own Packet id='96'
-W (1478611) comTask: Unknown packet, with len='0'
-I (1481381) TXtask: Sent Packet with id: '97'
-I (1482481) comTask: Ignoring received Own Packet id='97'
-I (1494651) comTask: Bouncing packet from node='170' id='89'
-I (1496421) TXtask: Sent Packet with id: '98'
-I (1509591) comTask: Bouncing packet from node='170' id='90'
-I (1511361) TXtask: Sent Packet with id: '99'
-I (1512461) comTask: Ignoring received Own Packet id='99'
-I (1524631) comTask: Bouncing packet from node='170' id='91'
-I (1526401) TXtask: Sent Packet with id: '100'
-W (1527501) comTask: Unknown packet, with len='0'
-W (1538601) comTask: Unknown packet, with len='0'
-I (1541371) TXtask: Sent Packet with id: '101'
-W (1542471) comTask: Unknown packet, with len='0'
-I (1554641) comTask: Bouncing packet from node='170' id='93'
-I (1556411) TXtask: Sent Packet with id: '102'
-I (1557511) comTask: Ignoring received Own Packet id='102'
-I (1569681) comTask: Bouncing packet from node='170' id='94'
-I (1571451) TXtask: Sent Packet with id: '103'
-I (1584621) comTask: Bouncing packet from node='170' id='95'
-I (1586391) TXtask: Sent Packet with id: '104'
-I (1599561) comTask: Bouncing packet from node='170' id='96'
-I (1601431) TXtask: Sent Packet with id: '105'
-I (1614501) comTask: Bouncing packet from node='170' id='97'
-I (1616371) TXtask: Sent Packet with id: '106'
-I (1617471) comTask: Ignoring received Own Packet id='106'
-I (1629541) comTask: Bouncing packet from node='170' id='98'
-I (1631411) TXtask: Sent Packet with id: '107'
-I (1644581) comTask: Bouncing packet from node='170' id='99'
-I (1646451) TXtask: Sent Packet with id: '108'
-I (1647551) comTask: Ignoring received Own Packet id='108'
-I (1659621) comTask: Bouncing packet from node='170' id='100'
-I (1661391) TXtask: Sent Packet with id: '109'
-I (1662491) comTask: Ignoring received Own Packet id='109'
-I (1674661) comTask: Bouncing packet from node='170' id='101'
-I (1676431) TXtask: Sent Packet with id: '110'
-I (1677531) comTask: Ignoring received Own Packet id='110'
-I (1689601) comTask: Bouncing packet from node='170' id='102'
-I (1691371) TXtask: Sent Packet with id: '111'
-W (1703571) comTask: Unknown packet, with len='0'
-I (1706441) TXtask: Sent Packet with id: '112'
-I (1721411) TXtask: Sent Packet with id: '113'
-I (1736381) TXtask: Sent Packet with id: '114'
-I (1751451) TXtask: Sent Packet with id: '115'
-I (1766421) TXtask: Sent Packet with id: '116'
-I (1781391) TXtask: Sent Packet with id: '117'
-I (1796361) TXtask: Sent Packet with id: '118'
-I (1811431) TXtask: Sent Packet with id: '119'
-I (1826401) TXtask: Sent Packet with id: '120'
-I (1841371) TXtask: Sent Packet with id: '121'
-I (1856441) TXtask: Sent Packet with id: '122'
-W (1868641) comTask: Unknown packet, with len='0'
-I (1871411) TXtask: Sent Packet with id: '123'
-I (1872511) comTask: Ignoring received Own Packet id='123'
-I (1884581) comTask: Bouncing packet from node='170' id='115'
-I (1886451) TXtask: Sent Packet with id: '124'
-I (1887551) comTask: Ignoring received Own Packet id='124'
-I (1899521) comTask: Bouncing packet from node='170' id='116'
-I (1901391) TXtask: Sent Packet with id: '125'
-I (1902491) comTask: Ignoring received Own Packet id='125'
-I (1914561) comTask: Bouncing packet from node='170' id='117'
-I (1916431) TXtask: Sent Packet with id: '126'
-W (1917531) comTask: Unknown packet, with len='0'
-I (1931401) TXtask: Sent Packet with id: '127'
-W (1943601) comTask: Unknown packet, with len='0'
-I (1946371) TXtask: Sent Packet with id: '128'
-W (1947371) comTask: Unknown packet, with len='0'
-W (1958571) comTask: Unknown packet, with len='0'
-I (1961441) TXtask: Sent Packet with id: '129'
-W (1962541) comTask: Unknown packet, with len='0'
-W (1973641) comTask: Unknown packet, with len='0'
-I (1976411) TXtask: Sent Packet with id: '130'
-W (1988711) comTask: Unknown packet, with len='0'
-I (1991381) TXtask: Sent Packet with id: '131'
-I (2006451) TXtask: Sent Packet with id: '132'
-W (2007551) comTask: Unknown packet, with len='0'
-W (2018551) comTask: Unknown packet, with len='0'
-I (2021421) TXtask: Sent Packet with id: '133'
-I (2022421) comTask: Ignoring received Own Packet id='133'
-I (2034591) comTask: Bouncing packet from node='170' id='125'
-I (2036361) TXtask: Sent Packet with id: '134'
-I (2037361) comTask: Ignoring received Own Packet id='134'
-I (2049631) comTask: Bouncing packet from node='170' id='126'
-I (2051401) TXtask: Sent Packet with id: '135'
-I (2052401) comTask: Ignoring received Own Packet id='135'
-I (2064571) comTask: Bouncing packet from node='170' id='127'
-I (2066441) TXtask: Sent Packet with id: '136'
-I (2067441) comTask: Ignoring received Own Packet id='136'
-I (2079611) comTask: Bouncing packet from node='170' id='128'
-I (2081381) TXtask: Sent Packet with id: '137'
-I (2082381) comTask: Ignoring received Own Packet id='137'
-I (2094551) comTask: Bouncing packet from node='170' id='129'
-I (2096421) TXtask: Sent Packet with id: '138'
-I (2097421) comTask: Ignoring received Own Packet id='138'
-I (2109591) comTask: Bouncing packet from node='170' id='130'
-I (2111361) TXtask: Sent Packet with id: '139'
-I (2112361) comTask: Ignoring received Own Packet id='139'
-I (2126431) TXtask: Sent Packet with id: '140'
-I (2141401) TXtask: Sent Packet with id: '141'
-I (2156371) TXtask: Sent Packet with id: '142'
-I (2171441) TXtask: Sent Packet with id: '143'
-I (2186411) TXtask: Sent Packet with id: '144'
-I (2201381) TXtask: Sent Packet with id: '145'
-I (2216451) TXtask: Sent Packet with id: '146'
-I (2231421) TXtask: Sent Packet with id: '147'
-I (2246391) TXtask: Sent Packet with id: '148'
-I (2261361) TXtask: Sent Packet with id: '149'
-I (2276431) TXtask: Sent Packet with id: '150'
-I (2291401) TXtask: Sent Packet with id: '151'
-I (2306371) TXtask: Sent Packet with id: '152'
-I (2321441) TXtask: Sent Packet with id: '153'
-I (2336411) TXtask: Sent Packet with id: '154'
-I (2351381) TXtask: Sent Packet with id: '155'
-I (2366451) TXtask: Sent Packet with id: '156'
-I (2381421) TXtask: Sent Packet with id: '157'
-I (2396391) TXtask: Sent Packet with id: '158'
-I (2411361) TXtask: Sent Packet with id: '159'
-I (2426431) TXtask: Sent Packet with id: '160'
-I (2441401) TXtask: Sent Packet with id: '161'
-I (2456371) TXtask: Sent Packet with id: '162'
-I (2471441) TXtask: Sent Packet with id: '163'
-I (2486411) TXtask: Sent Packet with id: '164'
-W (2498611) comTask: Unknown packet, with len='0'
-I (2501381) TXtask: Sent Packet with id: '165'
-I (2516451) TXtask: Sent Packet with id: '166'
-W (2528651) comTask: Unknown packet, with len='0'
-I (2531421) TXtask: Sent Packet with id: '167'
-I (2544591) comTask: Bouncing packet from node='170' id='159'
-I (2546361) TXtask: Sent Packet with id: '168'
-I (2547461) comTask: Ignoring received Own Packet id='168'
-W (2558661) comTask: Unknown packet, with len='0'
-I (2561431) TXtask: Sent Packet with id: '169'
-I (2562531) comTask: Ignoring received Own Packet id='169'
-W (2573631) comTask: Unknown packet, with len='0'
-I (2576401) TXtask: Sent Packet with id: '170'
-I (2577501) comTask: Ignoring received Own Packet id='170'
-I (2589571) comTask: Bouncing packet from node='170' id='162'
-I (2591441) TXtask: Sent Packet with id: '171'
-W (2592541) comTask: Unknown packet, with len='0'
-W (2603541) comTask: Unknown packet, with len='0'
-I (2606411) TXtask: Sent Packet with id: '172'
-I (2607411) comTask: Ignoring received Own Packet id='172'
-W (2618611) comTask: Unknown packet, with len='0'
-I (2621381) TXtask: Sent Packet with id: '173'
-W (2622481) comTask: Unknown packet, with len='0'
-I (2634651) comTask: Bouncing packet from node='170' id='165'
-I (2636421) TXtask: Sent Packet with id: '174'
-I (2651391) TXtask: Sent Packet with id: '175'
-I (2666361) TXtask: Sent Packet with id: '176'
-I (2679631) comTask: Bouncing packet from node='170' id='168'
-I (2681401) TXtask: Sent Packet with id: '177'
-I (2694571) comTask: Bouncing packet from node='170' id='169'
-I (2696441) TXtask: Sent Packet with id: '178'
-I (2697441) comTask: Ignoring received Own Packet id='178'
-I (2709611) comTask: Bouncing packet from node='170' id='170'
-I (2711381) TXtask: Sent Packet with id: '179'
-I (2712381) comTask: Ignoring received Own Packet id='179'
-I (2726451) TXtask: Sent Packet with id: '180'
-W (2738651) comTask: Unknown packet, with len='0'
-I (2741421) TXtask: Sent Packet with id: '181'
-W (2742521) comTask: Unknown packet, with len='0'
-W (2753621) comTask: Unknown packet, with len='0'
-I (2756391) TXtask: Sent Packet with id: '182'
-I (2771361) TXtask: Sent Packet with id: '183'
+26361,sent,0,
+41431,sent,1,
+56401,sent,2,
+71371,sent,3,
+86441,sent,4,
+101411,sent,5,
+116381,sent,6,
+131451,sent,7,
+146421,sent,8,
+147521,ignored,8,
+159591,bounced,0,
+161361,sent,9,
+162461,ignored,9,
+174531,bounced,1,
+176401,sent,10,
+189671,bounced,2,
+191441,sent,11,
+204611,bounced,3,
+206381,sent,12,
+218581,unknown,12,
+221451,sent,13,
+233651,unknown,13,
+236421,sent,14,
+237521,ignored,14,
+248621,unknown,14,
+251391,sent,15,
+252491,unknown,15,
+263691,unknown,15,
+266361,sent,16,
+267461,ignored,16,
+278561,unknown,16,
+281431,sent,17,
+294601,bounced,9,
+296371,sent,18,
+297471,unknown,18,
+308571,unknown,18,
+311441,sent,19,
+312441,ignored,19,
+324611,bounced,11,
+326381,sent,20,57.1674576,9.6247371[0m
+327381,ignored,20,57.1674576,9.6247371[0m
+339551,bounced,12,57.1674576,9.6247371[0m
+341421,sent,21,57.1674576,9.6247371[0m
+342421,ignored,21,57.1674576,9.6247371[0m
+354591,bounced,13,57.1674576,9.6247371[0m
+356361,sent,22,57.1674309,9.6247720[0m
+369531,bounced,14,57.1674309,9.6247720[0m
+371401,sent,23,57.1674309,9.6247720[0m
+372501,ignored,23,57.1674309,9.6247720[0m
+384571,bounced,15,57.1674309,9.6247720[0m
+386441,sent,24,57.1674232,9.6247745[0m
+387541,ignored,24,57.1674232,9.6247745[0m
+399611,bounced,16,57.1674232,9.6247745[0m
+401381,sent,25,57.1674232,9.6247745[0m
+402481,ignored,25,57.1674232,9.6247745[0m
+414551,bounced,17,57.1674232,9.6247745[0m
+416421,sent,26,57.1674232,9.6247216[0m
+428621,unknown,26,57.1674232,9.6247216[0m
+431391,sent,27,57.1674232,9.6247216[0m
+446361,sent,28,57.1674232,9.6247216[0m
+458561,unknown,28,57.1677551,9.6236719[0m
+461431,sent,29,57.1677551,9.6236719[0m
+476401,sent,30,57.1677551,9.6236719[0m
+491371,sent,31,57.1658058,9.6094755[0m
+506441,sent,32,57.1658058,9.6094755[0m
+521411,sent,33,57.1663170,9.6203006[0m
+533611,unknown,33,57.1663170,9.6203006[0m
+536381,sent,34,57.1656265,9.6078391[0m
+537381,ignored,34,57.1656265,9.6078391[0m
+548581,unknown,34,57.1656265,9.6078391[0m
+551451,sent,35,57.1656265,9.6078391[0m
+552551,unknown,35,57.1656265,9.6078391[0m
+563651,unknown,35,57.1656265,9.6078391[0m
+566421,sent,36,57.1656380,9.6078208[0m
+579591,bounced,28,57.1656380,9.6078208[0m
+581361,sent,37,57.1656380,9.6078208[0m
+582461,ignored,37,57.1656380,9.6078208[0m
+594631,bounced,29,57.1656380,9.6078208[0m
+596401,sent,38,57.1656113,9.6077881[0m
+597501,ignored,38,57.1656113,9.6077881[0m
+608701,unknown,38,57.1656113,9.6077881[0m
+611371,sent,39,57.1656113,9.6077881[0m
+612471,ignored,39,57.1656113,9.6077881[0m
+624541,bounced,31,57.1656113,9.6077881[0m
+626411,sent,40,57.1656265,9.6078022[0m
+627511,ignored,40,57.1656265,9.6078022[0m
+639581,bounced,32,57.1656265,9.6078022[0m
+641451,sent,41,57.1656265,9.6078022[0m
+642551,ignored,41,57.1656265,9.6078022[0m
+653551,unknown,41,57.1656265,9.6078022[0m
+656421,sent,42,57.1656303,9.6078389[0m
+657421,ignored,42,57.1656303,9.6078389[0m
+669591,bounced,34,57.1656303,9.6078389[0m
+671361,sent,43,57.1656303,9.6078389[0m
+672361,ignored,43,57.1656303,9.6078389[0m
+684631,bounced,35,57.1656303,9.6078389[0m
+686401,sent,44,57.1656303,9.6078849[0m
+687401,ignored,44,57.1656303,9.6078849[0m
+699571,bounced,36,57.1656303,9.6078849[0m
+701441,sent,45,57.1656303,9.6078849[0m
+713541,unknown,45,57.1656303,9.6078849[0m
+716411,sent,46,57.1656265,9.6078883[0m
+717411,unknown,46,57.1656265,9.6078883[0m
+731381,sent,47,57.1656265,9.6078883[0m
+746451,sent,48,57.1656303,9.6078365[0m
+761421,sent,49,57.1656303,9.6078365[0m
+776391,sent,50,57.1656303,9.6078365[0m
+791361,sent,51,57.1655121,9.6055858[0m
+806431,sent,52,57.1655121,9.6055858[0m
+821401,sent,53,57.1648636,9.5988542[0m
+836371,sent,54,57.1648636,9.5988542[0m
+851441,sent,55,57.1642418,9.5926977[0m
+866411,sent,56,57.1637001,9.5889354[0m
+881381,sent,57,57.1637001,9.5889354[0m
+896451,sent,58,57.1640053,9.5898916[0m
+911421,sent,59,57.1640053,9.5898916[0m
+926391,sent,60,57.1640205,9.5900466[0m
+938591,unknown,60,57.1640205,9.5900466[0m
+941361,sent,61,57.1640205,9.5900466[0m
+942461,unknown,61,57.1640205,9.5900466[0m
+956431,sent,62,57.1640244,9.5901906[0m
+969601,bounced,54,57.1640244,9.5901906[0m
+971371,sent,63,57.1640244,9.5901906[0m
+972471,ignored,63,57.1640244,9.5901906[0m
+986441,sent,64,57.1639938,9.5904067[0m
+999611,bounced,56,57.1639938,9.5904067[0m
+1001381,sent,65,57.1639938,9.5904067[0m
+1013581,unknown,65,57.1639938,9.5904067[0m
+1016451,sent,66,57.1639862,9.5905097[0m
+1028651,unknown,66,57.1639862,9.5905097[0m
+1031421,sent,67,57.1639862,9.5905097[0m
+1046391,sent,68,57.1640587,9.5902679[0m
+1058691,unknown,68,57.1640587,9.5902679[0m
+1061361,sent,69,57.1640587,9.5902679[0m
+1073661,unknown,69,57.1640587,9.5902679[0m
+1076431,sent,70,57.1639938,9.5902783[0m
+1077531,unknown,70,57.1639938,9.5902783[0m
+1089501,bounced,62,57.1639938,9.5902783[0m
+1091371,sent,71,57.1639938,9.5902783[0m
+1104641,bounced,63,57.1639938,9.5902783[0m
+1106411,sent,72,57.1640205,9.5905081[0m
+1107511,ignored,72,57.1640205,9.5905081[0m
+1118611,unknown,72,57.1640205,9.5905081[0m
+1121381,sent,73,57.1640205,9.5905081[0m
+1133681,unknown,73,57.1640205,9.5905081[0m
+1136451,sent,74,57.1640129,9.5905011[0m
+1137551,unknown,74,57.1640129,9.5905011[0m
+1149521,bounced,66,57.1640129,9.5905011[0m
+1151391,sent,75,57.1640129,9.5905011[0m
+1152491,ignored,75,57.1640129,9.5905011[0m
+1166361,sent,76,57.1640205,9.5905089[0m
+1179531,bounced,68,57.1640205,9.5905089[0m
+1181401,sent,77,57.1640205,9.5905089[0m
+1182501,ignored,77,57.1640205,9.5905089[0m
+1194571,bounced,69,57.1640205,9.5905089[0m
+1196441,sent,78,57.1640244,9.5905302[0m
+1197541,ignored,78,57.1640244,9.5905302[0m
+1209511,bounced,70,57.1640244,9.5905302[0m
+1211381,sent,79,57.1640244,9.5905302[0m
+1212481,ignored,79,57.1640244,9.5905302[0m
+1224551,bounced,71,57.1640244,9.5905302[0m
+1226421,sent,80,57.1640205,9.5905496[0m
+1238621,unknown,80,57.1640205,9.5905496[0m
+1241391,sent,81,57.1640205,9.5905496[0m
+1253591,unknown,81,57.1640205,9.5905496[0m
+1256361,sent,82,57.1640244,9.5905721[0m
+1269531,bounced,74,57.1640244,9.5905721[0m
+1271401,sent,83,57.1640244,9.5905721[0m
+1272501,ignored,83,57.1640244,9.5905721[0m
+1283601,unknown,83,57.1640244,9.5905721[0m
+1286371,sent,84,57.1640129,9.5905757[0m
+1298571,unknown,84,57.1640129,9.5905757[0m
+1301441,sent,85,57.1640129,9.5905757[0m
+1313541,unknown,85,57.1640129,9.5905757[0m
+1316411,sent,86,57.1640129,9.5904477[0m
+1331381,sent,87,57.1640129,9.5904477[0m
+1346451,sent,88,57.1640129,9.5903674[0m
+1361421,sent,89,57.1640129,9.5903674[0m
+1376391,sent,90,57.1640129,9.5903674[0m
+1391361,sent,91,57.1640129,9.5903674[0m
+1406431,sent,92,57.1640129,9.5903674[0m
+1421401,sent,93,57.1632576,9.5827915[0m
+1433601,unknown,93,57.1633339,9.5831612[0m
+1436371,sent,94,57.1633263,9.5830698[0m
+1448571,unknown,94,57.1633263,9.5830698[0m
+1451441,sent,95,57.1633263,9.5830698[0m
+1452441,unknown,95,57.1633263,9.5830698[0m
+1463641,unknown,95,57.1633263,9.5830698[0m
+1466411,sent,96,57.1634254,9.5836532[0m
+1467511,ignored,96,57.1634254,9.5836532[0m
+1478611,unknown,96,57.1634254,9.5836532[0m
+1481381,sent,97,57.1634254,9.5836532[0m
+1482481,ignored,97,57.1634254,9.5836532[0m
+1494651,bounced,89,57.1634254,9.5836532[0m
+1496421,sent,98,57.1634293,9.5836743[0m
+1509591,bounced,90,57.1634293,9.5836743[0m
+1511361,sent,99,57.1634293,9.5836743[0m
+1512461,ignored,99,57.1634293,9.5836743[0m
+1524631,bounced,91,57.1634293,9.5836743[0m
+1526401,sent,100,57.1634254,9.5837326[0m
+1527501,unknown,100,57.1634254,9.5837326[0m
+1538601,unknown,100,57.1634254,9.5837326[0m
+1541371,sent,101,57.1634254,9.5837326[0m
+1542471,unknown,101,57.1634254,9.5837326[0m
+1554641,bounced,93,57.1634254,9.5837326[0m
+1556411,sent,102,57.1634254,9.5837877[0m
+1557511,ignored,102,57.1634254,9.5837877[0m
+1569681,bounced,94,57.1634254,9.5837877[0m
+1571451,sent,103,57.1634254,9.5837877[0m
+1584621,bounced,95,57.1634254,9.5837877[0m
+1586391,sent,104,57.1634293,9.5838150[0m
+1599561,bounced,96,57.1634293,9.5838150[0m
+1601431,sent,105,57.1634293,9.5838150[0m
+1614501,bounced,97,57.1634293,9.5838150[0m
+1616371,sent,106,57.1634293,9.5838258[0m
+1617471,ignored,106,57.1634293,9.5838258[0m
+1629541,bounced,98,57.1634293,9.5838258[0m
+1631411,sent,107,57.1634293,9.5838258[0m
+1644581,bounced,99,57.1634293,9.5838258[0m
+1646451,sent,108,57.1634254,9.5838203[0m
+1647551,ignored,108,57.1634254,9.5838203[0m
+1659621,bounced,100,57.1634254,9.5838203[0m
+1661391,sent,109,57.1634254,9.5838203[0m
+1662491,ignored,109,57.1634254,9.5838203[0m
+1674661,bounced,101,57.1634254,9.5838203[0m
+1676431,sent,110,57.1634254,9.5838208[0m
+1677531,ignored,110,57.1634254,9.5838208[0m
+1689601,bounced,102,57.1634254,9.5838208[0m
+1691371,sent,111,57.1634254,9.5838208[0m
+1703571,unknown,111,57.1634254,9.5838208[0m
+1706441,sent,112,57.1634293,9.5837763[0m
+1721411,sent,113,57.1634293,9.5837763[0m
+1736381,sent,114,57.1634293,9.5836307[0m
+1751451,sent,115,57.1634293,9.5836307[0m
+1766421,sent,116,57.1634293,9.5836307[0m
+1781391,sent,117,57.1632195,9.5812501[0m
+1796361,sent,118,57.1632195,9.5812501[0m
+1811431,sent,119,57.1626625,9.5757508[0m
+1826401,sent,120,57.1625214,9.5729120[0m
+1841371,sent,121,57.1625214,9.5729120[0m
+1856441,sent,122,57.1625214,9.5729120[0m
+1868641,unknown,122,57.1624374,9.5728650[0m
+1871411,sent,123,57.1624374,9.5728650[0m
+1872511,ignored,123,57.1624374,9.5728650[0m
+1884581,bounced,115,57.1624374,9.5728650[0m
+1886451,sent,124,57.1625023,9.5739657[0m
+1887551,ignored,124,57.1625023,9.5739657[0m
+1899521,bounced,116,57.1625023,9.5739657[0m
+1901391,sent,125,57.1625023,9.5739657[0m
+1902491,ignored,125,57.1625023,9.5739657[0m
+1914561,bounced,117,57.1625023,9.5739657[0m
+1916431,sent,126,57.1625023,9.5739959[0m
+1917531,unknown,126,57.1625023,9.5739959[0m
+1931401,sent,127,57.1625023,9.5739959[0m
+1943601,unknown,127,57.1625023,9.5739959[0m
+1946371,sent,128,57.1625023,9.5740236[0m
+1947371,unknown,128,57.1625023,9.5740236[0m
+1958571,unknown,128,57.1625023,9.5740236[0m
+1961441,sent,129,57.1625023,9.5740236[0m
+1962541,unknown,129,57.1625023,9.5740236[0m
+1973641,unknown,129,57.1625023,9.5740236[0m
+1976411,sent,130,57.1624908,9.5740467[0m
+1988711,unknown,130,57.1624908,9.5740467[0m
+1991381,sent,131,57.1624908,9.5740467[0m
+2006451,sent,132,57.1624832,9.5740439[0m
+2007551,unknown,132,57.1624832,9.5740439[0m
+2018551,unknown,132,57.1624832,9.5740439[0m
+2021421,sent,133,57.1624832,9.5740439[0m
+2022421,ignored,133,57.1624832,9.5740439[0m
+2034591,bounced,125,57.1624832,9.5740439[0m
+2036361,sent,134,57.1624908,9.5740809[0m
+2037361,ignored,134,57.1624908,9.5740809[0m
+2049631,bounced,126,57.1624908,9.5740809[0m
+2051401,sent,135,57.1624908,9.5740809[0m
+2052401,ignored,135,57.1624908,9.5740809[0m
+2064571,bounced,127,57.1624908,9.5740809[0m
+2066441,sent,136,57.1624832,9.5740869[0m
+2067441,ignored,136,57.1624832,9.5740869[0m
+2079611,bounced,128,57.1624832,9.5740869[0m
+2081381,sent,137,57.1624832,9.5740869[0m
+2082381,ignored,137,57.1624832,9.5740869[0m
+2094551,bounced,129,57.1624832,9.5740869[0m
+2096421,sent,138,57.1624756,9.5740727[0m
+2097421,ignored,138,57.1624756,9.5740727[0m
+2109591,bounced,130,57.1624756,9.5740727[0m
+2111361,sent,139,57.1624756,9.5740727[0m
+2112361,ignored,139,57.1624756,9.5740727[0m
+2126431,sent,140,57.1624832,9.5740636[0m
+2141401,sent,141,57.1624832,9.5740636[0m
+2156371,sent,142,57.1624908,9.5738105[0m
+2171441,sent,143,57.1624908,9.5738105[0m
+2186411,sent,144,57.1624908,9.5735790[0m
+2201381,sent,145,57.1624908,9.5735790[0m
+2216451,sent,146,57.1624908,9.5735790[0m
+2231421,sent,147,57.1624908,9.5735790[0m
+2246391,sent,148,57.1624908,9.5735790[0m
+2261361,sent,149,57.1624908,9.5735790[0m
+2276431,sent,150,57.1624908,9.5735790[0m
+2291401,sent,151,57.1610374,9.5580257[0m
+2306371,sent,152,57.1609459,9.5582139[0m
+2321441,sent,153,57.1609459,9.5582139[0m
+2336411,sent,154,57.1609421,9.5583311[0m
+2351381,sent,155,57.1609421,9.5583311[0m
+2366451,sent,156,57.1609421,9.5582151[0m
+2381421,sent,157,57.1609421,9.5582151[0m
+2396391,sent,158,57.1609993,9.5580763[0m
+2411361,sent,159,57.1609993,9.5580763[0m
+2426431,sent,160,57.1609993,9.5580361[0m
+2441401,sent,161,57.1609993,9.5580361[0m
+2456371,sent,162,57.1610298,9.5581549[0m
+2471441,sent,163,57.1610298,9.5581549[0m
+2486411,sent,164,57.1610298,9.5581549[0m
+2498611,unknown,164,57.1618423,9.5675959[0m
+2501381,sent,165,57.1618423,9.5675959[0m
+2516451,sent,166,57.1618233,9.5694488[0m
+2528651,unknown,166,57.1618233,9.5694488[0m
+2531421,sent,167,57.1618233,9.5694488[0m
+2544591,bounced,159,57.1618233,9.5694488[0m
+2546361,sent,168,57.1619911,9.5692684[0m
+2547461,ignored,168,57.1619911,9.5692684[0m
+2558661,unknown,168,57.1619911,9.5692684[0m
+2561431,sent,169,57.1619911,9.5692684[0m
+2562531,ignored,169,57.1619911,9.5692684[0m
+2573631,unknown,169,57.1619911,9.5692684[0m
+2576401,sent,170,57.1620102,9.5692814[0m
+2577501,ignored,170,57.1620102,9.5692814[0m
+2589571,bounced,162,57.1620102,9.5692814[0m
+2591441,sent,171,57.1620102,9.5692814[0m
+2592541,unknown,171,57.1620102,9.5692814[0m
+2603541,unknown,171,57.1620102,9.5692814[0m
+2606411,sent,172,57.1619911,9.5693514[0m
+2607411,ignored,172,57.1619911,9.5693514[0m
+2618611,unknown,172,57.1619911,9.5693514[0m
+2621381,sent,173,57.1619911,9.5693514[0m
+2622481,unknown,173,57.1619911,9.5693514[0m
+2634651,bounced,165,57.1619911,9.5693514[0m
+2636421,sent,174,57.1619720,9.5692936[0m
+2651391,sent,175,57.1619720,9.5692936[0m
+2666361,sent,176,57.1619759,9.5692538[0m
+2679631,bounced,168,57.1619759,9.5692538[0m
+2681401,sent,177,57.1619759,9.5692538[0m
+2694571,bounced,169,57.1619759,9.5692538[0m
+2696441,sent,178,57.1620026,9.5692795[0m
+2697441,ignored,178,57.1620026,9.5692795[0m
+2709611,bounced,170,57.1620026,9.5692795[0m
+2711381,sent,179,57.1620026,9.5692795[0m
+2712381,ignored,179,57.1620026,9.5692795[0m
+2726451,sent,180,57.1620102,9.5693081[0m
+2738651,unknown,180,57.1620102,9.5693081[0m
+2741421,sent,181,57.1620102,9.5693081[0m
+2742521,unknown,181,57.1620102,9.5693081[0m
+2753621,unknown,181,57.1620102,9.5693081[0m
+2756391,sent,182,57.1620216,9.5692820[0m
+2771361,sent,183,57.1620216,9.5692820[0m
