@@ -234,7 +234,7 @@ int lora_init(void) {
 
     // My configuration
     lora_set_frequency(868e6);
-    lora_set_spreading_factor(11);
+    lora_set_spreading_factor(12);
     lora_set_bandwidth(125000);
     lora_set_coding_rate(5);
     lora_set_preamble_length(8);
