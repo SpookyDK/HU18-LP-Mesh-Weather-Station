@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include <string.h>
 
+static const char *TAG = "LoRa_Source";
 /*
  * Register definitions
  */
@@ -228,7 +229,6 @@ int lora_init(void) {
     lora_write_reg(REG_FIFO_TX_BASE_ADDR, 0);
     lora_write_reg(REG_LNA, lora_read_reg(REG_LNA) | 0x03);
     lora_write_reg(REG_MODEM_CONFIG_3, 0x04);
-    // lora_set_tx_power(17);
 
     lora_idle();
 
@@ -265,7 +265,7 @@ void lora_send_packet(uint8_t *buf, int size) {
     while ((lora_read_reg(REG_IRQ_FLAGS) & IRQ_TX_DONE_MASK) == 0) {
         vTaskDelay(2);
         if (attempts++ > 50) {
-            ESP_LOGE("LoRa", "Tx timeout, aborted");
+            ESP_LOGE(TAG, "Tx timeout, aborted");
             break;
         }
     }
@@ -281,10 +281,14 @@ int lora_receive_packet(uint8_t *buf, int size) {
      */
     int irq = lora_read_reg(REG_IRQ_FLAGS);
     lora_write_reg(REG_IRQ_FLAGS, irq);
-    if ((irq & IRQ_RX_DONE_MASK) == 0)
+    if ((irq & IRQ_RX_DONE_MASK) == 0) {
+        ESP_LOGW(TAG, "Failed to read as not finished receiving");
         return 0;
-    if (irq & IRQ_PAYLOAD_CRC_ERROR_MASK)
+    }
+    if (irq & IRQ_PAYLOAD_CRC_ERROR_MASK) {
+        ESP_LOGW(TAG, "Failed to read due to CRC Masking error");
         return 0;
+    }
 
     /*
      * Find packet size.
@@ -331,16 +335,6 @@ void block_if_receiving(void) {
 int lora_packet_rssi(void) { return (lora_read_reg(REG_PKT_RSSI_VALUE) - (__frequency < 868E6 ? 164 : 157)); }
 
 float lora_packet_snr(void) { return ((int8_t)lora_read_reg(REG_PKT_SNR_VALUE)) * 0.25; }
-
-void lora_close(void) {
-    lora_sleep();
-    //   close(__spi);  FIXME: end hardware features after lora_close
-    //   close(__cs);
-    //   close(__rst);
-    //   __spi = -1;
-    //   __cs = -1;
-    //   __rst = -1;
-}
 
 void lora_dump_registers(void) {
     int i;
