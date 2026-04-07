@@ -20,7 +20,7 @@ def clean(filepath: str):
                 continue
 
         if "GPS: Latitude:Longitude" in line:
-            cords = line.split("GPS: Latitude:Longitude:  ")[1][:-1]
+            cords = line.split("GPS: Latitude:Longitude:  ")[1][:-5]
             cords = cords.replace(" ", "")
 
         skip = False
