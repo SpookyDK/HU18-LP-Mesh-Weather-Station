@@ -1,0 +1,733 @@
+Executing action: monitor
+Serial port /dev/ttyUSB0
+Connecting....
+Detecting chip type... ESP32-H2
+Running idf_monitor in directory /home/esben/Uni/4-semester/HU18-LP-Mesh-Weather-Station/weather_node
+Executing "/home/esben/.espressif/python_env/idf5.5_py3.13_env/bin/python /home/esben/esp-idf-v5.5.1/tools/idf_monitor.py -p /dev/ttyUSB0 -b 115200 --toolchain-prefix riscv32-esp-elf- --target esp32h2 --revision 0 --decode-panic backtrace /home/esben/Uni/4-semester/HU18-LP-Mesh-Weather-Station/weather_node/build/humid.elf /home/esben/Uni/4-semester/HU18-LP-Mesh-Weather-Station/weather_node/build/bootloader/bootloader.elf -m '/home/esben/.espressif/python_env/idf5.5_py3.13_env/bin/python' '/home/esben/esp-idf-v5.5.1/tools/idf.py'"...
+ESP-ROM:esp32h2-20221101
+Build:Nov  1 2022
+rst:0x1 (POWERON),boot:0xf (SPI_FAST_FLASH_BOOT)
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x408460f0,len:0x1700
+load:0x4083c2d0,len:0xf78
+load:0x4083efd0,len:0x2fdc
+entry 0x4083c2da
+[0;32mI (23) boot: ESP-IDF v5.5.1 2nd stage bootloader[0m
+[0;32mI (24) boot: compile time Apr  7 2026 12:19:40[0m
+[0;32mI (25) boot: chip revision: v0.1[0m
+[0;32mI (25) boot: efuse block revision: v0.3[0m
+[0;32mI (27) boot.esp32h2: SPI Speed      : 64MHz[0m
+[0;32mI (31) boot.esp32h2: SPI Mode       : DIO[0m
+[0;32mI (35) boot.esp32h2: SPI Flash Size : 2MB[0m
+[0;32mI (39) boot: Enabling RNG early entropy source...[0m
+[0;32mI (43) boot: Partition Table:[0m
+[0;32mI (46) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (52) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (58) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (65) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (72) boot: End of partition table[0m
+[0;32mI (75) esp_image: segment 0: paddr=00010020 vaddr=42030020 size=0e768h ( 59240) map[0m
+[0;32mI (99) esp_image: segment 1: paddr=0001e790 vaddr=40800000 size=01888h (  6280) load[0m
+[0;32mI (102) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=2eda0h (191904) map[0m
+[0;32mI (158) esp_image: segment 3: paddr=0004edc8 vaddr=40801888 size=0d7b0h ( 55216) load[0m
+[0;32mI (176) esp_image: segment 4: paddr=0005c580 vaddr=4080f040 size=01aech (  6892) load[0m
+[0;32mI (184) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (184) boot: Disabling RNG early entropy source...[0m
+[0;32mI (194) cpu_start: Unicore app[0m
+[0;32mI (203) cpu_start: Pro cpu start user code[0m
+[0;32mI (203) cpu_start: cpu freq: 48000000 Hz[0m
+[0;32mI (204) app_init: Application information:[0m
+[0;32mI (205) app_init: Project name:     humid[0m
+[0;32mI (207) app_init: App version:      384e6be[0m
+[0;32mI (211) app_init: Compile time:     Apr  7 2026 12:19:36[0m
+[0;32mI (216) app_init: ELF file SHA256:  504156a81...[0m
+[0;32mI (220) app_init: ESP-IDF:          v5.5.1[0m
+[0;32mI (224) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (228) efuse_init: Max chip rev:     v1.99 [0m
+[0;32mI (232) efuse_init: Chip rev:         v0.1[0m
+[0;32mI (236) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (242) heap_init: At 408122F0 len 0003B090 (236 KiB): RAM[0m
+[0;32mI (247) heap_init: At 4084D380 len 00002B60 (10 KiB): RAM[0m
+[0;32mI (252) heap_init: At 50000000 len 00000FE8 (3 KiB): RTCRAM[0m
+[0;32mI (259) spi_flash: detected chip: gd[0m
+[0;32mI (261) spi_flash: flash io: dio[0m
+[0;33mW (264) spi_flash: Detected size(4096k) larger than the size in the binary image header(2048k). Using the size in the binary image header.[0m
+[0;32mI (277) sleep_gpio: Configure to isolate all GPIO pins in sleep state[0m
+[0;32mI (282) sleep_gpio: Enable automatic switching of GPIO sleep configuration[0m
+[0;32mI (301) main_task: Started on CPU0[0m
+[0;32mI (301) main_task: Calling app_main()[0m
+[0;32mI (321) main: Loading Config from NVS[0m
+[0;32mI (321) main: Loaded: Network_ID='1'  Node_ID='187'[0m
+[0;32mI (321) main: Starting GPS Task[0m
+[0;32mI (321) main: Starting Communication Task[0m
+00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F
+A1 81 1A 0B 00 52 D9 00 00 8F 09 2B 23 25 00 00 
+00 00 00 00 00 00 00 00 10 00 00 00 00 72 B4 64 
+00 08 23 FF 00 00 04 00 00 00 00 00 00 50 14 45 
+55 C3 05 27 1C 0A 03 0A 42 12 49 1D 00 AF 00 00 
+
+[0;32mI (391) main: Finished starting all tasks[0m
+[0;32mI (401) uart: queue free spaces: 20[0m
+[0;32mI (2411) GPS: Wiping settings...[0m
+[0;32mI (2621) GPS: Success from CFG-CFG[0m
+[0;32mI (3121) GPS: Disabling all NMEA Communication[0m
+[0;32mI (3821) GPS: Setting Communication protocol to only UBX...[0m
+[0;32mI (3911) GPS: Success from CFG-PRT[0m
+[0;32mI (4111) GPS: Setting to Stationary...[0m
+[0;32mI (4191) GPS: Success from CFG-NAV5[0m
+[0;32mI (4691) GPS_HotStart: Attempting to resume with HotStart...[0m
+[0;32mI (5501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (5501) GPS_FIX: Time to first fix 711  ms since start/reset 1056215[0m
+[0;32mI (6501) GPS_HotStart: Sending Poll request...[0m
+[0;32mI (7531) GPS_HotStart: Recieved hot start data[0m
+[0;32mI (7541) GPS_HotStart: Data saved[0m
+[0;32mI (8541) GPS: Init Complete.[0m
+[0;32mI (11501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (11501) GPS_FIX: Time to first fix 711  ms since start/reset 1062215[0m
+[0;32mI (12541) GPS: Latitude:Longitude:  57.2732239, 9.6011683[0m
+[0;32mI (12541) GPS: Tue Apr  7 12:20:20 2026[0m
+[0;32mI (12541) GPS: Going to sleep after 4000 ms[0m
+[0;33mW (25391) PCNT: Rain is not initialized[0m
+[0;32mI (26361) TXtask: Sent Packet with id: '0'[0m
+[0;32mI (40461) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (41431) TXtask: Sent Packet with id: '1'[0m
+[0;32mI (41501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (41501) GPS_FIX: Time to first fix 711  ms since start/reset 1092215[0m
+[0;32mI (42541) GPS: Latitude:Longitude:  57.2732277, 9.6011766[0m
+[0;32mI (42541) GPS: Tue Apr  7 12:20:50 2026[0m
+[0;32mI (42541) GPS: Going to sleep after 4000 ms[0m
+[0;32mI (55431) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (56401) TXtask: Sent Packet with id: '2'[0m
+[0;32mI (70401) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (71371) TXtask: Sent Packet with id: '3'[0m
+[0;32mI (71491) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (71491) GPS_FIX: Time to first fix 711  ms since start/reset 1122215[0m
+[0;32mI (72531) GPS: Latitude:Longitude:  57.2732353, 9.6011814[0m
+[0;32mI (72531) GPS: Tue Apr  7 12:21:20 2026[0m
+[0;32mI (72531) GPS: Going to sleep after 3990 ms[0m
+[0;33mW (85271) comTask: Unknown packet, with len='0'[0m
+[0;32mI (85471) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (86441) TXtask: Sent Packet with id: '4'[0m
+[0;32mI (87541) comTask: Ignoring received Own Packet id='4'[0m
+[0;33mW (100241) comTask: Unknown packet, with len='0'[0m
+[0;32mI (100441) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (101411) TXtask: Sent Packet with id: '5'[0m
+[0;32mI (101491) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (101491) GPS_FIX: Time to first fix 711  ms since start/reset 1152215[0m
+[0;32mI (102511) comTask: Ignoring received Own Packet id='5'[0m
+[0;32mI (102531) GPS: Latitude:Longitude:  57.2732620, 9.6011281[0m
+[0;32mI (102551) GPS: Tue Apr  7 12:21:50 2026[0m
+[0;32mI (102551) GPS: Going to sleep after 4010 ms[0m
+[0;32mI (116181) comTask: Bouncing packet from node='170' id='9'[0m
+bounce,1775557323,170,9,57.2732609,9.6011281
+[0;32mI (116181) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (117151) TXtask: Sent Packet with id: '6'[0m
+[0;32mI (118251) comTask: Ignoring received Own Packet id='6'[0m
+[0;32mI (131121) comTask: Bouncing packet from node='170' id='10'[0m
+bounce,1775557338,170,10,57.2732609,9.6011281
+[0;32mI (131121) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (131491) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (131491) GPS_FIX: Time to first fix 711  ms since start/reset 1182215[0m
+[0;32mI (132091) TXtask: Sent Packet with id: '7'[0m
+[0;32mI (132531) GPS: Latitude:Longitude:  57.2731590, 9.6010039[0m
+[0;32mI (132551) GPS: Tue Apr  7 12:22:20 2026[0m
+[0;32mI (132551) GPS: Going to sleep after 4010 ms[0m
+[0;32mI (133191) comTask: Ignoring received Own Packet id='7'[0m
+[0;32mI (146161) comTask: Bouncing packet from node='170' id='11'[0m
+bounce,1775557353,170,11,57.2731559,9.6010039
+[0;32mI (146161) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (147131) TXtask: Sent Packet with id: '8'[0m
+[0;32mI (148231) comTask: Ignoring received Own Packet id='8'[0m
+[0;32mI (161201) comTask: Bouncing packet from node='170' id='12'[0m
+bounce,1775557368,170,12,57.2731559,9.6010039
+[0;32mI (161201) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (161501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (161501) GPS_FIX: Time to first fix 711  ms since start/reset 1212215[0m
+[0;32mI (162171) TXtask: Sent Packet with id: '9'[0m
+[0;32mI (162541) GPS: Latitude:Longitude:  57.2732353, 9.6010549[0m
+[0;32mI (162541) GPS: Tue Apr  7 12:22:50 2026[0m
+[0;32mI (162541) GPS: Going to sleep after 4000 ms[0m
+[0;32mI (163271) comTask: Ignoring received Own Packet id='9'[0m
+[0;32mI (176141) comTask: Bouncing packet from node='170' id='13'[0m
+bounce,1775557383,170,13,57.2732355,9.6010549
+[0;32mI (176141) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (177111) TXtask: Sent Packet with id: '10'[0m
+[0;32mI (178211) comTask: Ignoring received Own Packet id='10'[0m
+[0;32mI (190411) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (191381) TXtask: Sent Packet with id: '11'[0m
+[0;32mI (191491) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (191491) GPS_FIX: Time to first fix 711  ms since start/reset 1242215[0m
+[0;32mI (192531) GPS: Latitude:Longitude:  57.2732353, 9.6011105[0m
+[0;32mI (192531) GPS: Tue Apr  7 12:23:20 2026[0m
+[0;32mI (192551) GPS: Going to sleep after 4010 ms[0m
+[0;32mI (206151) comTask: Bouncing packet from node='170' id='15'[0m
+bounce,1775557413,170,15,57.2732373,9.6011105
+[0;32mI (206151) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (207121) TXtask: Sent Packet with id: '12'[0m
+[0;32mI (220421) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (221391) TXtask: Sent Packet with id: '13'[0m
+[0;32mI (221491) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (221491) GPS_FIX: Time to first fix 711  ms since start/reset 1272215[0m
+[0;32mI (222531) GPS: Latitude:Longitude:  57.2732620, 9.6011433[0m
+[0;32mI (222551) GPS: Tue Apr  7 12:23:50 2026[0m
+[0;32mI (222551) GPS: Going to sleep after 4010 ms[0m
+[0;32mI (235391) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (236361) TXtask: Sent Packet with id: '14'[0m
+[0;32mI (250461) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (251431) TXtask: Sent Packet with id: '15'[0m
+[0;32mI (252491) GPS_FIX: Attempting to hot start[0m
+[0;32mI (252491) GPS_HotStart: Sending HotStart data[0m
+[0;32mI (255491) GPS_FIX: There is good fix after 5 attempts[0m
+[0;32mI (255491) GPS_FIX: Time to first fix 711  ms since start/reset 1306216[0m
+[0;32mI (256531) GPS: Latitude:Longitude:  57.2754173, 9.6039746[0m
+[0;32mI (256531) GPS: Tue Apr  7 12:24:24 2026[0m
+[0;32mI (256531) GPS: Going to sleep after 7990 ms[0m
+[0;32mI (265431) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (266401) TXtask: Sent Packet with id: '16'[0m
+[0;32mI (280401) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (281371) TXtask: Sent Packet with id: '17'[0m
+[0;32mI (281491) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (281491) GPS_FIX: Time to first fix 711  ms since start/reset 1332216[0m
+[0;32mI (282531) GPS: Latitude:Longitude:  57.2770233, 9.6060271[0m
+[0;32mI (282551) GPS: Tue Apr  7 12:24:50 2026[0m
+[0;32mI (282551) GPS: Going to sleep after 4010 ms[0m
+[0;32mI (295471) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (296441) TXtask: Sent Packet with id: '18'[0m
+[0;32mI (310441) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (311411) TXtask: Sent Packet with id: '19'[0m
+[0;32mI (311491) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (311491) GPS_FIX: Time to first fix 711  ms since start/reset 1362216[0m
+[0;32mI (312541) GPS: Latitude:Longitude:  57.2788353, 9.6083663[0m
+[0;32mI (312541) GPS: Tue Apr  7 12:25:20 2026[0m
+[0;32mI (312541) GPS: Going to sleep after 4000 ms[0m
+[0;32mI (325411) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (326381) TXtask: Sent Packet with id: '20'[0m
+[0;33mW (340281) comTask: Unknown packet, with len='0'[0m
+[0;32mI (340481) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (341451) TXtask: Sent Packet with id: '21'[0m
+[0;32mI (341491) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (341491) GPS_FIX: Time to first fix 711  ms since start/reset 1392216[0m
+[0;32mI (342541) GPS: Latitude:Longitude:  57.2798538, 9.6092452[0m
+[0;32mI (342541) GPS: Tue Apr  7 12:25:50 2026[0m
+[0;32mI (342541) GPS: Going to sleep after 4000 ms[0m
+[0;33mW (355251) comTask: Unknown packet, with len='0'[0m
+[0;32mI (355451) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (356421) TXtask: Sent Packet with id: '22'[0m
+[0;33mW (357521) comTask: Unknown packet, with len='0'[0m
+[0;32mI (371191) comTask: Bouncing packet from node='170' id='26'[0m
+bounce,1775557578,170,26,57.2798528,9.6092452
+[0;32mI (371191) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (371491) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (371491) GPS_FIX: Time to first fix 711  ms since start/reset 1422216[0m
+[0;32mI (372161) TXtask: Sent Packet with id: '23'[0m
+[0;32mI (372541) GPS: Latitude:Longitude:  57.2797585, 9.6092896[0m
+[0;32mI (372541) GPS: Tue Apr  7 12:26:20 2026[0m
+[0;32mI (372541) GPS: Going to sleep after 4000 ms[0m
+[0;33mW (373261) comTask: Unknown packet, with len='0'[0m
+[0;33mW (385161) comTask: Unknown packet, with len='0'[0m
+[0;32mI (385461) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (386431) TXtask: Sent Packet with id: '24'[0m
+[0;32mI (401201) comTask: Bouncing packet from node='170' id='28'[0m
+bounce,1775557608,170,28,57.2797585,9.6092896
+[0;32mI (401201) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (401491) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (401491) GPS_FIX: Time to first fix 711  ms since start/reset 1452216[0m
+[0;32mI (402171) TXtask: Sent Packet with id: '25'[0m
+[0;32mI (402531) GPS: Latitude:Longitude:  57.2797623, 9.6092656[0m
+[0;32mI (402551) GPS: Tue Apr  7 12:26:50 2026[0m
+[0;32mI (402551) GPS: Going to sleep after 4010 ms[0m
+[0;33mW (415271) comTask: Unknown packet, with len='0'[0m
+[0;32mI (415471) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (416441) TXtask: Sent Packet with id: '26'[0m
+[0;32mI (417541) comTask: Ignoring received Own Packet id='26'[0m
+[0;32mI (431111) comTask: Bouncing packet from node='170' id='30'[0m
+bounce,1775557638,170,30,57.2797647,9.6092656
+[0;32mI (431111) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (431501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (431501) GPS_FIX: Time to first fix 711  ms since start/reset 1482216[0m
+[0;32mI (432081) TXtask: Sent Packet with id: '27'[0m
+[0;32mI (432541) GPS: Latitude:Longitude:  57.2797623, 9.6092520[0m
+[0;32mI (432541) GPS: Tue Apr  7 12:27:20 2026[0m
+[0;32mI (432541) GPS: Going to sleep after 4000 ms[0m
+[0;32mI (433181) comTask: Ignoring received Own Packet id='27'[0m
+[0;32mI (446151) comTask: Bouncing packet from node='170' id='31'[0m
+bounce,1775557653,170,31,57.2797630,9.6092520
+[0;32mI (446151) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (447121) TXtask: Sent Packet with id: '28'[0m
+[0;32mI (448221) comTask: Ignoring received Own Packet id='28'[0m
+[0;32mI (461191) comTask: Bouncing packet from node='170' id='32'[0m
+bounce,1775557668,170,32,57.2797630,9.6092520
+[0;32mI (461191) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (461501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (461501) GPS_FIX: Time to first fix 711  ms since start/reset 1512217[0m
+[0;32mI (462161) TXtask: Sent Packet with id: '29'[0m
+[0;32mI (462541) GPS: Latitude:Longitude:  57.2797699, 9.6092117[0m
+[0;32mI (462561) GPS: Tue Apr  7 12:27:50 2026[0m
+[0;32mI (462561) GPS: Going to sleep after 4020 ms[0m
+[0;32mI (463261) comTask: Ignoring received Own Packet id='29'[0m
+[0;32mI (476131) comTask: Bouncing packet from node='170' id='33'[0m
+bounce,1775557683,170,33,57.2797702,9.6092117
+[0;32mI (476131) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (477101) TXtask: Sent Packet with id: '30'[0m
+[0;32mI (491271) comTask: Bouncing packet from node='170' id='34'[0m
+bounce,1775557698,170,34,57.2797702,9.6092117
+[0;32mI (491271) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (491501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (491501) GPS_FIX: Time to first fix 711  ms since start/reset 1542217[0m
+[0;32mI (492241) TXtask: Sent Packet with id: '31'[0m
+[0;32mI (492541) GPS: Latitude:Longitude:  57.2797813, 9.6091764[0m
+[0;32mI (492541) GPS: Tue Apr  7 12:28:20 2026[0m
+[0;32mI (492541) GPS: Going to sleep after 4000 ms[0m
+[0;32mI (493341) comTask: Ignoring received Own Packet id='31'[0m
+[0;32mI (505441) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (506411) TXtask: Sent Packet with id: '32'[0m
+[0;32mI (520411) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (521381) TXtask: Sent Packet with id: '33'[0m
+[0;32mI (521491) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (521491) GPS_FIX: Time to first fix 711  ms since start/reset 1572217[0m
+[0;32mI (522541) GPS: Latitude:Longitude:  57.2798080, 9.6092591[0m
+[0;32mI (522541) GPS: Tue Apr  7 12:28:50 2026[0m
+[0;32mI (522541) GPS: Going to sleep after 4000 ms[0m
+[0;32mI (535481) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (536451) TXtask: Sent Packet with id: '34'[0m
+[0;32mI (550451) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (551421) TXtask: Sent Packet with id: '35'[0m
+[0;32mI (551491) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (551491) GPS_FIX: Time to first fix 711  ms since start/reset 1602217[0m
+[0;32mI (552531) GPS: Latitude:Longitude:  57.2799225, 9.6093642[0m
+[0;32mI (552531) GPS: Tue Apr  7 12:29:20 2026[0m
+[0;32mI (552531) GPS: Going to sleep after 3990 ms[0m
+[0;32mI (565421) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (566391) TXtask: Sent Packet with id: '36'[0m
+[0;32mI (580391) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (581361) TXtask: Sent Packet with id: '37'[0m
+[0;32mI (581491) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (581491) GPS_FIX: Time to first fix 711  ms since start/reset 1632217[0m
+[0;32mI (582541) GPS: Latitude:Longitude:  57.2821198, 9.6121509[0m
+[0;32mI (582541) GPS: Tue Apr  7 12:29:50 2026[0m
+[0;32mI (582541) GPS: Going to sleep after 4000 ms[0m
+[0;32mI (595461) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (596431) TXtask: Sent Packet with id: '38'[0m
+[0;32mI (610431) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (611401) TXtask: Sent Packet with id: '39'[0m
+[0;32mI (611491) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (611491) GPS_FIX: Time to first fix 711  ms since start/reset 1662217[0m
+[0;32mI (612561) GPS: Latitude:Longitude:  57.2842255, 9.6146511[0m
+[0;32mI (612561) GPS: Tue Apr  7 12:30:20 2026[0m
+[0;32mI (612581) GPS: Going to sleep after 4040 ms[0m
+[0;32mI (625401) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (626371) TXtask: Sent Packet with id: '40'[0m
+[0;32mI (640471) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (641441) TXtask: Sent Packet with id: '41'[0m
+[0;32mI (641491) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (641491) GPS_FIX: Time to first fix 711  ms since start/reset 1692218[0m
+[0;32mI (642541) GPS: Latitude:Longitude:  57.2859268, 9.6167419[0m
+[0;32mI (642541) GPS: Tue Apr  7 12:30:50 2026[0m
+[0;32mI (642541) GPS: Going to sleep after 4000 ms[0m
+[0;32mI (655441) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (656411) TXtask: Sent Packet with id: '42'[0m
+[0;32mI (670411) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (671381) TXtask: Sent Packet with id: '43'[0m
+[0;32mI (671531) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (671531) GPS_FIX: Time to first fix 711  ms since start/reset 1722218[0m
+[0;32mI (672541) GPS: Latitude:Longitude:  57.2877426, 9.6188433[0m
+[0;32mI (672561) GPS: Tue Apr  7 12:31:20 2026[0m
+[0;32mI (672561) GPS: Going to sleep after 4020 ms[0m
+[0;32mI (685481) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (686451) TXtask: Sent Packet with id: '44'[0m
+[0;33mW (700251) comTask: Unknown packet, with len='0'[0m
+[0;32mI (700451) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (701421) TXtask: Sent Packet with id: '45'[0m
+[0;32mI (702471) GPS_FIX: Attempting to hot start[0m
+[0;32mI (702471) GPS_HotStart: Sending HotStart data[0m
+[0;32mI (710501) GPS_FIX: There is good fix after 10 attempts[0m
+[0;32mI (710501) GPS_FIX: Time to first fix 711  ms since start/reset 1761218[0m
+[0;32mI (711541) GPS: Latitude:Longitude:  57.2874870, 9.6177790[0m
+[0;32mI (711561) GPS: Tue Apr  7 12:31:59 2026[0m
+[0;32mI (711561) GPS: Going to sleep after 13020 ms[0m
+[0;33mW (715221) comTask: Unknown packet, with len='0'[0m
+[0;32mI (715421) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (716391) TXtask: Sent Packet with id: '46'[0m
+[0;32mI (717491) comTask: Ignoring received Own Packet id='46'[0m
+[0;32mI (731161) comTask: Bouncing packet from node='170' id='50'[0m
+bounce,1775557938,170,50,57.2874907,9.6177790
+[0;32mI (731161) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (731501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (731501) GPS_FIX: Time to first fix 711  ms since start/reset 1782218[0m
+[0;32mI (732131) TXtask: Sent Packet with id: '47'[0m
+[0;32mI (732541) GPS: Latitude:Longitude:  57.2874184, 9.6179263[0m
+[0;32mI (732561) GPS: Tue Apr  7 12:32:20 2026[0m
+[0;32mI (732561) GPS: Going to sleep after 4020 ms[0m
+[0;33mW (745231) comTask: Unknown packet, with len='0'[0m
+[0;32mI (745431) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (746401) TXtask: Sent Packet with id: '48'[0m
+[0;32mI (761271) comTask: Bouncing packet from node='170' id='52'[0m
+bounce,1775557968,170,52,57.2874203,9.6179263
+[0;32mI (761271) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (761501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (761501) GPS_FIX: Time to first fix 711  ms since start/reset 1812218[0m
+[0;32mI (762241) TXtask: Sent Packet with id: '49'[0m
+[0;32mI (762541) GPS: Latitude:Longitude:  57.2874298, 9.6179135[0m
+[0;32mI (762561) GPS: Tue Apr  7 12:32:50 2026[0m
+[0;32mI (762561) GPS: Going to sleep after 4020 ms[0m
+[0;33mW (775241) comTask: Unknown packet, with len='0'[0m
+[0;32mI (775441) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (776411) TXtask: Sent Packet with id: '50'[0m
+[0;32mI (791181) comTask: Bouncing packet from node='170' id='54'[0m
+bounce,1775557998,170,54,57.2874324,9.6179135
+[0;32mI (791181) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (791501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (791501) GPS_FIX: Time to first fix 711  ms since start/reset 1842218[0m
+[0;32mI (792151) TXtask: Sent Packet with id: '51'[0m
+[0;32mI (792541) GPS: Latitude:Longitude:  57.2874184, 9.6179184[0m
+[0;32mI (792561) GPS: Tue Apr  7 12:33:20 2026[0m
+[0;32mI (792561) GPS: Going to sleep after 4020 ms[0m
+[0;32mI (806121) comTask: Bouncing packet from node='170' id='55'[0m
+bounce,1775558013,170,55,57.2874145,9.6179184
+[0;32mI (806121) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (807091) TXtask: Sent Packet with id: '52'[0m
+[0;33mW (820191) comTask: Unknown packet, with len='0'[0m
+[0;32mI (820391) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (821361) TXtask: Sent Packet with id: '53'[0m
+[0;32mI (821501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (821501) GPS_FIX: Time to first fix 711  ms since start/reset 1872218[0m
+[0;32mI (822361) comTask: Ignoring received Own Packet id='53'[0m
+[0;32mI (822541) GPS: Latitude:Longitude:  57.2874298, 9.6178621[0m
+[0;32mI (822561) GPS: Tue Apr  7 12:33:50 2026[0m
+[0;32mI (822561) GPS: Going to sleep after 4020 ms[0m
+[0;32mI (836131) comTask: Bouncing packet from node='170' id='57'[0m
+bounce,1775558043,170,57,57.2874312,9.6178621
+[0;32mI (836131) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (837101) TXtask: Sent Packet with id: '54'[0m
+[0;32mI (838101) comTask: Ignoring received Own Packet id='54'[0m
+[0;32mI (850401) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (851371) TXtask: Sent Packet with id: '55'[0m
+[0;32mI (851501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (851501) GPS_FIX: Time to first fix 711  ms since start/reset 1902219[0m
+[0;32mI (852541) GPS: Latitude:Longitude:  57.2874184, 9.6178733[0m
+[0;32mI (852541) GPS: Tue Apr  7 12:34:20 2026[0m
+[0;32mI (852561) GPS: Going to sleep after 4020 ms[0m
+[0;32mI (866141) comTask: Bouncing packet from node='170' id='59'[0m
+bounce,1775558073,170,59,57.2874166,9.6178733
+[0;32mI (866141) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (867111) TXtask: Sent Packet with id: '56'[0m
+[0;32mI (880411) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (881381) TXtask: Sent Packet with id: '57'[0m
+[0;32mI (881491) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (881491) GPS_FIX: Time to first fix 711  ms since start/reset 1932219[0m
+[0;32mI (882541) GPS: Latitude:Longitude:  57.2874031, 9.6179470[0m
+[0;32mI (882561) GPS: Tue Apr  7 12:34:50 2026[0m
+[0;32mI (882561) GPS: Going to sleep after 4020 ms[0m
+[0;32mI (895481) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (896451) TXtask: Sent Packet with id: '58'[0m
+[0;32mI (910451) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (911421) TXtask: Sent Packet with id: '59'[0m
+[0;32mI (911501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (911501) GPS_FIX: Time to first fix 711  ms since start/reset 1962219[0m
+[0;32mI (912541) GPS: Latitude:Longitude:  57.2874107, 9.6179753[0m
+[0;32mI (912541) GPS: Tue Apr  7 12:35:20 2026[0m
+[0;32mI (912541) GPS: Going to sleep after 4000 ms[0m
+[0;32mI (925421) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (926391) TXtask: Sent Packet with id: '60'[0m
+[0;32mI (940391) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (941361) TXtask: Sent Packet with id: '61'[0m
+[0;32mI (941501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (941501) GPS_FIX: Time to first fix 711  ms since start/reset 1992219[0m
+[0;32mI (942541) GPS: Latitude:Longitude:  57.2874031, 9.6180411[0m
+[0;32mI (942561) GPS: Tue Apr  7 12:35:50 2026[0m
+[0;32mI (942561) GPS: Going to sleep after 4020 ms[0m
+[0;32mI (956131) comTask: Bouncing packet from node='170' id='65'[0m
+bounce,1775558163,170,65,57.2874071,9.6180411
+[0;32mI (956131) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (957101) TXtask: Sent Packet with id: '62'[0m
+[0;32mI (970401) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (971371) TXtask: Sent Packet with id: '63'[0m
+[0;32mI (971501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (971501) GPS_FIX: Time to first fix 711  ms since start/reset 2022219[0m
+[0;32mI (972541) GPS: Latitude:Longitude:  57.2874451, 9.6181499[0m
+[0;32mI (972541) GPS: Tue Apr  7 12:36:20 2026[0m
+[0;32mI (972541) GPS: Going to sleep after 4000 ms[0m
+[0;32mI (985471) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (986441) TXtask: Sent Packet with id: '64'[0m
+[0;32mI (1000441) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1001411) TXtask: Sent Packet with id: '65'[0m
+[0;32mI (1001491) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1001491) GPS_FIX: Time to first fix 711  ms since start/reset 2052219[0m
+[0;32mI (1002541) GPS: Latitude:Longitude:  57.2889709, 9.6209505[0m
+[0;32mI (1002541) GPS: Tue Apr  7 12:36:50 2026[0m
+[0;32mI (1002541) GPS: Going to sleep after 4000 ms[0m
+[0;32mI (1015411) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1016381) TXtask: Sent Packet with id: '66'[0m
+[0;32mI (1030481) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1031451) TXtask: Sent Packet with id: '67'[0m
+[0;32mI (1031501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1031501) GPS_FIX: Time to first fix 711  ms since start/reset 2082220[0m
+[0;32mI (1032541) GPS: Latitude:Longitude:  57.2908096, 9.6225492[0m
+[0;32mI (1032541) GPS: Tue Apr  7 12:37:20 2026[0m
+[0;32mI (1032541) GPS: Going to sleep after 4000 ms[0m
+[0;32mI (1045451) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1046421) TXtask: Sent Packet with id: '68'[0m
+[0;32mI (1060421) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1061391) TXtask: Sent Packet with id: '69'[0m
+[0;32mI (1061501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1061501) GPS_FIX: Time to first fix 711  ms since start/reset 2112220[0m
+[0;32mI (1062541) GPS: Latitude:Longitude:  57.2925568, 9.6241379[0m
+[0;32mI (1062541) GPS: Tue Apr  7 12:37:50 2026[0m
+[0;32mI (1062561) GPS: Going to sleep after 4020 ms[0m
+[0;32mI (1075391) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1076361) TXtask: Sent Packet with id: '70'[0m
+[0;32mI (1090461) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1091431) TXtask: Sent Packet with id: '71'[0m
+[0;32mI (1091491) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1091491) GPS_FIX: Time to first fix 711  ms since start/reset 2142220[0m
+[0;32mI (1092541) GPS: Latitude:Longitude:  57.2937584, 9.6245985[0m
+[0;32mI (1092541) GPS: Tue Apr  7 12:38:20 2026[0m
+[0;32mI (1092541) GPS: Going to sleep after 4000 ms[0m
+[0;32mI (1105431) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1106401) TXtask: Sent Packet with id: '72'[0m
+[0;32mI (1120401) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1121371) TXtask: Sent Packet with id: '73'[0m
+[0;32mI (1121501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1121501) GPS_FIX: Time to first fix 711  ms since start/reset 2172220[0m
+[0;32mI (1122541) GPS: Latitude:Longitude:  57.2942734, 9.6250383[0m
+[0;32mI (1122541) GPS: Tue Apr  7 12:38:50 2026[0m
+[0;32mI (1122561) GPS: Going to sleep after 4020 ms[0m
+[0;32mI (1135471) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1136441) TXtask: Sent Packet with id: '74'[0m
+[0;32mI (1150441) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1151411) TXtask: Sent Packet with id: '75'[0m
+[0;32mI (1151501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1151501) GPS_FIX: Time to first fix 711  ms since start/reset 2202220[0m
+[0;32mI (1152541) GPS: Latitude:Longitude:  57.2942772, 9.6250435[0m
+[0;32mI (1152541) GPS: Tue Apr  7 12:39:20 2026[0m
+[0;32mI (1152541) GPS: Going to sleep after 4000 ms[0m
+[0;32mI (1165411) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1166381) TXtask: Sent Packet with id: '76'[0m
+[0;32mI (1180481) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1181451) TXtask: Sent Packet with id: '77'[0m
+[0;32mI (1181491) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1181491) GPS_FIX: Time to first fix 711  ms since start/reset 2232220[0m
+[0;32mI (1182541) GPS: Latitude:Longitude:  57.2945709, 9.6251540[0m
+[0;32mI (1182561) GPS: Tue Apr  7 12:39:50 2026[0m
+[0;32mI (1182561) GPS: Going to sleep after 4020 ms[0m
+[0;32mI (1195451) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1196421) TXtask: Sent Packet with id: '78'[0m
+[0;32mI (1210421) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1211391) TXtask: Sent Packet with id: '79'[0m
+[0;32mI (1211501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1211501) GPS_FIX: Time to first fix 711  ms since start/reset 2262220[0m
+[0;32mI (1212541) GPS: Latitude:Longitude:  57.2947655, 9.6256225[0m
+[0;32mI (1212541) GPS: Tue Apr  7 12:40:20 2026[0m
+[0;32mI (1212541) GPS: Going to sleep after 4000 ms[0m
+[0;32mI (1225391) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1226361) TXtask: Sent Packet with id: '80'[0m
+[0;32mI (1240461) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1241431) TXtask: Sent Packet with id: '81'[0m
+[0;32mI (1242481) GPS_FIX: Attempting to hot start[0m
+[0;32mI (1242481) GPS_HotStart: Sending HotStart data[0m
+[0;32mI (1247551) GPS_FIX: There is good fix after 7 attempts[0m
+[0;32mI (1247551) GPS_FIX: Time to first fix 711  ms since start/reset 2298220[0m
+[0;32mI (1248551) GPS: Latitude:Longitude:  57.2951698, 9.6257846[0m
+[0;32mI (1248551) GPS: Tue Apr  7 12:40:56 2026[0m
+[0;32mI (1248551) GPS: Going to sleep after 10010 ms[0m
+[0;33mW (1255231) comTask: Unknown packet, with len='0'[0m
+[0;32mI (1255431) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1256401) TXtask: Sent Packet with id: '82'[0m
+[0;32mI (1271171) comTask: Bouncing packet from node='170' id='86'[0m
+bounce,1775558478,170,86,57.2951691,9.6257846
+[0;32mI (1271171) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1271511) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1271511) GPS_FIX: Time to first fix 711  ms since start/reset 2322220[0m
+[0;32mI (1272141) TXtask: Sent Packet with id: '83'[0m
+[0;32mI (1272541) GPS: Latitude:Longitude:  57.2952309, 9.6251729[0m
+[0;32mI (1272561) GPS: Tue Apr  7 12:41:20 2026[0m
+[0;32mI (1272561) GPS: Going to sleep after 4020 ms[0m
+[0;32mI (1273241) comTask: Ignoring received Own Packet id='83'[0m
+[0;32mI (1286211) comTask: Bouncing packet from node='170' id='87'[0m
+bounce,1775558493,170,87,57.2952330,9.6251729
+[0;32mI (1286211) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1287181) TXtask: Sent Packet with id: '84'[0m
+[0;32mI (1288281) comTask: Ignoring received Own Packet id='84'[0m
+[0;32mI (1301251) comTask: Bouncing packet from node='170' id='88'[0m
+bounce,1775558508,170,88,57.2952330,9.6251729
+[0;32mI (1301251) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1301511) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1301511) GPS_FIX: Time to first fix 711  ms since start/reset 2352220[0m
+[0;32mI (1302221) TXtask: Sent Packet with id: '85'[0m
+[0;32mI (1302551) GPS: Latitude:Longitude:  57.2952576, 9.6250233[0m
+[0;32mI (1302551) GPS: Tue Apr  7 12:41:50 2026[0m
+[0;32mI (1302551) GPS: Going to sleep after 4010 ms[0m
+[0;32mI (1303321) comTask: Ignoring received Own Packet id='85'[0m
+[0;32mI (1316191) comTask: Bouncing packet from node='170' id='89'[0m
+bounce,1775558523,170,89,57.2952564,9.6250233
+[0;32mI (1316191) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1317161) TXtask: Sent Packet with id: '86'[0m
+[0;32mI (1318261) comTask: Ignoring received Own Packet id='86'[0m
+[0;32mI (1331231) comTask: Bouncing packet from node='170' id='90'[0m
+bounce,1775558538,170,90,57.2952564,9.6250233
+[0;32mI (1331231) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1331501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1331501) GPS_FIX: Time to first fix 711  ms since start/reset 2382221[0m
+[0;32mI (1332201) TXtask: Sent Packet with id: '87'[0m
+[0;32mI (1332541) GPS: Latitude:Longitude:  57.2952957, 9.6249396[0m
+[0;32mI (1332561) GPS: Tue Apr  7 12:42:20 2026[0m
+[0;32mI (1332561) GPS: Going to sleep after 4020 ms[0m
+[0;32mI (1333301) comTask: Ignoring received Own Packet id='87'[0m
+[0;32mI (1345401) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1346371) TXtask: Sent Packet with id: '88'[0m
+[0;32mI (1360471) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1361441) TXtask: Sent Packet with id: '89'[0m
+[0;32mI (1361501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1361501) GPS_FIX: Time to first fix 711  ms since start/reset 2412221[0m
+[0;32mI (1362541) GPS: Latitude:Longitude:  57.2952194, 9.6251141[0m
+[0;32mI (1362561) GPS: Tue Apr  7 12:42:50 2026[0m
+[0;32mI (1362561) GPS: Going to sleep after 4020 ms[0m
+[0;32mI (1375441) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1376411) TXtask: Sent Packet with id: '90'[0m
+[0;32mI (1390411) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1391381) TXtask: Sent Packet with id: '91'[0m
+[0;32mI (1391501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1391501) GPS_FIX: Time to first fix 711  ms since start/reset 2442221[0m
+[0;32mI (1392541) GPS: Latitude:Longitude:  57.2951241, 9.6253572[0m
+[0;32mI (1392541) GPS: Tue Apr  7 12:43:20 2026[0m
+[0;32mI (1392541) GPS: Going to sleep after 4000 ms[0m
+[0;32mI (1405481) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1406451) TXtask: Sent Packet with id: '92'[0m
+[0;32mI (1420451) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1421421) TXtask: Sent Packet with id: '93'[0m
+[0;32mI (1421501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1421501) GPS_FIX: Time to first fix 711  ms since start/reset 2472221[0m
+[0;32mI (1422541) GPS: Latitude:Longitude:  57.2950287, 9.6255661[0m
+[0;32mI (1422541) GPS: Tue Apr  7 12:43:50 2026[0m
+[0;32mI (1422541) GPS: Going to sleep after 4000 ms[0m
+[0;32mI (1435421) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1436391) TXtask: Sent Packet with id: '94'[0m
+[0;32mI (1450391) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1451361) TXtask: Sent Packet with id: '95'[0m
+[0;32mI (1452511) GPS_FIX: Attempting to hot start[0m
+[0;32mI (1452511) GPS_HotStart: Sending HotStart data[0m
+[0;32mI (1453541) GPS_FIX: There is good fix after 3 attempts[0m
+[0;32mI (1453541) GPS_FIX: Time to first fix 711  ms since start/reset 2504221[0m
+[0;32mI (1454541) GPS: Latitude:Longitude:  57.2968826, 9.6280220[0m
+[0;32mI (1454561) GPS: Tue Apr  7 12:44:22 2026[0m
+[0;32mI (1454561) GPS: Going to sleep after 6020 ms[0m
+[0;32mI (1465461) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1466431) TXtask: Sent Packet with id: '96'[0m
+[0;32mI (1480431) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1481401) TXtask: Sent Packet with id: '97'[0m
+[0;32mI (1481501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1481501) GPS_FIX: Time to first fix 711  ms since start/reset 2532222[0m
+[0;32mI (1482541) GPS: Latitude:Longitude:  57.2985649, 9.6299067[0m
+[0;32mI (1482561) GPS: Tue Apr  7 12:44:50 2026[0m
+[0;32mI (1482561) GPS: Going to sleep after 4020 ms[0m
+[0;32mI (1495401) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1496371) TXtask: Sent Packet with id: '98'[0m
+[0;32mI (1510471) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1511441) TXtask: Sent Packet with id: '99'[0m
+[0;32mI (1511511) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1511511) GPS_FIX: Time to first fix 711  ms since start/reset 2562222[0m
+[0;32mI (1512551) GPS: Latitude:Longitude:  57.3003654, 9.6321109[0m
+[0;32mI (1512551) GPS: Tue Apr  7 12:45:20 2026[0m
+[0;32mI (1512551) GPS: Going to sleep after 4010 ms[0m
+[0;32mI (1525441) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1526411) TXtask: Sent Packet with id: '100'[0m
+[0;32mI (1540411) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1541381) TXtask: Sent Packet with id: '101'[0m
+[0;32mI (1541531) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1541531) GPS_FIX: Time to first fix 711  ms since start/reset 2592222[0m
+[0;32mI (1542541) GPS: Latitude:Longitude:  57.3020096, 9.6342929[0m
+[0;32mI (1542541) GPS: Tue Apr  7 12:45:50 2026[0m
+[0;32mI (1542561) GPS: Going to sleep after 4020 ms[0m
+[0;32mI (1555481) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1556451) TXtask: Sent Packet with id: '102'[0m
+[0;32mI (1570451) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1571421) TXtask: Sent Packet with id: '103'[0m
+[0;32mI (1571501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1571501) GPS_FIX: Time to first fix 711  ms since start/reset 2622222[0m
+[0;32mI (1572541) GPS: Latitude:Longitude:  57.3024750, 9.6347051[0m
+[0;32mI (1572561) GPS: Tue Apr  7 12:46:20 2026[0m
+[0;32mI (1572561) GPS: Going to sleep after 4020 ms[0m
+[0;32mI (1585421) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1586391) TXtask: Sent Packet with id: '104'[0m
+[0;32mI (1600391) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1601361) TXtask: Sent Packet with id: '105'[0m
+[0;32mI (1601501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1601501) GPS_FIX: Time to first fix 711  ms since start/reset 2652222[0m
+[0;32mI (1602541) GPS: Latitude:Longitude:  57.3028793, 9.6354760[0m
+[0;32mI (1602561) GPS: Tue Apr  7 12:46:50 2026[0m
+[0;32mI (1602561) GPS: Going to sleep after 4020 ms[0m
+[0;32mI (1615461) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1616431) TXtask: Sent Packet with id: '106'[0m
+[0;32mI (1630431) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1631401) TXtask: Sent Packet with id: '107'[0m
+[0;32mI (1631491) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1631491) GPS_FIX: Time to first fix 711  ms since start/reset 2682222[0m
+[0;32mI (1632531) GPS: Latitude:Longitude:  57.3031235, 9.6355304[0m
+[0;32mI (1632551) GPS: Tue Apr  7 12:47:20 2026[0m
+[0;32mI (1632551) GPS: Going to sleep after 4010 ms[0m
+[0;32mI (1645401) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1646371) TXtask: Sent Packet with id: '108'[0m
+[0;32mI (1660471) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1661441) TXtask: Sent Packet with id: '109'[0m
+[0;32mI (1661511) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1661511) GPS_FIX: Time to first fix 711  ms since start/reset 2712222[0m
+[0;32mI (1662551) GPS: Latitude:Longitude:  57.3029442, 9.6341587[0m
+[0;32mI (1662551) GPS: Tue Apr  7 12:47:50 2026[0m
+[0;32mI (1662551) GPS: Going to sleep after 4010 ms[0m
+[0;32mI (1675441) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1676411) TXtask: Sent Packet with id: '110'[0m
+[0;32mI (1690411) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1691381) TXtask: Sent Packet with id: '111'[0m
+[0;32mI (1691501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1691521) GPS_FIX: Time to first fix 711  ms since start/reset 2742222[0m
+[0;32mI (1692551) GPS: Latitude:Longitude:  57.3029327, 9.6340468[0m
+[0;32mI (1692551) GPS: Tue Apr  7 12:48:20 2026[0m
+[0;32mI (1692551) GPS: Going to sleep after 4010 ms[0m
+[0;32mI (1705481) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1706451) TXtask: Sent Packet with id: '112'[0m
+[0;32mI (1720451) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1721421) TXtask: Sent Packet with id: '113'[0m
+[0;32mI (1721511) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1721511) GPS_FIX: Time to first fix 711  ms since start/reset 2772223[0m
+[0;32mI (1722551) GPS: Latitude:Longitude:  57.3029327, 9.6340125[0m
+[0;32mI (1722551) GPS: Tue Apr  7 12:48:50 2026[0m
+[0;32mI (1722551) GPS: Going to sleep after 4010 ms[0m
+[0;32mI (1735421) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1736391) TXtask: Sent Packet with id: '114'[0m
+[0;32mI (1750391) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1751361) TXtask: Sent Packet with id: '115'[0m
+[0;32mI (1751501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1751501) GPS_FIX: Time to first fix 711  ms since start/reset 2802223[0m
+[0;32mI (1752541) GPS: Latitude:Longitude:  57.3029442, 9.6339979[0m
+[0;32mI (1752561) GPS: Tue Apr  7 12:49:20 2026[0m
+[0;32mI (1752561) GPS: Going to sleep after 4020 ms[0m
+[0;32mI (1765461) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1766431) TXtask: Sent Packet with id: '116'[0m
+[0;32mI (1780431) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1781401) TXtask: Sent Packet with id: '117'[0m
+[0;32mI (1781501) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1781521) GPS_FIX: Time to first fix 711  ms since start/reset 2832223[0m
+[0;32mI (1782551) GPS: Latitude:Longitude:  57.3029251, 9.6340335[0m
+[0;32mI (1782551) GPS: Tue Apr  7 12:49:50 2026[0m
+[0;32mI (1782551) GPS: Going to sleep after 4010 ms[0m
+[0;32mI (1795401) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1796371) TXtask: Sent Packet with id: '118'[0m
+[0;32mI (1810471) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1811441) TXtask: Sent Packet with id: '119'[0m
+[0;32mI (1811511) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1811511) GPS_FIX: Time to first fix 711  ms since start/reset 2862223[0m
+[0;32mI (1812551) GPS: Latitude:Longitude:  57.3028221, 9.6341881[0m
+[0;32mI (1812551) GPS: Tue Apr  7 12:50:20 2026[0m
+[0;32mI (1812551) GPS: Going to sleep after 4010 ms[0m
+[0;32mI (1825441) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1826411) TXtask: Sent Packet with id: '120'[0m
+[0;32mI (1840411) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1841381) TXtask: Sent Packet with id: '121'[0m
+[0;32mI (1841511) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (1841511) GPS_FIX: Time to first fix 711  ms since start/reset 2892223[0m
+[0;32mI (1842551) GPS: Latitude:Longitude:  57.3027763, 9.6343211[0m
+[0;32mI (1842551) GPS: Tue Apr  7 12:50:50 2026[0m
+[0;32mI (1842551) GPS: Going to sleep after 4010 ms[0m
+[0;32mI (1855481) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (1856451) TXtask: Sent Packet with id: '122'[0m

@@ -1,0 +1,183 @@
+Executing action: monitor
+Serial port /dev/ttyUSB0
+Connecting....
+Detecting chip type... ESP32-H2
+Running idf_monitor in directory /home/zadd/Programming/P4-The-Good-Ones/weather_node
+Executing "/home/zadd/.espressif/python_env/idf5.5_py3.14_env/bin/python /home/zadd/.esp/esp-idf/tools/idf_monitor.py -p /dev/ttyUSB0 -b 115200 --toolchain-prefix riscv32-esp-elf- --target esp32h2 --revision 0 --decode-panic backtrace /home/zadd/Programming/P4-The-Good-Ones/weather_node/build/humid.elf /home/zadd/Programming/P4-The-Good-Ones/weather_node/build/bootloader/bootloader.elf -m '/home/zadd/.espressif/python_env/idf5.5_py3.14_env/bin/python' '/home/zadd/.esp/esp-idf/tools/idf.py'"...
+ESP-ROM:esp32h2-20221101
+Build:Nov  1 2022
+rst:0x1 (POWERON),boot:0x1c (SPI_FAST_FLASH_BOOT)
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x408460f0,len:0x1700
+load:0x4083c2d0,len:0xf78
+load:0x4083efd0,len:0x2fdc
+entry 0x4083c2da
+[0;32mI (23) boot: ESP-IDF v5.5.1-dirty 2nd stage bootloader[0m
+[0;32mI (24) boot: compile time Mar 31 2026 09:28:19[0m
+[0;32mI (25) boot: chip revision: v0.1[0m
+[0;32mI (25) boot: efuse block revision: v0.3[0m
+[0;32mI (28) boot.esp32h2: SPI Speed      : 64MHz[0m
+[0;32mI (32) boot.esp32h2: SPI Mode       : DIO[0m
+[0;32mI (35) boot.esp32h2: SPI Flash Size : 2MB[0m
+[0;32mI (39) boot: Enabling RNG early entropy source...[0m
+[0;32mI (44) boot: Partition Table:[0m
+[0;32mI (46) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (53) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (59) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (66) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (72) boot: End of partition table[0m
+[0;32mI (76) esp_image: segment 0: paddr=00010020 vaddr=42030020 size=0e768h ( 59240) map[0m
+[0;32mI (100) esp_image: segment 1: paddr=0001e790 vaddr=40800000 size=01888h (  6280) load[0m
+[0;32mI (103) esp_image: segment 2: paddr=00020020 vaddr=42000020 size=2eda0h (191904) map[0m
+[0;32mI (159) esp_image: segment 3: paddr=0004edc8 vaddr=40801888 size=0d7b0h ( 55216) load[0m
+[0;32mI (177) esp_image: segment 4: paddr=0005c580 vaddr=4080f040 size=01aech (  6892) load[0m
+[0;32mI (185) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (185) boot: Disabling RNG early entropy source...[0m
+[0;32mI (195) cpu_start: Unicore app[0m
+[0;32mI (204) cpu_start: Pro cpu start user code[0m
+[0;32mI (204) cpu_start: cpu freq: 48000000 Hz[0m
+[0;32mI (205) app_init: Application information:[0m
+[0;32mI (205) app_init: Project name:     humid[0m
+[0;32mI (207) app_init: App version:      32e18e1[0m
+[0;32mI (211) app_init: Compile time:     Apr  7 2026 12:51:21[0m
+[0;32mI (216) app_init: ELF file SHA256:  3cfd9b6f2...[0m
+[0;32mI (221) app_init: ESP-IDF:          v5.5.1-dirty[0m
+[0;32mI (225) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (229) efuse_init: Max chip rev:     v1.99 [0m
+[0;32mI (233) efuse_init: Chip rev:         v0.1[0m
+[0;32mI (237) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (243) heap_init: At 408122F0 len 0003B090 (236 KiB): RAM[0m
+[0;32mI (248) heap_init: At 4084D380 len 00002B60 (10 KiB): RAM[0m
+[0;32mI (253) heap_init: At 50000000 len 00000FE8 (3 KiB): RTCRAM[0m
+[0;32mI (260) spi_flash: detected chip: gd[0m
+[0;32mI (262) spi_flash: flash io: dio[0m
+[0;33mW (265) spi_flash: Detected size(4096k) larger than the size in the binary image header(2048k). Using the size in the binary image header.[0m
+[0;32mI (278) sleep_gpio: Configure to isolate all GPIO pins in sleep state[0m
+[0;32mI (284) sleep_gpio: Enable automatic switching of GPIO sleep configuration[0m
+[0;32mI (302) main_task: Started on CPU0[0m
+[0;32mI (302) main_task: Calling app_main()[0m
+[0;32mI (312) main: Loading Config from NVS[0m
+[0;32mI (312) main: Loaded: Network_ID='1'  Node_ID='170'[0m
+[0;32mI (312) main: Starting GPS Task[0m
+[0;32mI (312) main: Starting Communication Task[0m
+00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F
+38 81 1A 0B 00 52 D9 00 00 8F 09 2B 23 26 00 00 
+00 00 00 00 00 00 00 00 10 00 00 00 00 72 C4 64 
+00 08 23 FF 00 00 04 00 00 00 00 00 00 50 14 45 
+55 C3 05 27 1C 0A 03 0A 42 12 49 1D 00 AF 00 00 
+
+[0;32mI (382) main: Finished starting all tasks[0m
+[0;32mI (392) uart: queue free spaces: 20[0m
+[0;32mI (2402) GPS: Wiping settings...[0m
+[0;32mI (2722) GPS: Success from CFG-CFG[0m
+[0;32mI (3222) GPS: Disabling all NMEA Communication[0m
+[0;32mI (3922) GPS: Setting Communication protocol to only UBX...[0m
+[0;32mI (4012) GPS: Success from CFG-PRT[0m
+[0;32mI (4212) GPS: Setting to Stationary...[0m
+[0;32mI (4292) GPS: Success from CFG-NAV5[0m
+[0;32mI (4792) GPS_HotStart: Attempting to resume with HotStart...[0m
+[0;32mI (5232) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (5232) GPS_FIX: Time to first fix 1678  ms since start/reset 4678[0m
+[0;32mI (6232) GPS_HotStart: Sending Poll request...[0m
+[0;32mI (7262) GPS_HotStart: Recieved hot start data[0m
+[0;32mI (7272) GPS_HotStart: Data saved[0m
+[0;32mI (8272) GPS: Init Complete.[0m
+[0;32mI (11232) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (11232) GPS_FIX: Time to first fix 1678  ms since start/reset 10678[0m
+[0;32mI (12272) GPS: Latitude:Longitude:  57.2574272, 9.5815082[0m
+[0;32mI (12272) GPS: Tue Apr  7 12:51:57 2026[0m
+[0;32mI (12272) GPS: Going to sleep after 4000 ms[0m
+[0;33mW (25382) PCNT: Rain is not initialized[0m
+[1;31mE (26472) LoRa: Tx timeout, aborted[0m
+[0;32mI (26472) TXtask: Sent Packet with id: '0'[0m
+[0;32mI (40472) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (40522) TXtask: Sent Packet with id: '1'[0m
+[0;32mI (42322) GPS_FIX: Attempting to hot start[0m
+[0;32mI (42322) GPS_HotStart: Sending HotStart data[0m
+[0;32mI (43412) GPS_FIX: There is good fix after 3 attempts[0m
+[0;32mI (43412) GPS_FIX: Time to first fix 1299  ms since start/reset 4799[0m
+[0;32mI (44322) GPS: Latitude:Longitude:  57.2572937, 9.5815228[0m
+[0;32mI (44322) GPS: Tue Apr  7 12:52:29 2026[0m
+[0;32mI (44322) GPS: Going to sleep after 6050 ms[0m
+[0;32mI (55422) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (55472) TXtask: Sent Packet with id: '2'[0m
+[0;32mI (70472) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (70522) TXtask: Sent Packet with id: '3'[0m
+[0;32mI (71362) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (71362) GPS_FIX: Time to first fix 1299  ms since start/reset 2799[0m
+[0;32mI (72322) GPS: Latitude:Longitude:  57.2573700, 9.5815273[0m
+[0;32mI (72322) GPS: Tue Apr  7 12:52:57 2026[0m
+[0;32mI (72322) GPS: Going to sleep after 4050 ms[0m
+[0;32mI (85422) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (85472) TXtask: Sent Packet with id: '4'[0m
+[0;32mI (100472) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (100522) TXtask: Sent Packet with id: '5'[0m
+[0;32mI (101322) GPS_FIX: Attempting to hot start[0m
+[0;32mI (101322) GPS_HotStart: Sending HotStart data[0m
+[0;32mI (102422) GPS_FIX: There is good fix after 3 attempts[0m
+[0;32mI (102422) GPS_FIX: Time to first fix 2299  ms since start/reset 3799[0m
+[0;32mI (103332) GPS: Latitude:Longitude:  57.2574463, 9.5815453[0m
+[0;32mI (103332) GPS: Tue Apr  7 12:53:28 2026[0m
+[0;32mI (103332) GPS: Going to sleep after 5060 ms[0m
+[0;32mI (115422) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (115472) TXtask: Sent Packet with id: '6'[0m
+[0;32mI (130472) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (130522) TXtask: Sent Packet with id: '7'[0m
+[0;32mI (131322) GPS_FIX: Attempting to hot start[0m
+[0;32mI (131322) GPS_HotStart: Sending HotStart data[0m
+[0;32mI (132402) GPS_FIX: There is good fix after 3 attempts[0m
+[0;32mI (132402) GPS_FIX: Time to first fix 2300  ms since start/reset 3800[0m
+[0;32mI (133322) GPS: Latitude:Longitude:  57.2573624, 9.5815740[0m
+[0;32mI (133342) GPS: Tue Apr  7 12:53:58 2026[0m
+[0;32mI (133342) GPS: Going to sleep after 5070 ms[0m
+[0;32mI (145422) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (145472) TXtask: Sent Packet with id: '8'[0m
+[0;32mI (160472) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (160522) TXtask: Sent Packet with id: '9'[0m
+[0;32mI (161402) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (161402) GPS_FIX: Time to first fix 2799  ms since start/reset 2799[0m
+[0;32mI (162332) GPS: Latitude:Longitude:  57.2573166, 9.5815598[0m
+[0;32mI (162332) GPS: Tue Apr  7 12:54:27 2026[0m
+[0;32mI (162332) GPS: Going to sleep after 4060 ms[0m
+[0;32mI (175422) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (175472) TXtask: Sent Packet with id: '10'[0m
+[0;33mW (181072) comTask: Unknown packet, with len='0'[0m
+[0;32mI (190472) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (191322) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (191322) GPS_FIX: Time to first fix 1800  ms since start/reset 2800[0m
+[1;31mE (191562) LoRa: Tx timeout, aborted[0m
+[0;32mI (191562) TXtask: Sent Packet with id: '11'[0m
+[0;32mI (192322) GPS: Latitude:Longitude:  57.2573700, 9.5815792[0m
+[0;32mI (192322) GPS: Tue Apr  7 12:54:57 2026[0m
+[0;32mI (192322) GPS: Going to sleep after 4050 ms[0m
+[0;32mI (205462) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (205512) TXtask: Sent Packet with id: '12'[0m
+[0;32mI (220412) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (220462) TXtask: Sent Packet with id: '13'[0m
+[0;32mI (221372) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (221372) GPS_FIX: Time to first fix 2800  ms since start/reset 2800[0m
+[0;32mI (222322) GPS: Latitude:Longitude:  57.2573700, 9.5815607[0m
+[0;32mI (222322) GPS: Tue Apr  7 12:55:27 2026[0m
+[0;32mI (222342) GPS: Going to sleep after 4070 ms[0m
+[0;32mI (235462) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (235512) TXtask: Sent Packet with id: '14'[0m
+[0;32mI (250412) PCNT: Rain='0.0'mm   pulses='0'[0m
+[0;32mI (250462) TXtask: Sent Packet with id: '15'[0m
+[0;32mI (252322) GPS_FIX: Attempting to hot start[0m
+[0;32mI (252322) GPS_HotStart: Sending HotStart data[0m
+[0;32mI (254362) GPS_FIX: There is good fix after 4 attempts[0m
+[0;32mI (254362) GPS_FIX: Time to first fix 1301  ms since start/reset 5801[0m
+[0;32mI (255322) GPS: Latitude:Longitude:  57.2574196, 9.5816579[0m
+[0;32mI (255322) GPS: Tue Apr  7 12:56:00 2026[0m
+[0;32mI (255322) GPS: Going to sleep after 7050 ms[0m
+[0;32mI (2402) GPS: Wiping settings...[0m
+[0;32mI (2632) GPS: Success from CFG-CFG[0m
+[0;32mI (3132) GPS: Disabling all NMEA Communication[0m
+[0;32mI (3832) GPS: Setting Communication protocol to only UBX...[0m
+[0;32mI (3912) GPS: Success from CFG-PRT[0m
+[0;32mI (4112) GPS: Setting to Stationary...[0m
+[0;32mI (4192) GPS: Success from CFG-NAV5[0m
+[0;32mI (4692) GPS_HotStart: Attempting to resume with HotStart...[0m
+[0;32mI (6442) GPS_FIX: Attempting to hot start[0m
+[0;32mI (6462) GPS_HotStart: Sending HotStart data[0m
