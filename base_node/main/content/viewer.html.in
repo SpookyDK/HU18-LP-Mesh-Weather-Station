@@ -9,7 +9,8 @@ input,select{font:12px monospace;padding:4px 4px}button{font:12px monospace;padd
 Node:<input id="fn" size="4" oninput="render()">Flag:<input id="ff" size="8" oninput="render()">
 Max:<select id="mr" onchange="render()"><option>100</option><option>200</option><option>500</option><option>0</option></select>
 Page:<input id="pg" size="2" type="number" min="0" onchange="render()">
-<button onclick="idx=0;rows=[];render()">Clear</button><button onclick="ws.send('START_SD_STREAM:'+idx);render()">Get New</button>
+Idx:<input id="idxn" size="4" type="number" min="0" oninput="setIdx(Number(this.value))">
+<button onclick="setIdx(0);rows=[];render()">Clear</button><button onclick="ws.send('START_SD_STREAM:'+idx)">Get New</button>
 <button onclick="exportCSV()">CSV</button>
 &nbsp;<span id="cnt"></span>
 <div style="display: flex; align-items: flex-start; gap: 10px; margin-top: 6px;">
@@ -73,12 +74,15 @@ var b=rows.map(function(r){return[new Date(r.t).toISOString(),r.orig_node_id,r.n
 var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h+b],{type:'text/csv'}));
 a.download='sensors.csv';a.click();
 }
+const idxInput=document.getElementById("idxn");
+idxInput.oninput=(e)=>{idx=e.target.value;}
+function setIdx(nv){idx=nv;idxInput=nv;}
 var ws,idx=0,heartbeatTimer;
 function resetHeartbeat(){
 clearTimeout(heartbeatTimer);
 heartbeatTimer = setTimeout(()=>{
 console.warn("Heartbeat lost. Closing Conn");
-if (ws) ws.close(); },10000); }
+if (ws) ws.close();},10000);}
 function conn(){
 document.getElementById('s').textContent='Connecting...';
 ws=new WebSocket('ws://'+location.hostname+'/dataviewer');
@@ -87,7 +91,7 @@ ws.onopen=function(){document.getElementById('s').textContent='Connected';ws.sen
 ws.onclose=function(){document.getElementById('s').textContent='Disconnected';setTimeout(conn,2000);};
 ws.onmessage=function(e){
 if(e.data instanceof ArrayBuffer){handleData(e.data);}
-    else if(e.data.startsWith('END_OF_TRANSMISSION')){idx=Number(e.data.split(':')[1]);}
-    else{console.log("Received unkown packet:"+e)}
+else if(e.data.startsWith('END_OF_TRANSMISSION')){setIdx(Number(e.data.split(':')[1]));}
+else{console.log("Received unkown packet:"+e)}
 };}conn();
 </script></body></html>

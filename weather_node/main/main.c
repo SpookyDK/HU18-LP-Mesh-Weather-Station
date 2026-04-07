@@ -22,10 +22,11 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 static const char *TAG = "main";
 
-#define DUTY_CYCLES_MS 300000
+#define DUTY_CYCLES_MS 15000
 #define PACKET_TIME_TO_LIVE 3
 #define NVS_NAMESPACE "lora_conf"
 #define NVS_NETWORK_KEY "network_key"
@@ -73,10 +74,6 @@ extern bool power_shared_solar_state;
 
 packet_header_t header = {0};
 static void prepare_header() {
-    if (PACKET_ID >= 255) {
-        PACKET_ID = 0;
-        ESP_LOGI(TAG, "Packet ID reached max and returned to 0");
-    }
     header.network_id = NETWORK_ID;
     header.orig_node_id = NODE_ID;
     header.packet_id = PACKET_ID++;
@@ -141,6 +138,7 @@ static void communication_task(void *p) {
     int buffer_len;
     uint8_t buffer[256] = {0};
     full_packet_t temp_packet = {0};
+    struct timespec ts;
 
     while (1) {
         lora_receive();
@@ -172,7 +170,10 @@ static void communication_task(void *p) {
 
             block_if_receiving();
             lora_send_packet((uint8_t *)&temp_packet, buffer_len);
-            ESP_LOGI(tag, "Sent Packet, received from node='%d'", temp_packet.head.orig_node_id);
+            ESP_LOGI(tag, "Bouncing packet from node='%d' id='%d'", temp_packet.head.orig_node_id, temp_packet.head.packet_id);
+            clock_gettime(CLOCK_REALTIME, &ts);
+            printf("bounce,%lld,%d,%d,%.7f,%.7f\n", ts.tv_sec, temp_packet.head.orig_node_id, temp_packet.head.packet_id,
+                   gps_shared_latitude / 1e7, gps_shared_longitude / 1e7);
         }
 
         // Is it time to send own packet?
@@ -244,7 +245,7 @@ void app_main(void) {
     }
     load_config_nvs();
 
-    ESP_LOGI(TAG, "Starting Tempeture Task");
+    /* ESP_LOGI(TAG, "Starting Tempeture Task");
     xTaskCreate(temp_task, "tempTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
 
     ESP_LOGI(TAG, "Starting Soil Moisture Reading Task");
@@ -260,7 +261,7 @@ void app_main(void) {
     xTaskCreate(pcnt_task, "windTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
 
     ESP_LOGI(TAG, "Starting power Task");
-    xTaskCreate(power_sensor_task, "powerTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
+    xTaskCreate(power_sensor_task, "powerTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL); */
 
     ESP_LOGI(TAG, "Starting GPS Task");
     xTaskCreate(gps_task, "gpsTask", 4096, NULL, 0, NULL);
