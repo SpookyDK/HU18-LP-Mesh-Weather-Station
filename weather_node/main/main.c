@@ -1,6 +1,5 @@
 #include "NEO_6M_UART.h"
 #include "driver/spi_master.h"
-#include "esp_bit_defs.h"
 #include "esp_err.h"
 #include "esp_log.h"
 #include "esp_random.h"
@@ -17,12 +16,10 @@
 #include "pin_config.h"
 #include "portmacro.h"
 #include "tempeture.h"
-#include <math.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 
 static const char *TAG = "main";
 
@@ -138,7 +135,6 @@ static void communication_task(void *p) {
     int buffer_len;
     uint8_t buffer[256] = {0};
     full_packet_t temp_packet = {0};
-    struct timespec ts;
 
     while (1) {
         lora_receive();
@@ -171,9 +167,6 @@ static void communication_task(void *p) {
             block_if_receiving();
             lora_send_packet((uint8_t *)&temp_packet, buffer_len);
             ESP_LOGI(tag, "Bouncing packet from node='%d' id='%d'", temp_packet.head.orig_node_id, temp_packet.head.packet_id);
-            clock_gettime(CLOCK_REALTIME, &ts);
-            printf("bounce,%lld,%d,%d,%.7f,%.7f\n", ts.tv_sec, temp_packet.head.orig_node_id, temp_packet.head.packet_id,
-                   gps_shared_latitude / 1e7, gps_shared_longitude / 1e7);
         }
 
         // Is it time to send own packet?
@@ -245,7 +238,7 @@ void app_main(void) {
     }
     load_config_nvs();
 
-    /* ESP_LOGI(TAG, "Starting Tempeture Task");
+    ESP_LOGI(TAG, "Starting Tempeture Task");
     xTaskCreate(temp_task, "tempTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
 
     ESP_LOGI(TAG, "Starting Soil Moisture Reading Task");
@@ -261,7 +254,7 @@ void app_main(void) {
     xTaskCreate(pcnt_task, "windTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
 
     ESP_LOGI(TAG, "Starting power Task");
-    xTaskCreate(power_sensor_task, "powerTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL); */
+    xTaskCreate(power_sensor_task, "powerTask", 4096, (void *)DUTY_CYCLES_MS, 0, NULL);
 
     ESP_LOGI(TAG, "Starting GPS Task");
     xTaskCreate(gps_task, "gpsTask", 4096, NULL, 0, NULL);
