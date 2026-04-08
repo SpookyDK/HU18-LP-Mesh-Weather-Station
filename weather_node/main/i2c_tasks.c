@@ -193,7 +193,7 @@ void power_sensor_task(void *duty_cycle_ms) {
                 if (current < 0)
                     power_shared_solar_production = 0;
                 else
-                    power_shared_solar_production = (uint8_t)(current >> 2);
+                    power_shared_solar_production = (uint8_t)(power >> 2);
                 ESP_LOGI(TAG, "Shared solar '%d'", power_shared_solar_production);
             } else if (devices[i].addr == POWER_ADDR_BATTERY) {
                 if (voltage < 3500)
