@@ -20,7 +20,7 @@ Idx:<input id="idxn" size="4" type="number" min="0" oninput="setIdx(Number(this.
 <th onclick="sort('air_temp')">Temp°C</th><th onclick="sort('air_humidity')">Hum%</th><th onclick="sort('pressure')">hPa</th>
 <th onclick="sort('soil_moisture')">SoilM</th><th onclick="sort('soil_temps')">SoilT°C</th>
 <th onclick="sort('lux')">Lux</th><th onclick="sort('precipitation')">Precip</th><th onclick="sort('wind_speed')">Wind</th>
-<th onclick="sort('solar_output')">Gen mA</th><th onclick="sort('bat_voltage')">Bat V</th><th onclick="sort('flags')">Flags</th>
+<th onclick="sort('solar_output')">Gen mW</th><th onclick="sort('bat_voltage')">Bat V</th><th onclick="sort('flags')">Flags</th>
 </tr></thead><tbody id="tb"></tbody></table></div>
 <div style="flex-grow:1;min-width:0;">
 <video style="width:100%;height:auto;display:block;" autoplay muted loop>
@@ -76,7 +76,7 @@ a.download='sensors.csv';a.click();
 }
 const idxInput=document.getElementById("idxn");
 idxInput.oninput=(e)=>{idx=e.target.value;}
-function setIdx(nv){idx=nv;idxInput=nv;}
+function setIdx(nv){idx=nv;idxInput.value=nv;}
 var ws,idx=0,heartbeatTimer;
 function resetHeartbeat(){
 clearTimeout(heartbeatTimer);

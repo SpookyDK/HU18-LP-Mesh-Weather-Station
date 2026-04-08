@@ -233,7 +233,7 @@ static void evaluate_frame(ubx_frame_t *frame) {
         case 0x0201: // NAV-POSLLH
             gps_shared_longitude = *(int32_t *)&frame->data[offset + 10];
             gps_shared_latitude = *(int32_t *)&frame->data[offset + 14];
-            ESP_LOGI("GPS", "Latitude:Longitude:  %.7f, %.7f", gps_shared_latitude / 1e7f, gps_shared_longitude / 1e7);
+            ESP_LOGD("GPS", "Latitude:Longitude:  %.7f, %.7f", gps_shared_latitude / 1e7f, gps_shared_longitude / 1e7);
             break;
         case 0x2101: // NAV-TIMEUTC
             nano = *(int32_t *)&frame->data[offset + 14];
@@ -254,7 +254,7 @@ static void evaluate_frame(ubx_frame_t *frame) {
             clock_settime(CLOCK_REALTIME, &ts);
             localtime_r(&t, &time_local);
             strftime(time_buffer, sizeof(time_buffer), "%c", &time_local);
-            ESP_LOGI("GPS", "%s", time_buffer);
+            ESP_LOGD("GPS", "%s", time_buffer);
             break;
         case 0x3b06: // CFG-PM2
             print_frame(frame);
