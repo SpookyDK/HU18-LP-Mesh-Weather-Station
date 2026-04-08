@@ -407,7 +407,7 @@ void gps_task() {
     ubx_frame_t *frame;
 #ifdef GPS_DISABLE_PIN
     TickType_t last_wake = xTaskGetTickCount();
-    const TickType_t gps_polling_rate = pdMS_TO_TICKS(30000); // MIN_TO_TICKS(10);
+    const TickType_t gps_polling_rate = MIN_TO_TICKS(30);
 #endif
     gpsCalcCheckSum(nav_posllh_poll, sizeof(nav_posllh_poll));
     gpsCalcCheckSum(nav_timeutc_poll, sizeof(nav_timeutc_poll));
