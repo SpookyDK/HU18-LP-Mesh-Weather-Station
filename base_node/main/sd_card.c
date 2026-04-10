@@ -16,13 +16,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/param.h>
+#include <time.h>
 
 static const char *TAG = "SD_CARD";
 
 #define MAX_BUF_SIZE 64
 
-esp_err_t b_append_file(const char *path, full_packet_t data[], uint8_t count) {
-    ESP_LOGI(TAG, "Opening file to append, '%s'", path);
+esp_err_t b_append_file(const char *path, full_packet_t data) {
+    ESP_LOGD(TAG, "Opening file to append, '%s'", path);
     FILE *f = fopen(path, "ab");
     if (f == NULL) {
         ESP_LOGE(TAG, "Failed to open file, '%s'", path);
@@ -35,8 +36,7 @@ esp_err_t b_append_file(const char *path, full_packet_t data[], uint8_t count) {
     localtime_r(&ts_now.tv_sec, &timeinfo);
 
     fwrite((uint8_t *)&ts_now.tv_sec, sizeof(&ts_now.tv_sec), 1, f);
-    fwrite((uint8_t *)&count, sizeof(uint8_t), 1, f);
-    fwrite(data, sizeof(full_packet_t), count, f);
+    fwrite(&data, sizeof(full_packet_t), 1, f);
     fclose(f);
     return ESP_OK;
 }
@@ -50,31 +50,25 @@ READ_RETURN_STATE b_read_file(const char *path, size_t start_idx, size_t *len, u
     }
     fseek(f, start_idx, SEEK_SET);
     size_t cur_idx = 0, max_size = *len;
+    size_t packet_size = 4 + sizeof(full_packet_t); // 4 comes from time stamp
     READ_RETURN_STATE return_state;
     while (true) {
-        // Reading the time stamp, which is ignored
-        size_t bytes_read = fread(&result[cur_idx], sizeof(uint8_t), 4, f);
-        if (bytes_read == 0) {
-            return_state = READ_DONE;
-            *len = cur_idx;
-            break;
-        }
-        cur_idx += bytes_read;
-        // Reading the number of packets to read
-        uint8_t count;
-        fread(&count, sizeof(uint8_t), 1, f);
-        result[cur_idx++] = count;
-        // Ensuring there is enough space in buffer before reading
-        if (cur_idx + sizeof(full_packet_t) * count >= max_size) {
+        if (cur_idx + packet_size > max_size) {
             return_state = READ_NOT_DONE;
             break;
         }
-        cur_idx += fread(&result[cur_idx], sizeof(uint8_t), sizeof(full_packet_t) * count, f);
-        *len = cur_idx;
+        size_t bytes_read = fread(&result[cur_idx], 1, packet_size, f);
+        if (bytes_read == 0) {
+            return_state = READ_DONE;
+            break;
+        }
+        cur_idx += bytes_read;
     }
     fclose(f);
+    *len = cur_idx;
     return return_state;
 }
+
 esp_err_t b_read_last_packet(const char *path, full_packet_t *result) {
     FILE *f = fopen(path, "rb");
     if (f == NULL)

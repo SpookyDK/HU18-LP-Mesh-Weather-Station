@@ -59,24 +59,15 @@ void init_dio0_interrupt() {
 full_packet_t packet_cache[CACHE_SIZE];
 uint8_t cache_len = 0;
 
-typedef enum {
-    CACHE_NEW_ITEM,
-    CACHE_DUPLICATE_PACKET,
-    CACHE_RECURRING_NODE,
-} cache_ret_state;
-
-static cache_ret_state is_duplicate(full_packet_t pack) {
-    for (int i = 0; i < cache_len; i++) {
-        if (packet_cache[i].head.orig_node_id == pack.head.orig_node_id) {
-            if (packet_cache[i].head.packet_id == pack.head.packet_id) {
-                return CACHE_DUPLICATE_PACKET;
-            }
-            return CACHE_RECURRING_NODE;
+static bool is_duplicate(full_packet_t pack) {
+    for (int i = 0; i < CACHE_SIZE; i++) {
+        if (packet_cache[i].head.orig_node_id == pack.head.orig_node_id && packet_cache[i].head.packet_id == pack.head.packet_id) {
+            return true;
         }
     }
     memcpy(&packet_cache[cache_len], &pack, sizeof(full_packet_t));
     cache_len = (cache_len + 1) & CACHE_MASK;
-    return CACHE_NEW_ITEM;
+    return false;
 }
 
 full_packet_t big_data_packet = {0};
@@ -111,8 +102,7 @@ static void receive_task(void *p) {
             ESP_LOGI(TAG, "Ignoring packet from other network '%d'", temp_packet.head.network_id);
             continue;
         }
-        cache_ret_state state = is_duplicate(temp_packet);
-        if (state == CACHE_DUPLICATE_PACKET) {
+        if (is_duplicate(temp_packet)) {
             ESP_LOGI(TAG, "Ignoring Duplicate packet id='%d'", temp_packet.head.packet_id);
             continue;
         }
@@ -122,17 +112,13 @@ static void receive_task(void *p) {
         strftime(strtime_buf, sizeof(strtime_buf), "%c", &timeinfo);
 
         ESP_LOGI(TAG, "Received packet id='%d' from '%d' at %s", temp_packet.head.packet_id, temp_packet.head.orig_node_id, strtime_buf);
-        memcpy(&big_data_packet, (uint8_t *)&temp_packet, packet_len);
-        if (state == CACHE_RECURRING_NODE) {
-            if (b_append_file(PACKET_FILE, packet_cache, cache_len) == ESP_OK) {
-                ESP_LOGI(TAG, "Stored buffer to SD card item_count: '%d'", cache_len);
-                memcpy(&packet_cache[0], &temp_packet, sizeof(full_packet_t));
-                cache_len = 1;
-                // Notify site_content.c that it needs to send new data through websocket
-                notify_ws_new_sd_data();
-            } else {
-                ESP_LOGW(TAG, "Failed to store packet cache");
-            }
+        memcpy(&big_data_packet, (uint8_t *)&temp_packet, packet_len); // Legacy viewer, depends on this
+        if (b_append_file(PACKET_FILE, temp_packet) == ESP_OK) {
+            ESP_LOGI(TAG, "Stored packet to SD card");
+            // Notify site_content.c that it needs to send new data through websocket
+            notify_ws_new_sd_data();
+        } else {
+            ESP_LOGW(TAG, "Failed to store packet");
         }
     }
     ESP_LOGW(TAG, "Left task");

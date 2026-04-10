@@ -13,7 +13,7 @@ Idx:<input id="idxn" size="4" type="number" min="0" oninput="setIdx(Number(this.
 <button onclick="setIdx(0);rows=[];render()">Clear</button><button onclick="ws.send('START_SD_STREAM:'+idx)">Get New</button>
 <button onclick="exportCSV()">CSV</button>
 &nbsp;<span id="cnt"></span>
-<div style="display: flex; align-items: flex-start; gap: 10px; margin-top: 6px;">
+<div style="display:flex;align-items:flex-start;gap:10px;margin-top:6px;">
 <div style="overflow-x:auto;flex-shrink:0;"><table><thead><tr>
 <th onclick="sort('t')">Time</th><th onclick="sort('orig_node_id')">Node</th><th onclick="sort('packet_id')">PktID</th>
 <th onclick="sort('hop_count')">Hops</th><th onclick="sort('latitude')">Lat</th><th onclick="sort('longitude')">Lon</th>
@@ -30,6 +30,7 @@ Idx:<input id="idxn" size="4" type="number" min="0" oninput="setIdx(Number(this.
 var rows=[],sc='t',sd='d';
 function pp(buf){
 var v=new DataView(buf),o=0,r={};
+r.t=v.getInt32(o,1)*1000;o+=4;
 r.network_id=v.getUint8(o++);r.orig_node_id=v.getUint8(o++);
 r.packet_id=v.getUint8(o++);;r.hop_count=v.getUint8(o++);r.flags=v.getUint8(o++);
 r.longitude=v.getInt32(o,1)/1e7;o+=4;r.latitude=v.getInt32(o,1)/1e7;o+=4;
@@ -40,11 +41,10 @@ r.lux=v.getUint16(o,1);o+=2;r.precipitation=v.getUint16(o,1)/10;o+=2;
 r.wind_speed=v.getUint16(o,1)/1000;o+=2;
 r.solar_output=v.getUint8(o++)*4;r.bat_voltage=v.getUint8(o)/250+3.5;
 return r;}
-function handleData(b){const v=new DataView(b);let po=0;
-while(po<b.byteLength){const t=v.getInt32(po,true)*1000,
-c=v.getUint8(po+4);po+=5;for(let i=0;i<c;i++){
-const p=pp(b.slice(po,po+@FULL_PACKET@));p.t=t;rows.push(p);
-po+=@FULL_PACKET@;}}render();}
+function handleData(b){let po=0;
+while(po<b.byteLength){
+rows.push(pp(b.slice(po,po+@FULL_PACKET@+4)));
+po+=@FULL_PACKET@+4;}render();}
 function sort(c){if(sc===c)sd=sd==='d'?'a':'d';else{sc=c;sd='d';}render();}
 function render(){
 var fn=document.getElementById('fn').value;
