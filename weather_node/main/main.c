@@ -104,6 +104,8 @@ static bool is_duplicate(packet_header_t head) {
             return true;
         }
     }
+    packet_cache[write_idx].packet_id = head.packet_id;
+    packet_cache[write_idx].node_id = head.orig_node_id;
     write_idx = (write_idx + 1) & CACHE_MASK;
     return false;
 }
