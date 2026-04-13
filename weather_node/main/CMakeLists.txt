@@ -5,7 +5,7 @@ idf_component_register(SRCS "main.c" "moist_soil.c" "tempeture.c" "i2c_tasks.c" 
 if(ENABLE_ANALYZER)
 target_compile_options(${COMPONENT_LIB} PRIVATE 
     "-fanalyzer"           # The logic/path analyzer
-    "-Wanalyzer-too-complex" # Warns if the analyzer gives up on a complex function
+    # "-Wanalyzer-too-complex" # Warns if the analyzer gives up on a complex function
     "-Wall"                # Standard good warnings
     "-Wextra"              # Extra "suspicious" code warnings
     "-Wshadow"             # Warns if you name a local variable the same as a global

@@ -70,7 +70,7 @@ void barometer_task(void *duty_cycle_ms) {
         if (res == ESP_OK) {
             bmp_shared_pressure = (bmp_pressure >> 8) - 100000;
             ESP_LOGI("BMP280", "Read Values: temp = %2d °C, pres_diff = %d, Raw=%.2f", bmp_tempeture, bmp_shared_pressure,
-                     (float)(bmp_pressure / 256.0f));
+                     (double)(bmp_pressure / 256.0f));
         } else {
             ESP_LOGE("BMP280", "Read Failed: %s", esp_err_to_name(res));
         }

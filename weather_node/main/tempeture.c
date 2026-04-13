@@ -82,7 +82,7 @@ void temp_task(void *duty_cycle_ms) {
         for (int i = 0; i < ds18b20_device_num; i++) {
             if (ds18b20_get_temperature(ds18b20s[i], &ds18b20_temperature) == ESP_OK) {
                 ds18b20_shared_soil_tempeture[i] = ds18b20_temperature;
-                ESP_LOGI("DS18B20", "[%d] [Temperature]> %.2f, Shared> %d", i, ds18b20_temperature / 16.0f,
+                ESP_LOGI("DS18B20", "[%d] [Temperature]> %.2f, Shared> %d", i, (double)(ds18b20_temperature / 16.0f),
                          ds18b20_shared_soil_tempeture[i]);
                 ds18b20_shared_status = false;
             } else {

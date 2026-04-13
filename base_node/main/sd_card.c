@@ -71,15 +71,22 @@ READ_RETURN_STATE b_read_file(const char *path, size_t start_idx, size_t *len, u
 
 esp_err_t b_read_last_packet(const char *path, full_packet_t *result) {
     FILE *f = fopen(path, "rb");
-    if (f == NULL)
+    if (f == NULL) {
+        fclose(f);
         return ESP_ERR_NOT_FOUND;
+    }
     fseek(f, 0, SEEK_END);
-    if (ftell(f) < sizeof(full_packet_t))
+    if (ftell(f) < sizeof(full_packet_t)) {
+        fclose(f);
         return ESP_ERR_INVALID_SIZE;
+    }
     fseek(f, -sizeof(full_packet_t), SEEK_END);
     size_t read = fread(result, 1, sizeof(full_packet_t), f);
-    if (read != sizeof(full_packet_t))
+    if (read != sizeof(full_packet_t)) {
+        fclose(f);
         return ESP_FAIL;
+    }
+    fclose(f);
     return ESP_OK;
 }
 

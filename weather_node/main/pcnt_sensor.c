@@ -50,7 +50,7 @@ uint16_t get_rain() {
     ESP_ERROR_CHECK(pcnt_unit_get_count(rain_pcnt_unit, &rain_cnt));
     ESP_ERROR_CHECK(pcnt_unit_clear_count(rain_pcnt_unit));
 
-    ESP_LOGI(TAG, "Rain='%.1f'mm   pulses='%d'", rain_cnt * 0.2f, rain_cnt);
+    ESP_LOGI(TAG, "Rain='%.1f'mm   pulses='%d'", (double)(rain_cnt * 0.2f), rain_cnt);
     return (uint16_t)rain_cnt;
 }
 
@@ -97,7 +97,7 @@ void pcnt_task(void *duty_cycle_ms) {
 
         mms = PI * WIND_CUP_DIAMETER * CALIBRATION_FACTOR * wind_cnt * 1000000000ULL / (cur_time - last_time);
         wind_shared_speed = (uint16_t)(mms);
-        ESP_LOGI(TAG, "pulses = %ld, mms = %f, shared = %d", wind_cnt, mms, wind_shared_speed);
+        ESP_LOGI(TAG, "pulses = %ld, mms = %f, shared = %d", wind_cnt, (double)mms, wind_shared_speed);
 
         last_time = esp_timer_get_time();
         vTaskDelay(pdMS_TO_TICKS((uint32_t)duty_cycle_ms)); // wait
