@@ -33,8 +33,12 @@ foreach(SRC_NAME IN ITEMS viewer.html index.html)
   list(APPEND GZ_FILES ${GZ_OUT})
   target_add_binary_data(${COMPONENT_LIB} ${GZ_OUT} BINARY)
 endforeach()
+
+add_custom_target(generate_gz ALL DEPENDS ${GZ_FILES})
+add_dependencies(${COMPONENT_LIB} generate_gz)
+
 if(ENABLE_ANALYZER)
-target_compile_options(${COMPONENT_LIB} PRIVATE 
+  target_compile_options(${COMPONENT_LIB} PRIVATE
     "-fanalyzer"           # The logic/path analyzer
     # "-Wanalyzer-too-complex" # Warns if the analyzer gives up on a complex function
     "-Wall"                # Standard good warnings
@@ -45,5 +49,3 @@ target_compile_options(${COMPONENT_LIB} PRIVATE
     "-Wstack-usage=2048"   # Warns if a function uses more than 2KB of stack (prevents stack overflows)
 )
 endif()
-add_custom_target(generate_gz ALL DEPENDS ${GZ_FILES})
-add_dependencies(${COMPONENT_LIB} generate_gz)
