@@ -101,7 +101,7 @@ void light_sensor_task(void *duty_cycle_ms) {
     ESP_ERROR_CHECK(tsl2591_set_als_status(&light_sensor_dev, TSL2591_ALS_ON));
 
     ESP_ERROR_CHECK(tsl2591_set_gain(&light_sensor_dev, TSL2591_GAIN_LOW));
-    ESP_ERROR_CHECK(tsl2591_set_integration_time(&light_sensor_dev, TSL2591_INTEGRATION_300MS));
+    ESP_ERROR_CHECK(tsl2591_set_integration_time(&light_sensor_dev, TSL2591_INTEGRATION_100MS));
 
     uint16_t cha0_full, cha1_ir;
     esp_err_t res;
