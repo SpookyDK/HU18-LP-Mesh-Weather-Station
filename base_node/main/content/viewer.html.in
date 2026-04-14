@@ -25,14 +25,14 @@ Idx:<input id="idxn" size="4" type="number" min="0" oninput="setIdx(Number(this.
 <div style="flex-grow:1;min-width:0;">
 <video style="width:100%;height:auto;display:block;" autoplay muted loop>
 <source src="https://media.tenor.com/lHUl-0nKsmUAAAPo/cocio-rolling.mp4" type="video/mp4"></video>
-</div></div>
+<br><span id="error"></span></div></div>
 <script>
-var rows=[],sc='t',sd='d';
+var rows=[],sc='t',sd='d',ppid=-1,error=0;
 function pp(buf){
 var v=new DataView(buf),o=0,r={};
 r.t=v.getInt32(o,1)*1000;o+=4;
 r.network_id=v.getUint8(o++);r.orig_node_id=v.getUint8(o++);
-r.packet_id=v.getUint8(o++);;r.hop_count=v.getUint8(o++);r.flags=v.getUint8(o++);
+r.packet_id=v.getUint8(o++);r.hop_count=v.getUint8(o++);r.flags=v.getUint8(o++);
 r.longitude=v.getInt32(o,1)/1e7;o+=4;r.latitude=v.getInt32(o,1)/1e7;o+=4;
 r.air_humidity=v.getUint8(o++);r.air_temp=v.getInt16(o,1)/10;o+=2;
 r.soil_temps=[];for(var i=0;i<4;i++){r.soil_temps.push(v.getInt16(o,1)/16);o+=2;}
@@ -41,10 +41,14 @@ r.lux=v.getUint16(o,1);o+=2;r.precipitation=v.getUint16(o,1)/10;o+=2;
 r.wind_speed=v.getUint16(o,1)/1000;o+=2;
 r.solar_output=v.getUint8(o++)*4;r.bat_voltage=v.getUint8(o)/250+3.5;
 return r;}
-function handleData(b){let po=0;
-while(po<b.byteLength){
-rows.push(pp(b.slice(po,po+@FULL_PACKET@+4)));
-po+=@FULL_PACKET@+4;}render();}
+function handleData(b){
+let po=0;while(po<b.byteLength){
+const p=pp(b.slice(po,po+@FULL_PACKET@+4));rows.push(p);po+=@FULL_PACKET@+4;
+if(p.packet_id!==ppid+1){error++;}
+const span=document.getElementById("error");
+if(span){span.textContent="Of all packets in buffer "+error+" / "+rows.length+" = "+(error/rows.length*100).toFixed(2)+"% Failed."}
+ppid=p.packet_id;ppid=ppid==255?-1:ppid;}
+render();}
 function sort(c){if(sc===c)sd=sd==='d'?'a':'d';else{sc=c;sd='d';}render();}
 function render(){
 var fn=document.getElementById('fn').value;

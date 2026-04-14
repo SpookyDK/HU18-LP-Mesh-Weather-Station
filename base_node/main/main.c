@@ -5,6 +5,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/idf_additions.h"
 #include "freertos/projdefs.h"
+#include "portmacro.h"
 #include "sd_card.h"
 #include "web_server.h"
 #include <stdio.h>
