@@ -8,6 +8,7 @@
 #include "i2c_tasks.h"
 #include "i2cdev.h"
 #include "my_drivers/bmp280.h"
+#include "portmacro.h"
 #include "tsl2591.h"
 #include <stdbool.h>
 #include <stdint.h>
@@ -65,6 +66,8 @@ void barometer_task(void *duty_cycle_ms) {
     vTaskDelay(pdMS_TO_TICKS(300));
 
     esp_err_t res;
+    TickType_t PreviousWakeTime = xTaskGetTickCount();
+
     while (1) {
         res = bmp280_read(&bmp, &bmp_tempeture, &bmp_pressure);
         if (res == ESP_OK) {
@@ -75,8 +78,7 @@ void barometer_task(void *duty_cycle_ms) {
             ESP_LOGE("BMP280", "Read Failed: %s", esp_err_to_name(res));
         }
 
-        // vTaskDelay(pdMS_TO_TICKS(1000));
-        vTaskDelay(pdMS_TO_TICKS((uint32_t)duty_cycle_ms));
+        vTaskDelayUntil(&PreviousWakeTime, pdMS_TO_TICKS((uint32_t)duty_cycle_ms));
     }
     bmp280_free_desc(&bmp);
     ESP_LOGW("BMP280", "Leaving Accel Task");
@@ -103,21 +105,29 @@ void light_sensor_task(void *duty_cycle_ms) {
     ESP_ERROR_CHECK(tsl2591_set_gain(&light_sensor_dev, TSL2591_GAIN_LOW));
     ESP_ERROR_CHECK(tsl2591_set_integration_time(&light_sensor_dev, TSL2591_INTEGRATION_100MS));
 
-    uint16_t cha0_full, cha1_ir;
+    uint16_t cha1_ir;
+    float lux;
     esp_err_t res;
+    TickType_t PreviousWakeTime = xTaskGetTickCount();
+
     while (1) {
         if (i2c_dev_check_present(&light_sensor_dev.i2c_dev) != ESP_OK) {
             ESP_LOGE(TAG, "Light sensor disapperad and is dead");
             vTaskDelete(NULL);
         }
-        if ((res = tsl2591_get_channel_data(&light_sensor_dev, &cha0_full, &cha1_ir)) == ESP_OK) {
-            tsl_shared_spectrum = cha0_full;
-            ESP_LOGI(TAG, "Full: %d shared_spectrum = %d  IR reading: %d", cha0_full, tsl_shared_spectrum, cha1_ir);
+        if ((res = tsl2591_get_lux(&light_sensor_dev, &lux, &cha1_ir)) == ESP_OK) {
+            if (lux < 1) {
+                tsl_shared_spectrum = 1;
+            } else if (lux > 0xffff) {
+                tsl_shared_spectrum = 0xffff;
+            } else {
+                tsl_shared_spectrum = (uint16_t)lux;
+            }
+            ESP_LOGI(TAG, "shared_spectrum = %d  IR reading: %d", tsl_shared_spectrum, cha1_ir);
         } else {
             ESP_LOGW(TAG, "Cound not read Lux value: %d", res);
         }
-
-        vTaskDelay(pdMS_TO_TICKS((uint32_t)duty_cycle_ms));
+        vTaskDelayUntil(&PreviousWakeTime, pdMS_TO_TICKS((uint32_t)duty_cycle_ms));
     }
 }
 
@@ -175,6 +185,8 @@ void power_sensor_task(void *duty_cycle_ms) {
 
     uint16_t raw_voltage = 0, raw_current = 0, raw_power = 0, voltage = 0, power = 0;
     int16_t current = 0;
+    TickType_t PreviousWakeTime = xTaskGetTickCount();
+
     while (1) {
         for (int i = 0; i < DEVICE_COUNT; i++) {
             if (!devices_state[i])
@@ -203,7 +215,7 @@ void power_sensor_task(void *duty_cycle_ms) {
                 ESP_LOGI(TAG, "Shared battery '%d'", power_shared_bat_volatage);
             }
         }
-        vTaskDelay(pdMS_TO_TICKS((uint32_t *)duty_cycle_ms));
+        vTaskDelayUntil(&PreviousWakeTime, pdMS_TO_TICKS((uint32_t *)duty_cycle_ms));
     }
     ESP_LOGE(TAG, "Task ended");
     vTaskDelete(NULL);

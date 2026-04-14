@@ -89,6 +89,7 @@ void pcnt_task(void *duty_cycle_ms) {
     int wind_cnt = 0;
     int64_t cur_time = 0, last_time = 0;
     float mms = 0;
+    TickType_t PreviousWakeTime = xTaskGetTickCount();
 
     while (1) {
         ESP_ERROR_CHECK(pcnt_unit_get_count(wind_pcnt_unit, &wind_cnt));
@@ -100,7 +101,7 @@ void pcnt_task(void *duty_cycle_ms) {
         ESP_LOGI(TAG, "pulses = %ld, mms = %f, shared = %d", wind_cnt, (double)mms, wind_shared_speed);
 
         last_time = esp_timer_get_time();
-        vTaskDelay(pdMS_TO_TICKS((uint32_t)duty_cycle_ms)); // wait
+        vTaskDelayUntil(&PreviousWakeTime, pdMS_TO_TICKS((uint32_t)duty_cycle_ms));
     }
     ESP_LOGW(TAG, "Left task unexpectedly");
 }

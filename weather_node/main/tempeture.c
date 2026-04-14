@@ -3,9 +3,11 @@
 #include "esp_err.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
+#include "freertos/idf_additions.h"
 #include "onewire_bus_impl_rmt.h"
 #include "onewire_device.h"
 #include "onewire_types.h"
+#include "portmacro.h"
 #include "tempeture.h"
 #include <stdbool.h>
 #include <stdint.h>
@@ -67,6 +69,8 @@ void temp_task(void *duty_cycle_ms) {
     init_tempeture();
 
     int16_t dht11_tempeture, dht11_humidity, ds18b20_temperature;
+    TickType_t PreviousWakeTime = xTaskGetTickCount();
+
     while (true) {
         if (dht_read_data(CONFIG_DHT11_PIN, &dht11_humidity, &dht11_tempeture) == ESP_OK) {
             dht_shared_air_humidity = (uint8_t)(dht11_humidity / 10);
@@ -90,6 +94,6 @@ void temp_task(void *duty_cycle_ms) {
                 ESP_LOGW("DS18B20", "Failed to read");
             }
         }
-        vTaskDelay(pdMS_TO_TICKS((uint32_t)duty_cycle_ms));
+        vTaskDelayUntil(&PreviousWakeTime, pdMS_TO_TICKS((uint32_t)duty_cycle_ms));
     }
 }

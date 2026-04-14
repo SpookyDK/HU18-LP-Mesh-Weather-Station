@@ -7,6 +7,7 @@
 #include "freertos/task.h"
 #include "hal/adc_types.h"
 #include "moist_soil.h"
+#include "portmacro.h"
 #include <stdint.h>
 #include <stdio.h>
 
@@ -63,13 +64,15 @@ void moist_task(void *duty_cycle_ms) {
 
     int raw;
     int voltage;
+    TickType_t PreviousWakeTime = xTaskGetTickCount();
+
     while (1) {
         ESP_ERROR_CHECK(adc_oneshot_read(adc_handle, MOISTURE_ADC_CHANNEL, &raw));
         adc_cali_raw_to_voltage(cali_handle, raw, &voltage);
 
         moist_shared_percentage = raw_to_percent(raw);
         ESP_LOGI(TAG, "Raw: %4d | Voltage: %4d mV | Moisture: %3d%%", raw, voltage, moist_shared_percentage);
-        vTaskDelay(pdMS_TO_TICKS((uint32_t)duty_cycle_ms));
+        vTaskDelayUntil(&PreviousWakeTime, pdMS_TO_TICKS((uint32_t)duty_cycle_ms));
     }
     ESP_LOGW(TAG, "Leaving task");
 }
