@@ -15,8 +15,8 @@ static const char *TAG = "moisture-soil";
 bool moist_shared_status = true;
 
 // Calibration values - measure once, change and forget
-#define ADC_DRY_VALUE 2700 // Dry reference achieved by placing sensor in Very Dry dirt
-#define ADC_WET_VALUE 1750 // Wet reference achieved by placing sensor in dirt fully saturated by water
+#define ADC_DRY_VALUE 900 // Dry reference achieved by placing sensor in Very Dry dirt
+#define ADC_WET_VALUE 200 // Wet reference achieved by placing sensor in dirt fully saturated by water
 
 // Convert raw ADC value to percentage (0% = dry, 100% = wet)
 static inline uint8_t raw_to_percent(int32_t raw) {
