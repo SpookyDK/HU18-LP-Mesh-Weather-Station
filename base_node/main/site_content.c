@@ -4,7 +4,6 @@
 #include "freertos/idf_additions.h"
 #include "freertos/projdefs.h"
 #include "http_parser.h"
-#include "packet_def.h"
 #include "portmacro.h"
 #include "sd_card.h"
 #include "site_content.h"
@@ -20,17 +19,6 @@ TaskHandle_t g_websocket_task = NULL;
 static httpd_handle_t s_server = NULL;
 static int s_ws_fd = 0;
 
-static esp_err_t get_handler_root(httpd_req_t *req) {
-    extern const uint8_t index_html_start[] asm("_binary_index_html_gz_start");
-    extern const uint8_t index_html_end[] asm("_binary_index_html_gz_end");
-    const size_t index_html_size = (index_html_end - index_html_start);
-    httpd_resp_set_type(req, "text/html; charset=utf-8");
-    httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
-    httpd_resp_send(req, (const char *)index_html_start, index_html_size);
-    return ESP_OK;
-}
-static httpd_uri_t uri_get_root = {.uri = "/", .method = HTTP_GET, .handler = get_handler_root, .user_ctx = NULL};
-
 static esp_err_t get_handler_favicon(httpd_req_t *req) {
     extern const uint8_t favicon_ico_start[] asm("_binary_favicon_ico_start");
     extern const uint8_t favicon_ico_end[] asm("_binary_favicon_ico_end");
@@ -42,14 +30,6 @@ static esp_err_t get_handler_favicon(httpd_req_t *req) {
 }
 static httpd_uri_t uri_get_favicon = {.uri = "/favicon.ico", .method = HTTP_GET, .handler = get_handler_favicon, .user_ctx = NULL};
 
-extern full_packet_t big_data_packet;
-static esp_err_t get_handler_data(httpd_req_t *req) {
-    httpd_resp_set_type(req, "application/octet-stream");
-    httpd_resp_send(req, (const char *)&big_data_packet, sizeof(full_packet_t));
-    return ESP_OK;
-}
-static httpd_uri_t uri_get_data = {.uri = "/data", .method = HTTP_GET, .handler = get_handler_data, .user_ctx = NULL};
-
 static esp_err_t get_handler_viewer(httpd_req_t *req) {
     extern const uint8_t viewer_html_gz_start[] asm("_binary_viewer_html_gz_start");
     extern const uint8_t viewer_html_gz_end[] asm("_binary_viewer_html_gz_end");
@@ -59,7 +39,7 @@ static esp_err_t get_handler_viewer(httpd_req_t *req) {
     httpd_resp_send(req, (const char *)viewer_html_gz_start, viewer_html_gz_size);
     return ESP_OK;
 }
-static httpd_uri_t uri_get_viewer = {.uri = "/viewer", .method = HTTP_GET, .handler = get_handler_viewer, .user_ctx = NULL};
+static httpd_uri_t uri_get_viewer = {.uri = "/", .method = HTTP_GET, .handler = get_handler_viewer, .user_ctx = NULL};
 
 static void ws_push_task(void *arg) {
     ws_push_args_t *a = (ws_push_args_t *)arg;
@@ -183,7 +163,7 @@ static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
     return ESP_OK;
 }
 static httpd_uri_t uri_get_dataviewer = {
-    .uri = "/dataviewer", .method = HTTP_GET, .handler = get_handler_dataviewer, .user_ctx = NULL, .is_websocket = true};
+    .uri = "/data", .method = HTTP_GET, .handler = get_handler_dataviewer, .user_ctx = NULL, .is_websocket = true};
 
 httpd_handle_t start_webserver(void) {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -192,9 +172,7 @@ httpd_handle_t start_webserver(void) {
 
     if (httpd_start(&s_server, &config) == ESP_OK) {
         ESP_LOGI("webserver", "Registring uri");
-        httpd_register_uri_handler(s_server, &uri_get_root);
         httpd_register_uri_handler(s_server, &uri_get_favicon);
-        httpd_register_uri_handler(s_server, &uri_get_data);
         httpd_register_uri_handler(s_server, &uri_get_viewer);
         httpd_register_uri_handler(s_server, &uri_get_dataviewer);
         ESP_LOGI("webserver", "Registred all uri");

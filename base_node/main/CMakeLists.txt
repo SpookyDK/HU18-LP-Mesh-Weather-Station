@@ -16,7 +16,7 @@ set(GZ_DIR "${CMAKE_CURRENT_BINARY_DIR}/gz")
 file(MAKE_DIRECTORY ${GZ_DIR})
 
 set(GZ_FILES "")
-foreach(SRC_NAME IN ITEMS viewer.html index.html)
+foreach(SRC_NAME IN ITEMS viewer.html)
   if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${SRC_NAME}")
     set(SRC_PATH "${CMAKE_CURRENT_BINARY_DIR}/${SRC_NAME}")
   else()

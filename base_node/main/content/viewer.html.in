@@ -73,8 +73,8 @@ return'<tr><td>'+new Date(x.t).toLocaleString()+'</td><td>'+x.orig_node_id+'</td
 }
 function exportCSV(){
 if(!rows.length)return;
-var h='time,node,network,packet_id,hops,flags,lat,lon,air_temp,humidity,pressure,soil_moist,soil_t1,soil_t2,soil_t3,soil_t4,lux,precip,wind\n';
-var b=rows.map(function(r){return[new Date(r.t).toISOString(),r.orig_node_id,r.network_id,r.packet_id,r.hop_count,'0x'+r.flags.toString(16),r.latitude,r.longitude,r.air_temp,r.air_humidity,r.pressure,r.soil_moisture].concat(r.soil_temps).concat([r.lux,r.precipitation,r.wind_speed,r.solar_output,r.bat_voltage]).join(',');}).join('\n');
+var h='time,node,network,packet_id,hops,flags,lat,lon,air_temp,humidity,pressure,soil_moist,soil_t1,soil_t2,soil_t3,soil_t4,lux,precip,wind,solar_output,bat_voltage\n';
+var b=rows.map(function(r){return[new Date(r.t).toISOString(),r.orig_node_id,r.network_id,r.packet_id,r.hop_count,'0b'+r.flags.toString(2),r.latitude,r.longitude,r.air_temp,r.air_humidity,r.pressure,r.soil_moisture].concat(r.soil_temps).concat([r.lux,r.precipitation,r.wind_speed,r.solar_output,r.bat_voltage]).join(',');}).join('\n');
 var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h+b],{type:'text/csv'}));
 a.download='sensors.csv';a.click();
 }
@@ -89,7 +89,7 @@ console.warn("Heartbeat lost. Closing Conn");
 if (ws) ws.close();},10000);}
 function conn(){
 document.getElementById('s').textContent='Connecting...';
-ws=new WebSocket('ws://'+location.hostname+'/dataviewer');
+ws=new WebSocket('ws://'+location.hostname+'/data');
 ws.binaryType='arraybuffer';
 ws.onopen=function(){document.getElementById('s').textContent='Connected';ws.send(idx?'START_SD_STREAM:'+idx:'START_SD_STREAM');};
 ws.onclose=function(){document.getElementById('s').textContent='Disconnected';setTimeout(conn,2000);};
