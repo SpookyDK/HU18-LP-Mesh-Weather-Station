@@ -40,6 +40,7 @@ static void rain_pcnt_init(void) {
     rain_init = true;
 }
 
+static int64_t rain_last_time = 0;
 uint16_t get_rain() {
     if (!rain_init) {
         ESP_LOGW(TAG, "Rain is not initialized");
@@ -47,11 +48,19 @@ uint16_t get_rain() {
         return 0;
     }
     int rain_cnt = 0;
-    ESP_ERROR_CHECK(pcnt_unit_get_count(rain_pcnt_unit, &rain_cnt));
-    ESP_ERROR_CHECK(pcnt_unit_clear_count(rain_pcnt_unit));
+    int64_t cur_time = esp_timer_get_time();
+    int64_t duration = cur_time - rain_last_time;
 
-    ESP_LOGI(TAG, "Rain='%.1f'mm   pulses='%d'", (double)(rain_cnt * 0.2f), rain_cnt);
-    return (uint16_t)rain_cnt;
+    ESP_ERROR_CHECK(pcnt_unit_get_count(rain_pcnt_unit, &rain_cnt));
+    pcnt_unit_clear_count(rain_pcnt_unit);
+
+    if (duration <= 0)
+        return 0;
+
+    double rain_rate = (((double)rain_cnt * 0.2) / (double)duration) * 3600000000.0;
+    ESP_LOGI(TAG, "Rain='%.1f'mm   pulses='%d'", rain_rate, rain_cnt);
+    rain_last_time = cur_time;
+    return (uint16_t)(rain_rate * 10);
 }
 
 static pcnt_unit_handle_t wind_pcnt_unit = NULL;
@@ -101,7 +110,7 @@ void pcnt_task(void *duty_cycle_ms) {
         ESP_LOGI(TAG, "pulses = %ld, mms = %f, shared = %d", wind_cnt, (double)mms, wind_shared_speed);
 
         last_time = esp_timer_get_time();
-        vTaskDelayUntil(&PreviousWakeTime, pdMS_TO_TICKS((uint32_t)duty_cycle_ms));
+        vTaskDelayUntil(&PreviousWakeTime, pdMS_TO_TICKS((uint32_t *)duty_cycle_ms));
     }
     ESP_LOGW(TAG, "Left task unexpectedly");
 }
