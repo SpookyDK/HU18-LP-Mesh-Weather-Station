@@ -59,7 +59,16 @@ static void ws_push_task(void *arg) {
     httpd_ws_frame_t ws_pkt = {.type = HTTPD_WS_TYPE_BINARY, .payload = buf};
 
     while (1) {
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        uint32_t notif = ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
+        (void)notif;
+
+        uint32_t bits = 0;
+        xTaskNotifyWait(0, NOTIFY_EXIT, &bits, 0);
+        if (bits & NOTIFY_EXIT) {
+            ESP_LOGI(TAG, "WS push: Exit requested, fd='%d'", fd);
+            goto cleanup;
+        }
+
         size_t len = WS_PUSH_CHUNK;
         READ_RETURN_STATE read_ret;
         while ((read_ret = b_read_file(PACKET_FILE, sd_tail_idx, &len, buf)) != READ_FAILURE) {
@@ -94,13 +103,31 @@ void notify_ws_new_sd_data(void) {
         xTaskNotifyGive(g_websocket_task);
     }
 }
+static void stop_push_task(void) {
+    if (g_websocket_task == NULL)
+        return;
+
+    ESP_LOGI(TAG, "Requesting push task exit");
+    xTaskNotify(g_websocket_task, NOTIFY_EXIT, eSetBits);
+
+    for (int i = 0; i < 10; i++) {
+        vTaskDelay(pdMS_TO_TICKS(50));
+        if (g_websocket_task == NULL)
+            return;
+    }
+
+    ESP_LOGW(TAG, "Push task did not take exit in due time");
+    if (g_websocket_task != NULL) {
+        vTaskDelete(g_websocket_task);
+        g_websocket_task = NULL;
+    }
+}
 
 static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
     if (req->method == HTTP_GET) {
         if (g_websocket_task != NULL) {
             ESP_LOGI(TAG, "New WS handshake - Killing stale push task");
-            vTaskDelete(g_websocket_task);
-            g_websocket_task = NULL;
+            stop_push_task();
         }
         s_ws_fd = httpd_req_to_sockfd(req);
         ESP_LOGI(TAG, "Handshake done, client connected fd'%d'", s_ws_fd);
@@ -114,7 +141,6 @@ static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
         return ret;
     }
     if (ws_pkt.type == HTTPD_WS_TYPE_PONG || ws_pkt.type == HTTPD_WS_TYPE_CLOSE) {
-        free(buf);
         return ESP_OK;
     }
     if (ws_pkt.len > 0) {

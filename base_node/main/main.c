@@ -1,6 +1,7 @@
 #include "NEO_6M_UART.h"
 #include "big_data.h"
 #include "driver/spi_master.h"
+#include "esp_heap_caps.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/idf_additions.h"
@@ -57,6 +58,7 @@ void app_main(void) {
     // read_last_packet();
 
     while (1) {
+        // heap_caps_print_heap_info(MALLOC_CAP_8BIT);
         vTaskDelay(pdMS_TO_TICKS(60000));
     }
 }

@@ -14,6 +14,7 @@ typedef struct {
 
 #define NOTIFY_NEW_DATA BIT(0)
 #define NOTIFY_FLUSH_NOW BIT(1)
+#define NOTIFY_EXIT BIT(2)
 
 #define WS_PUSH_CHUNK 512
 

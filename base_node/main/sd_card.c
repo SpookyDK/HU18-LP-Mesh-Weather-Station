@@ -35,7 +35,7 @@ esp_err_t b_append_file(const char *path, full_packet_t data) {
     clock_gettime(CLOCK_REALTIME, &ts_now);
     localtime_r(&ts_now.tv_sec, &timeinfo);
 
-    fwrite((uint8_t *)&ts_now.tv_sec, sizeof(&ts_now.tv_sec), 1, f);
+    fwrite((uint8_t *)&ts_now.tv_sec, 4, 1, f); // 4 comes from time stamp size
     fwrite(&data, sizeof(full_packet_t), 1, f);
     fclose(f);
     return ESP_OK;
