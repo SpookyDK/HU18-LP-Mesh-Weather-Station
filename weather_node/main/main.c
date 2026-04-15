@@ -23,7 +23,7 @@
 
 static const char *TAG = "main";
 
-#define DUTY_CYCLES_MS 900000
+#define DUTY_CYCLES_MS 900 * 1000
 #define PACKET_TIME_TO_LIVE 3
 #define NVS_NAMESPACE "lora_conf"
 #define NVS_NETWORK_KEY "network_key"
