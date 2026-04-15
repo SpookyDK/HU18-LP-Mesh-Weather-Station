@@ -129,15 +129,8 @@ void uart_reader_task(void *args) {
             }
         }
 
-        bool routed = false;
-        if (xQueueSend(dest, &frame, 0) == pdTRUE) {
-            routed = true;
-        } else {
+        if (xQueueSend(dest, &frame, 0) != pdTRUE) {
             ESP_LOGW("GPS_UART", "Queue full, dropping frame");
-            frame_free(frame);
-        }
-
-        if (!routed) {
             frame_free(frame);
         }
     }
@@ -193,17 +186,42 @@ static void print_frame(ubx_frame_t *frame) {
         printf("\n");
     }
 }
+static void convert_utc_tm_to_time_t(ubx_frame_t *frame, uint16_t offset) {
+    // 1. Extract raw values from your frame
+    int32_t nano = *(int32_t *)&frame->data[offset + 14];
+    int year = *(uint16_t *)&frame->data[offset + 18]; // Keep full year for the math
+    int mon = frame->data[offset + 20];
+    int mday = frame->data[offset + 21];
+    int hour = frame->data[offset + 22];
+    int min = frame->data[offset + 23];
+    int sec = frame->data[offset + 24];
+    if (mon <= 2) {
+        year -= 1;
+        mon += 12;
+    }
+    // Unix Epoch Math (Seconds since Jan 1, 1970)
+    // The constant 719561 is the number of days between 0000-00-00 and 1970-01-01
+    long long days = (365LL * year) + (year / 4) - (year / 100) + (year / 400) + (30 * mon) + (3 * (mon + 1) / 5) + mday - 719561;
+    time_t t = (days * 86400LL) + (hour * 3600) + (min * 60) + sec;
+
+    struct timespec ts;
+    ts.tv_sec = t;
+    ts.tv_nsec = nano;
+    clock_settime(CLOCK_REALTIME, &ts);
+
+    // Mostly used for debug
+    /* struct tm time_local;
+    localtime_r(&t, &time_local);
+    char time_buffer[80];
+    strftime(time_buffer, sizeof(time_buffer), "%c", &time_local);
+    ESP_LOGI("GPS", "%s", time_buffer); */
+}
 
 int32_t gps_shared_longitude = 0;
 int32_t gps_shared_latitude = 0;
 
 static void evaluate_frame(ubx_frame_t *frame) {
     uint16_t offset, msg_id;
-    int32_t nano;
-    struct tm time, time_local;
-    time_t t;
-    struct timespec ts;
-    char time_buffer[80];
     for (int f = 0; f < frame->frame_count; f++) {
         offset = frame->frame_offsets[f];
         msg_id = *(uint16_t *)&frame->data[offset + 2];
@@ -236,25 +254,7 @@ static void evaluate_frame(ubx_frame_t *frame) {
             ESP_LOGD("GPS", "Latitude:Longitude:  %.7f, %.7f", (double)(gps_shared_latitude / 1e7f), (double)gps_shared_longitude / 1e7);
             break;
         case 0x2101: // NAV-TIMEUTC
-            nano = *(int32_t *)&frame->data[offset + 14];
-            time.tm_year = *(uint16_t *)&frame->data[offset + 18] - 1900;
-            time.tm_mon = frame->data[offset + 20] - 1;
-            time.tm_mday = frame->data[offset + 21];
-            time.tm_hour = frame->data[offset + 22];
-            time.tm_min = frame->data[offset + 23];
-            time.tm_sec = frame->data[offset + 24];
-            time.tm_isdst = -1;
-            setenv("TZ", "UTC", 1);
-            tzset();
-            t = mktime(&time);
-            setenv("TZ", "CET-1CEST,M3.5.0,M10.5.0/3", 1);
-            tzset();
-            ts.tv_sec = t;
-            ts.tv_nsec = nano;
-            clock_settime(CLOCK_REALTIME, &ts);
-            localtime_r(&t, &time_local);
-            strftime(time_buffer, sizeof(time_buffer), "%c", &time_local);
-            ESP_LOGD("GPS", "%s", time_buffer);
+            convert_utc_tm_to_time_t(frame, offset);
             break;
         case 0x3b06: // CFG-PM2
             print_frame(frame);
@@ -277,10 +277,8 @@ static int gps_send_request(uint8_t *sentence, uint8_t messageLengthInc) {
     uart_write_bytes(GPS_UART_NUM, (const char *)sentence, messageLengthInc);
 
     ubx_frame_t *frame;
-
     if (xQueueReceive(response_queue, &frame, pdMS_TO_TICKS(120000)) == pdTRUE) {
         evaluate_frame(frame);
-
         frame_free(frame);
         return 0;
     }

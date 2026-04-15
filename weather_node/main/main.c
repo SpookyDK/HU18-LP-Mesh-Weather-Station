@@ -1,6 +1,7 @@
 #include "NEO_6M_UART.h"
 #include "driver/spi_master.h"
 #include "esp_err.h"
+#include "esp_heap_caps.h"
 #include "esp_log.h"
 #include "esp_random.h"
 #include "freertos/idf_additions.h"
@@ -267,6 +268,7 @@ void app_main(void) {
     ESP_LOGI(TAG, "Finished starting all tasks");
     while (1) {
         // print_runtime_stats();
-        vTaskDelay(pdMS_TO_TICKS(DUTY_CYCLES_MS));
+        // heap_caps_print_heap_info(MALLOC_CAP_8BIT);
+        vTaskDelay(pdMS_TO_TICKS(60000));
     }
 }
