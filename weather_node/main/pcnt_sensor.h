@@ -4,9 +4,6 @@
 #include "esp_err.h"
 #include <stdint.h>
 
-#define WIND_PCNT_INPUT_PIN 1
-#define RAIN_PCNT_INPUT_PIN 0
-
 #define PCNT_HIGH_LIMIT 1000
 #define PCNT_LOW_LIMIT -1000
 #define WIND_CUP_DIAMETER 0.97f

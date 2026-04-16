@@ -1,3 +1,4 @@
+#include "pin_config.h"
 #include "dht11.h"
 #include "ds18b20.h"
 #include "esp_err.h"

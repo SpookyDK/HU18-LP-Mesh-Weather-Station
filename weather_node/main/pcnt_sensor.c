@@ -1,3 +1,4 @@
+#include "pin_config.h"
 #include "driver/gpio.h"
 #include "driver/pulse_cnt.h"
 #include "esp_err.h"

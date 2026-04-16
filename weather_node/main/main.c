@@ -126,9 +126,9 @@ static void communication_task(void *p) {
     esp_err_t ret;
 
     spi_bus_config_t bus = {
-        .miso_io_num = LORA_MISO_GPIO,
-        .mosi_io_num = LORA_MOSI_GPIO,
-        .sclk_io_num = LORA_SCK_GPIO,
+        .miso_io_num = SPI_MISO_GPIO,
+        .mosi_io_num = SPI_MOSI_GPIO,
+        .sclk_io_num = SPI_SCK_GPIO,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
         .max_transfer_sz = 0,
