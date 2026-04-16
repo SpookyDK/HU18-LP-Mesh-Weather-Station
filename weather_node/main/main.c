@@ -29,6 +29,7 @@ static const char *TAG = "main";
 #define NVS_NAMESPACE "lora_conf"
 #define NVS_NETWORK_KEY "network_key"
 #define NVS_NODE_KEY "node_key"
+#define NVS_PACKET_ID_KEY "paket_key"
 
 static uint8_t NETWORK_ID = 1;
 static uint8_t NODE_ID = 1;
@@ -72,12 +73,22 @@ extern bool power_shared_solar_state;
 
 packet_header_t header = {0};
 static void prepare_header() {
+    nvs_handle_t nvs;
+    esp_err_t ret = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &nvs);
+    if (ret == ESP_OK) {
+        nvs_get_u8(nvs, NVS_PACKET_ID_KEY, &PACKET_ID);
+    }
     header.network_id = NETWORK_ID;
     header.orig_node_id = NODE_ID;
     header.packet_id = PACKET_ID++;
     header.hop_count = PACKET_TIME_TO_LIVE;
-    header.flags = 1 ^ (dht_shared_air_tempeture_status << 2) ^ (ds18b20_shared_status << 3) ^ (moist_shared_status << 4) ^
-                   (bmp_shared_status << 6) ^ (power_shared_solar_state << 7);
+    header.flags = 1 | (dht_shared_air_tempeture_status << 2) | (ds18b20_shared_status << 3) | (moist_shared_status << 4) |
+                   (bmp_shared_status << 6) | (power_shared_solar_state << 7);
+    if (ret == ESP_OK) {
+        nvs_set_u8(nvs, NVS_PACKET_ID_KEY, PACKET_ID);
+        nvs_commit(nvs);
+        nvs_close(nvs);
+    }
 }
 
 full_packet_t packet = {0};
