@@ -10,15 +10,15 @@ Node:<input id="fn" size="4" oninput="render()">Flag:<input id="ff" size="8" oni
 Max:<select id="mr" onchange="render()"><option>100</option><option>200</option><option>500</option><option>0</option></select>
 Page:<input id="pg" size="2" type="number" min="0" onchange="render()">
 Idx:<input id="idxn" size="4" type="number" min="0" oninput="setIdx(Number(this.value))">
-<button onclick="setIdx(0);rows=[];render()">Clear</button><button onclick="ws.send('START_SD_STREAM:'+idx)">Get New</button>
+<button onclick="setIdx(0);rows=[];error=0;render()">Clear</button><button onclick="ws.send('START_SD_STREAM:'+idx)">Get New</button>
 <button onclick="exportCSV()">CSV</button>
 &nbsp;<span id="cnt"></span>
 <div style="display:flex;align-items:flex-start;gap:10px;margin-top:6px;">
 <div style="overflow-x:auto;flex-shrink:0;"><table><thead><tr>
-<th onclick="sort('t')">Time</th><th onclick="sort('orig_node_id')">Node</th><th onclick="sort('packet_id')">PktID</th>
-<th onclick="sort('hop_count')">Hops</th><th onclick="sort('latitude')">Lat</th><th onclick="sort('longitude')">Lon</th>
+<th onclick="sort('t')">Time</th><th onclick="sort('onid')">Node</th><th onclick="sort('pkt_id')">PktID</th>
+<th onclick="sort('hop_count')">Hops</th><th onclick="sort('lat')">Lat</th><th onclick="sort('lot')">Lon</th>
 <th onclick="sort('air_temp')">Temp°C</th><th onclick="sort('air_humidity')">Hum%</th><th onclick="sort('pressure')">hPa</th>
-<th onclick="sort('soil_moisture')">SoilM</th><th onclick="sort('soil_temps')">SoilT°C</th>
+<th onclick="sort('soil_m')">SoilM</th><th onclick="sort('soil_temps')">SoilT°C</th>
 <th onclick="sort('lux')">Lux</th><th onclick="sort('precipitation')">Precip</th><th onclick="sort('wind_speed')">Wind</th>
 <th onclick="sort('solar_output')">Gen mW</th><th onclick="sort('bat_voltage')">Bat V</th><th onclick="sort('flags')">Flags</th>
 </tr></thead><tbody id="tb"></tbody></table></div>
@@ -27,16 +27,17 @@ Idx:<input id="idxn" size="4" type="number" min="0" oninput="setIdx(Number(this.
 <source src="https://media.tenor.com/lHUl-0nKsmUAAAPo/cocio-rolling.mp4" type="video/mp4"></video>
 <br><span id="error"></span></div></div>
 <script>
-var rows=[],sc='t',sd='d',ppid=-1,error=0;
+var ddict=new Proxy({},{get:(t,pid)=>pid in t?t[pid]:-1})
+var rows=[],sc='t',sd='d',error=0;
 function pp(buf){
 var v=new DataView(buf),o=0,r={};
 r.t=v.getInt32(o,1)*1000;o+=4;
-r.network_id=v.getUint8(o++);r.orig_node_id=v.getUint8(o++);
-r.packet_id=v.getUint8(o++);r.hop_count=v.getUint8(o++);r.flags=v.getUint8(o++);
-r.longitude=v.getInt32(o,1)/1e7;o+=4;r.latitude=v.getInt32(o,1)/1e7;o+=4;
+r.nid=v.getUint8(o++);r.onid=v.getUint8(o++);
+r.pkt_id=v.getUint8(o++);r.hop_count=v.getUint8(o++);r.flags=v.getUint8(o++);
+r.lot=v.getInt32(o,1)/1e7;o+=4;r.lat=v.getInt32(o,1)/1e7;o+=4;
 r.air_humidity=v.getUint8(o++);r.air_temp=v.getInt16(o,1)/10;o+=2;
 r.soil_temps=[];for(var i=0;i<4;i++){r.soil_temps.push(v.getInt16(o,1)/16);o+=2;}
-r.soil_moisture=v.getUint8(o++);r.pressure=(v.getInt16(o,1)+100000)/100;o+=2;
+r.soil_m=v.getUint8(o++);r.pressure=(v.getInt16(o,1)+100000)/100;o+=2;
 r.lux=v.getUint16(o,1);o+=2;r.precipitation=v.getUint16(o,1)/10;o+=2;
 r.wind_speed=v.getUint16(o,1)/1000;o+=2;
 r.solar_output=v.getUint8(o++)*4;r.bat_voltage=v.getUint8(o)/250+3.5;
@@ -44,10 +45,10 @@ return r;}
 function handleData(b){
 let po=0;while(po<b.byteLength){
 const p=pp(b.slice(po,po+@FULL_PACKET@+4));rows.push(p);po+=@FULL_PACKET@+4;
-if(p.packet_id!==ppid+1){error++;}
+if(p.pkt_id!==ddict[p.onid]+1){error++;}
 const span=document.getElementById("error");
 if(span){span.textContent="Of all packets in buffer "+error+" / "+rows.length+" = "+(error/rows.length*100).toFixed(2)+"% Failed."}
-ppid=p.packet_id;ppid=ppid==255?-1:ppid;}
+ddict[p.onid]=p.pkt_id;ddict[p.onid]=ddict[p.onid]==255?-1:ddict[p.onid];}
 render();}
 function sort(c){if(sc===c)sd=sd==='d'?'a':'d';else{sc=c;sd='d';}render();}
 function render(){
@@ -56,25 +57,25 @@ var ff=document.getElementById('ff').value;
 var pg=document.getElementById('pg').value;
 var mr=parseInt(document.getElementById('mr').value)||Infinity;
 var col=sc,dir=sd,r=rows.slice();
-if(fn)r=r.filter(function(x){return String(x.orig_node_id).indexOf(fn)>=0;});
+if(fn)r=r.filter(function(x){return String(x.onid).indexOf(fn)>=0;});
 if(ff)r=r.filter(function(x){return String(x.flags.toString(2).padStart(8,"0")).indexOf(ff.startsWith("0b")?ff.slice(2):ff)>=0;});
 r.sort(function(a,b){var av=a[col],bv=b[col];return av<bv?(dir==='a'?-1:1):av>bv?(dir==='a'?1:-1):0;});
 if(mr!==Infinity)r=r.slice(pg*mr,pg*mr+mr);
 document.getElementById('cnt').textContent=rows.length+' rows';
 if(!r.length){document.getElementById('tb').innerHTML='<tr><td colspan="15">No data</td></tr>';return;}
 document.getElementById('tb').innerHTML=r.map(function(x){
-return'<tr><td>'+new Date(x.t).toLocaleString()+'</td><td>'+x.orig_node_id+'</td><td>'+x.packet_id+'</td><td>'+x.hop_count+'</td>'+
-'<td>'+x.latitude.toFixed(7)+'</td><td>'+x.longitude.toFixed(7)+'</td>'+
+return'<tr><td>'+new Date(x.t).toLocaleString()+'</td><td>'+x.onid+'</td><td>'+x.pkt_id+'</td><td>'+x.hop_count+'</td>'+
+'<td>'+x.lat.toFixed(7)+'</td><td>'+x.lot.toFixed(7)+'</td>'+
 '<td>'+x.air_temp.toFixed(1)+'</td><td>'+x.air_humidity+'</td><td>'+x.pressure.toFixed(1)+'</td>'+
-'<td>'+x.soil_moisture+'</td><td>'+x.soil_temps.map(function(t){return t.toFixed(1);}).join('/')+'</td>'+
+'<td>'+x.soil_m+'</td><td>'+x.soil_temps.map(function(t){return t.toFixed(1);}).join('/')+'</td>'+
 '<td>'+x.lux+'</td><td>'+x.precipitation.toFixed(1)+'</td><td>'+x.wind_speed.toFixed(3)+'</td>'+
 '<td>'+x.solar_output+'</td><td>'+x.bat_voltage.toFixed(2)+'</td>'+
 '<td>0b'+x.flags.toString(2).padStart(8,'0')+'</td></tr>';}).join('');
 }
 function exportCSV(){
 if(!rows.length)return;
-var h='time,node,network,packet_id,hops,flags,lat,lon,air_temp,humidity,pressure,soil_moist,soil_t1,soil_t2,soil_t3,soil_t4,lux,precip,wind,solar_output,bat_voltage\n';
-var b=rows.map(function(r){return[new Date(r.t).toISOString(),r.orig_node_id,r.network_id,r.packet_id,r.hop_count,'0b'+r.flags.toString(2),r.latitude,r.longitude,r.air_temp,r.air_humidity,r.pressure,r.soil_moisture].concat(r.soil_temps).concat([r.lux,r.precipitation,r.wind_speed,r.solar_output,r.bat_voltage]).join(',');}).join('\n');
+var h='time,node,network,pkt_id,hops,flags,lat,lon,air_temp,humidity,pressure,soil_moist,soil_t1,soil_t2,soil_t3,soil_t4,lux,precip,wind,solar_output,bat_voltage\n';
+var b=rows.map(function(r){return[new Date(r.t).toISOString(),r.onid,r.nid,r.pkt_id,r.hop_count,'0b'+r.flags.toString(2),r.lat,r.lot,r.air_temp,r.air_humidity,r.pressure,r.soil_m].concat(r.soil_temps).concat([r.lux,r.precipitation,r.wind_speed,r.solar_output,r.bat_voltage]).join(',');}).join('\n');
 var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h+b],{type:'text/csv'}));
 a.download='sensors.csv';a.click();
 }

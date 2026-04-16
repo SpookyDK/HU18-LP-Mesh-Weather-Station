@@ -1,15 +1,13 @@
 #include "NEO_6M_UART.h"
 #include "big_data.h"
 #include "driver/spi_master.h"
-#include "esp_heap_caps.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/idf_additions.h"
 #include "freertos/projdefs.h"
-#include "portmacro.h"
+#include "pin_config.h"
 #include "sd_card.h"
 #include "web_server.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include <sys/_timeval.h>
 #include <sys/time.h>
@@ -19,9 +17,9 @@ const char *TAG = "main";
 
 static inline void init_my_spi() {
     spi_bus_config_t bus_cfg = {
-        .mosi_io_num = 4,
-        .miso_io_num = 5,
-        .sclk_io_num = 6,
+        .mosi_io_num = SPI_MOSI_GPIO,
+        .miso_io_num = SPI_MISO_GPIO,
+        .sclk_io_num = SPI_SCK_GPIO,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
         .max_transfer_sz = 4000,
@@ -54,11 +52,7 @@ void app_main(void) {
     ESP_LOGI(TAG, "Starting GPS task");
     xTaskCreate(gps_task, "gpsTask", 4096, NULL, 0, NULL);
 
-    // Dont use It will save the loaded packet again, and im not refactoring that much
-    // read_last_packet();
-
     while (1) {
-        // heap_caps_print_heap_info(MALLOC_CAP_8BIT);
         vTaskDelay(pdMS_TO_TICKS(60000));
     }
 }
