@@ -116,7 +116,7 @@ void light_sensor_task(void *duty_cycle_ms) {
             vTaskDelete(NULL);
         }
         if ((res = tsl2591_get_lux(&light_sensor_dev, &lux, &cha1_ir)) == ESP_OK) {
-            if (lux < 1) {
+            if (lux <= 1) {
                 tsl_shared_spectrum = 1;
             } else if (lux > 0xffff) {
                 tsl_shared_spectrum = 0xffff;
