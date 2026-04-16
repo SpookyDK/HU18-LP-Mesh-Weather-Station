@@ -10,7 +10,7 @@ Node:<input id="fn" size="4" oninput="render()">Flag:<input id="ff" size="8" oni
 Max:<select id="mr" onchange="render()"><option>100</option><option>200</option><option>500</option><option>0</option></select>
 Page:<input id="pg" size="2" type="number" min="0" onchange="render()">
 Idx:<input id="idxn" size="4" type="number" min="0" oninput="setIdx(Number(this.value))">
-<button onclick="setIdx(0);rows=[];render()">Clear</button><button onclick="ws.send('START_SD_STREAM:'+idx)">Get New</button>
+<button onclick="setIdx(0);rows=[];error=0;render()">Clear</button><button onclick="ws.send('START_SD_STREAM:'+idx)">Get New</button>
 <button onclick="exportCSV()">CSV</button>
 &nbsp;<span id="cnt"></span>
 <div style="display:flex;align-items:flex-start;gap:10px;margin-top:6px;">
@@ -45,7 +45,7 @@ return r;}
 function handleData(b){
 let po=0;while(po<b.byteLength){
 const p=pp(b.slice(po,po+@FULL_PACKET@+4));rows.push(p);po+=@FULL_PACKET@+4;
-if(p.pkt_id!==ppid+1){error++;}
+if(p.pkt_id!==ddict[p.onid]+1){error++;}
 const span=document.getElementById("error");
 if(span){span.textContent="Of all packets in buffer "+error+" / "+rows.length+" = "+(error/rows.length*100).toFixed(2)+"% Failed."}
 ddict[p.onid]=p.pkt_id;ddict[p.onid]=ddict[p.onid]==255?-1:ddict[p.onid];}
