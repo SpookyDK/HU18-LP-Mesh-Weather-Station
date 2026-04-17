@@ -203,7 +203,7 @@ void power_sensor_task(void *duty_cycle_ms) {
 
             ESP_LOGI(TAG, "ADDR = %x Voltage: %d mV, Current: %d mA, Power: %d mW", devices[i].addr, voltage, current, power);
             if (devices[i].addr == POWER_ADDR_SOLAR) {
-                if (current < 0)
+                if (power < 0)
                     power_shared_solar_production = 0;
                 else
                     power_shared_solar_production = (uint8_t)(power >> 2);
