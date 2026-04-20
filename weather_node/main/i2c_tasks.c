@@ -1,4 +1,3 @@
-#include "pin_config.h"
 #include "bmp280.h"
 #include "driver/i2c_master.h"
 #include "esp_err.h"
@@ -9,6 +8,7 @@
 #include "i2c_tasks.h"
 #include "i2cdev.h"
 #include "my_drivers/bmp280.h"
+#include "pin_config.h"
 #include "portmacro.h"
 #include "tsl2591.h"
 #include <stdbool.h>
@@ -117,9 +117,9 @@ void light_sensor_task(void *duty_cycle_ms) {
             vTaskDelete(NULL);
         }
         if ((res = tsl2591_get_lux(&light_sensor_dev, &lux, &cha1_ir)) == ESP_OK) {
-            if (lux <= 1) {
+            if (lux <= 1.0f) {
                 tsl_shared_spectrum = 1;
-            } else if (lux > 0xffff) {
+            } else if (lux > 65535.0f) {
                 tsl_shared_spectrum = 0xffff;
             } else {
                 tsl_shared_spectrum = (uint16_t)lux;
