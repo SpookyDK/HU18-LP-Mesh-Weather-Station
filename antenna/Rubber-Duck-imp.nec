@@ -1,0 +1,24 @@
+CM 868 MHz Rubber Duck - Centered on Flat X-Y Ground Plane
+CE
+# --- ANTENNA (Centered, pointing UP) ---
+# 5cm wire starting at origin (0,0,0) going up to Z=0.05
+GW 1 15 0 0 0.001 0 0 0.051 0.00075
+# --- GROUND PLANE (9cm X-axis x 7cm Y-axis) ---
+# Wires running parallel to X-axis
+GW 2 9 -0.045 -0.035 0  0.045 -0.035 0  0.0005
+GW 3 9 -0.045  0.000 0  0.045  0.000 0  0.0005
+GW 4 9 -0.045  0.035 0  0.045  0.035 0  0.0005
+# Wires running parallel to Y-axis
+GW 5 7 -0.045 -0.035 0 -0.045  0.035 0  0.0005
+GW 6 7  0.000 -0.035 0  0.000  0.035 0  0.0005
+GW 7 7  0.045 -0.035 0  0.045  0.035 0  0.0005
+GE 0
+# --- MATERIAL & COIL ---
+LD 5 1 0 0 3.72E7
+# Inductor (Tuned for center feed)
+LD 0 1 1 1 1.5 3.8E-7 0
+# --- FEED ---
+EX 0 1 1 0 1 0
+FR 0 100 0 0 800 1
+RP 0 181 73 1000 0.5 0 1 5
+EN

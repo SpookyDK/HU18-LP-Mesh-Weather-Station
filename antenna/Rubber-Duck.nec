@@ -1,21 +1,21 @@
-CM 868 MHz Rubber Duck - Corner Mount Inline
+CM 868 MHz Rubber Duck - Centered on Flat Ground Plane
 CE
-# --- ANTENNA (Top-Left Corner) ---
-# 5cm wire starting at the corner
-GW 1 15 -0.045 0 0.001 -0.045 0 0.051 0.00075
-# --- PROTOBOARD (9cm Wide x 7cm Down) ---
-# Horizontal Wires (X-axis, 9cm total)
+# --- ANTENNA (Centered at 0,0) ---
+# 5cm wire starting at the center of the grid
+GW 1 15 0 0 0.001 0 0 0.051 0.00075
+# --- GROUND PLANE (9cm Wide x 7cm Deep, Flat on X-Z plane) ---
+# Horizontal Wires (X-axis, centered)
 GW 2 9 -0.045 0 0      0.045 0 0      0.0005
 GW 3 9 -0.045 0 -0.035 0.045 0 -0.035 0.0005
 GW 4 9 -0.045 0 -0.07  0.045 0 -0.07  0.0005
-# Vertical Wires (Z-axis, 7cm total)
+# Vertical Wires (Z-axis, relative to center)
 GW 5 7 -0.045 0 0     -0.045 0 -0.07  0.0005
 GW 6 7  0.000 0 0      0.000 0 -0.07  0.0005
 GW 7 7  0.045 0 0      0.045 0 -0.07  0.0005
 GE 0
 # --- MATERIAL & COIL ---
 LD 5 1 0 0 3.72E7
-# Inductor (Tuned for corner impedance)
+# Inductor (May need re-tuning for center impedance)
 LD 0 1 1 1 1.5 3.8E-7 0
 # --- FEED ---
 EX 0 1 1 0 1 0
