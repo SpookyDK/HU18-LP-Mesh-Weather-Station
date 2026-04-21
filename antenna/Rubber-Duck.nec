@@ -1,0 +1,16 @@
+CM 868 MHz Rubber Duck - 2-Wire Realistic
+CE
+# Wire 1: The Antenna (5cm)
+GW 1 15 0 0 0.001 0 0 0.051 0.00075
+# Wire 2: The Counterpoise (10cm)
+GW 2 15 0 0 0 0 0 -0.10 0.001
+GE 0
+# LD: Internal matching coil
+LD 0 1 1 1 0 3.8E-7 0
+# EX: Feed Point
+EX 0 1 1 0 1 0
+# FR: Frequency Sweep
+FR 0 100 0 0 800 1
+# RP: Starting at 0.5 degrees instead of 0 to avoid calculation errors
+RP 0 180 73 1000 0.5 0 1 5
+EN 
