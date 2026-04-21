@@ -1,18 +1,21 @@
-CM Stacked 25mm Collinear - LoRa 868MHz
-CM Fixed RP card for xnec2c compatibility
+CM Stacked 25mm Collinear - Aluminum
 CE
 # Dipole 1 (Bottom)
 GW 1 11 0 0 -0.078 0 0 0.078 0.0125
-# Dipole 2 (Top) - Physical spacing ~0.75 wavelength
+# Dipole 2 (Top)
 GW 2 11 0 0 0.182 0 0 0.338 0.0125
 GE 0
-# TL card: Connects center of GW1 to center of GW2
-# -75 ohms forces the 180-degree phase flip needed for horizontal gain
-# 0.172m is the electrical 1/2 wave delay
+# --- ALUMINUM PROPERTIES ---
+# LD 5: Sets conductivity to 3.72E7 S/m for both wires
+LD 5 1 0 0 3.72E7
+LD 5 2 0 0 3.72E7
+# ---------------------------
+# TL card: Phasing line
 TL 1 6 2 6 -75 0.172
-# Source on center segment of bottom dipole
+# Source
 EX 0 1 6 0 1 0
 FR 0 100 0 0 800 1
-# Fixed RP card: 0 73 73 1000 0 0 5 5 (Removed the trailing 1)
-RP 0 73 73 1000 0 0 5 5
+# RP: 0 to 180 degrees (full vertical sweep) 
+# Starting at 0.5 to avoid the "theta 90" ground/axis error
+RP 0 181 73 1000 0.5 0 1 5
 EN
