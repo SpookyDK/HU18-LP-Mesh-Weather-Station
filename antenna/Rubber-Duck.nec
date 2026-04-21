@@ -1,22 +1,24 @@
-CM 868 MHz Rubber Duck - Realistic Copper
+CM 868 MHz Rubber Duck - Corner Mount Inline
 CE
-# Wire 1: The Antenna (5cm)
-GW 1 15 0 0 0.001 0 0 0.051 0.00075
-# Wire 2: The Counterpoise (10cm)
-GW 2 15 0 0 0 0 0 -0.10 0.001
+# --- ANTENNA (Top-Left Corner) ---
+# 5cm wire starting at the corner
+GW 1 15 -0.045 0 0.001 -0.045 0 0.051 0.00075
+# --- PROTOBOARD (9cm Wide x 7cm Down) ---
+# Horizontal Wires (X-axis, 9cm total)
+GW 2 9 -0.045 0 0      0.045 0 0      0.0005
+GW 3 9 -0.045 0 -0.035 0.045 0 -0.035 0.0005
+GW 4 9 -0.045 0 -0.07  0.045 0 -0.07  0.0005
+# Vertical Wires (Z-axis, 7cm total)
+GW 5 7 -0.045 0 0     -0.045 0 -0.07  0.0005
+GW 6 7  0.000 0 0      0.000 0 -0.07  0.0005
+GW 7 7  0.045 0 0      0.045 0 -0.07  0.0005
 GE 0
-# --- MATERIAL PROPERTIES ---
-# LD 5: Applies Copper conductivity to all segments of Tag 1 and Tag 2
-LD 5 1 0 0 5.8E7
-LD 5 2 0 0 5.8E7
-# ---------------------------
-# LD 0: Internal matching coil with 1.2 Ohms of parasitic resistance
-# Format: LD 0, Tag, Start Seg, End Seg, Resistance, Inductance
-LD 0 1 1 1 1.2 3.8E-7 0
-# EX: Feed Point
+# --- MATERIAL & COIL ---
+LD 5 1 0 0 3.72E7
+# Inductor (Tuned for corner impedance)
+LD 0 1 1 1 1.5 3.8E-7 0
+# --- FEED ---
 EX 0 1 1 0 1 0
-# FR: Frequency Sweep
 FR 0 100 0 0 800 1
-# RP: Radiation Pattern
-RP 0 180 73 1000 0.5 0 1 5
+RP 0 181 73 1000 0.5 0 1 5
 EN
