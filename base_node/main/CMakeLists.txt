@@ -8,7 +8,34 @@ idf_component_register(SRCS "main.c" "site_content.c" "web_server.c" "big_data.c
 include(CheckTypeSize)
 set(CMAKE_EXTRA_INCLUDE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/${EXTERNAL_LIBS}/../packet_def/packet_def.h")
 check_type_size("full_packet_t" FULL_PACKET)
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/content/viewer.html.in" "${CMAKE_CURRENT_BINARY_DIR}/viewer.html")
+# Read the file content into a variable
+file(READ "${CMAKE_EXTRA_INCLUDE_FILES}" HEADER_CONTENTS)
+
+# Helper function to parse BIT(n) and convert to decimal
+function(parse_bit_flag FLAG_NAME OUTPUT_VAR)
+  # Search for "FLAG_NAME = BIT(n)"
+  # This regex handles optional spaces and capture the digit
+  if(HEADER_CONTENTS MATCHES "${FLAG_NAME}[ \t]*=[ \t]*BIT\\(([0-9]+)\\)")
+    set(BIT_INDEX ${CMAKE_MATCH_1})
+
+    # Calculate 2 ^ BIT_INDEX using bitwise shift
+    math(EXPR BIT_VALUE "1 << ${BIT_INDEX}")
+
+    set(${OUTPUT_VAR} ${BIT_VALUE} PARENT_SCOPE)
+  else()
+    message(WARNING "Could not find value for ${FLAG_NAME} in header")
+  endif()
+endfunction()
+
+# Extract the values
+parse_bit_flag("FLAG_DHT"      DHT_VAL)
+parse_bit_flag("FLAG_DS18B20"  DS18_VAL)
+parse_bit_flag("FLAG_MOIST"    MOIST_VAL)
+parse_bit_flag("FLAG_PRESSURE" PRESS_VAL)
+parse_bit_flag("FLAG_SOLAR"    SOLAR_VAL)
+
+# Configure your file
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/content/viewer.html.in" "${CMAKE_CURRENT_BINARY_DIR}/viewer.html" @ONLY)
 
 set(CONTENT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/content")
 set(GZ_DIR "${CMAKE_CURRENT_BINARY_DIR}/gz")

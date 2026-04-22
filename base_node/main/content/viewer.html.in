@@ -1,8 +1,8 @@
 <!DOCTYPE html><html><head><meta charset="UTF-8"><title>Sensor Viewer</title><style>
 body{font:13px monospace;margin:8px}table{border-collapse:collapse;font:12px monospace}
-th,td{border:1px solid #222;padding:2px 4px;white-space:nowrap}th{cursor:pointer;background:#444}
+th,td{border:1px solid #888;padding:2px 4px;white-space:nowrap}th{cursor:pointer;background:#444}
 input,select{font:12px monospace;padding:4px 4px}button{font:12px monospace;padding:4px 4px}
-#s{font-weight:bold}</style>
+.error{background:red;font-weight:bold}#s{font-weight:bold}</style>
 <meta name="color-scheme" content="light dark"/></head><body>
 <b>Sensor Viewer</b> &nbsp;
 <span id="s">Connecting...</span><br><br>
@@ -25,10 +25,16 @@ Idx:<input id="idxn" size="4" type="number" min="0" oninput="setIdx(Number(this.
 <div style="flex-grow:1;min-width:0;">
 <video style="width:100%;height:auto;display:block;" autoplay muted loop>
 <source src="https://media.tenor.com/lHUl-0nKsmUAAAPo/cocio-rolling.mp4" type="video/mp4"></video>
-<br><span id="error"></span></div></div>
+<br><span id="error"></span>
+
+<div style="overflow-x:auto;flex-shrink:0;margin:10px auto;width:max-content;"><table><thead><tr>
+<th onclick="">Post Time</th><th onclick="">Node</th><th onclick="">Missing PktID</th>
+</tr></thead><tbody id="etb"></tbody></table></div>
+
+</div></div>
 <script>
 var ddict=new Proxy({},{get:(t,pid)=>pid in t?t[pid]:-1})
-var rows=[],sc='t',sd='d',error=0;
+var rows=[],sc='t',sd='d',error=0,erows=[];
 function pp(buf){
 var v=new DataView(buf),o=0,r={};
 r.t=v.getInt32(o,1)*1000;o+=4;
@@ -45,11 +51,19 @@ return r;}
 function handleData(b){
 let po=0;while(po<b.byteLength){
 const p=pp(b.slice(po,po+@FULL_PACKET@+4));rows.push(p);po+=@FULL_PACKET@+4;
-if(p.pkt_id!==ddict[p.onid]+1){error++;}
+if(p.pkt_id!==ddict[p.onid]+1){error++;
+erows.push({pkt_id:ddict[p.onid]+1,t:p.t,onid:p.onid});erender();
+}
 const span=document.getElementById("error");
 if(span){span.textContent="Of all packets in buffer "+error+" / "+rows.length+" = "+(error/rows.length*100).toFixed(2)+"% Failed."}
 ddict[p.onid]=p.pkt_id;ddict[p.onid]=ddict[p.onid]==255?-1:ddict[p.onid];}
 render();}
+function erender(){
+document.getElementById("etb").innerHTML = erows.slice().reverse()
+.map(function (x) {
+return"<tr><td>"+new Date(x.t).toLocaleString()+"</td><td>"+
+x.onid+"</td><td>"+x.pkt_id+"</td></tr>";}).join("");
+}
 function sort(c){if(sc===c)sd=sd==='d'?'a':'d';else{sc=c;sd='d';}render();}
 function render(){
 var fn=document.getElementById('fn').value;
@@ -63,14 +77,21 @@ r.sort(function(a,b){var av=a[col],bv=b[col];return av<bv?(dir==='a'?-1:1):av>bv
 if(mr!==Infinity)r=r.slice(pg*mr,pg*mr+mr);
 document.getElementById('cnt').textContent=rows.length+' rows';
 if(!r.length){document.getElementById('tb').innerHTML='<tr><td colspan="15">No data</td></tr>';return;}
-document.getElementById('tb').innerHTML=r.map(function(x){
-return'<tr><td>'+new Date(x.t).toLocaleString()+'</td><td>'+x.onid+'</td><td>'+x.pkt_id+'</td><td>'+x.hop_count+'</td>'+
-'<td>'+x.lat.toFixed(7)+'</td><td>'+x.lot.toFixed(7)+'</td>'+
-'<td>'+x.air_temp.toFixed(1)+'</td><td>'+x.air_humidity+'</td><td>'+x.pressure.toFixed(1)+'</td>'+
-'<td>'+x.soil_m+'</td><td>'+x.soil_temps.map(function(t){return t.toFixed(1);}).join('/')+'</td>'+
-'<td>'+x.lux+'</td><td>'+x.precipitation.toFixed(1)+'</td><td>'+x.wind_speed.toFixed(3)+'</td>'+
-'<td>'+x.solar_output+'</td><td>'+x.bat_voltage.toFixed(2)+'</td>'+
-'<td>0b'+x.flags.toString(2).padStart(8,'0')+'</td></tr>';}).join('');
+document.getElementById('tb').innerHTML=r.map(x=>{
+const td=(f,val)=>`<td${x.flags&f?' class=error':''}>${val}</td>`;return`<tr>
+<td>${new Date(x.t).toLocaleString()}</td>
+<td>${x.onid}</td><td>${x.pkt_id}</td><td>${x.hop_count}</td>
+<td>${x.lat.toFixed(7)}</td><td>${x.lot.toFixed(7)}</td>
+${td(@DHT_VAL@,x.air_temp.toFixed(1))}
+${td(@DHT_VAL@,x.air_humidity)}
+${td(@PRESS_VAL@,x.pressure.toFixed(1))}
+${td(@MOIST_VAL@,x.soil_m)}
+${td(@DS18_VAL@,x.soil_temps.map(t=>t.toFixed(1)).join('/'))}
+<td>${x.lux}</td><td>${x.precipitation.toFixed(1)}</td><td>${x.wind_speed.toFixed(3)}</td>
+${td(@SOLAR_VAL@,x.solar_output)}
+<td>${x.bat_voltage.toFixed(2)}</td>
+<td>0b${x.flags.toString(2).padStart(8,'0')}</td>
+</tr>`;}).join('');
 }
 function exportCSV(){
 if(!rows.length)return;
@@ -82,7 +103,7 @@ a.download='sensors.csv';a.click();
 const idxInput=document.getElementById("idxn");
 idxInput.oninput=(e)=>{idx=e.target.value;}
 function setIdx(nv){idx=nv;idxInput.value=nv;}
-var ws,idx=0,heartbeatTimer;
+var ws,idx=0,heartbeatTimer,target=location.hostname;
 function resetHeartbeat(){
 clearTimeout(heartbeatTimer);
 heartbeatTimer = setTimeout(()=>{
@@ -90,7 +111,7 @@ console.warn("Heartbeat lost. Closing Conn");
 if (ws) ws.close();},10000);}
 function conn(){
 document.getElementById('s').textContent='Connecting...';
-ws=new WebSocket('ws://'+location.hostname+'/data');
+ws=new WebSocket('ws://'+target+'/data');
 ws.binaryType='arraybuffer';
 ws.onopen=function(){document.getElementById('s').textContent='Connected';ws.send(idx?'START_SD_STREAM:'+idx:'START_SD_STREAM');};
 ws.onclose=function(){document.getElementById('s').textContent='Disconnected';setTimeout(conn,2000);};
