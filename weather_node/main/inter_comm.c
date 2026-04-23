@@ -20,7 +20,7 @@
 #include <string.h>
 
 static const char *TAG = "InComm";
-static TaskHandle_t commTask_handle;
+static TaskHandle_t comm_taskhandle;
 
 /// =======================================================
 ///     The configuration of the node
@@ -53,11 +53,11 @@ static void load_config_nvs(void) {
     ESP_LOGI(TAG, "Loading Config from NVS");
     nvs_handle_t handle;
     if (nvs_open(NVS_NAMESPACE, NVS_READONLY, &handle) != ESP_OK) {
-        ESP_LOGW(TAG, "Failed to load Config; Generating values...");
-        NETWORK_ID = 1;
-        esp_fill_random(&NODE_ID, sizeof(NODE_ID)); // TODO: Make it better than just a fill random
+        // ESP_LOGW(TAG, "Failed to load Config; Generating values...");
+        /* NETWORK_ID = 1;
+        esp_fill_random(&NODE_ID, sizeof(NODE_ID));
         ESP_LOGI(TAG, "Network ID: '%d'  Node ID: '%d'", NETWORK_ID, NODE_ID);
-        save_config_nvs();
+        save_config_nvs(); */
         return;
     }
     if (nvs_get_u8(handle, NVS_NETWORK_KEY, &NETWORK_ID) != ESP_OK) {
@@ -121,11 +121,12 @@ static void packet_worker() {
     const TickType_t send_interval = pdMS_TO_TICKS(DUTY_CYCLES_MS);
     data_packet.head.hop_count = PACKET_TIME_TO_LIVE;
 
+    vTaskSuspend(NULL); // Get resumed externally to functionally begin
+
     while (1) {
         xTaskDelayUntil(&last_send_tick, send_interval);
         prepare_packet(&data_packet);
-
-        xTaskNotify(commTask_handle, 0, eNoAction);
+        xTaskNotify(comm_taskhandle, 0, eNoAction);
     }
 }
 
@@ -194,19 +195,40 @@ static void receive_something() {
     }
 }
 
+/// ======================
+///     Pairing logic
+/// ======================
+
+static pairing_packet_t pairing_packet = {0};
+static void pair_to_network() {
+    pairing_packet.head.hop_count = PACKET_TIME_TO_LIVE;
+    esp_fill_random(&pairing_packet.nonce, sizeof(pairing_packet.nonce));
+
+    block_if_receiving();
+    lora_send_packet((uint8_t *)&pairing_packet, sizeof(pairing_packet_t));
+    ESP_LOGI(TAG, "Sent pairing request");
+}
+
 /// ============================
 ///     Main listening loop
 /// ============================
 
 void inter_comm_task(void *arg) {
-    load_config_nvs();
-
-    commTask_handle = xTaskGetCurrentTaskHandle();
+    comm_taskhandle = xTaskGetCurrentTaskHandle();
 
     lora_init();
     lora_dump_registers();
 
-    xTaskCreate(packet_worker, "workerTask", 1024, NULL, 10, NULL);
+    TaskHandle_t worker_taskhandle;
+    xTaskCreate(packet_worker, "workerTask", 1024, NULL, 10, &worker_taskhandle);
+
+    load_config_nvs();
+    if (NODE_ID && NETWORK_ID) {
+        vTaskResume(worker_taskhandle);
+    } else {
+        ESP_LOGI(TAG, "Node is not connected to network");
+        pair_to_network();
+    }
 
     while (1) {
         lora_receive();

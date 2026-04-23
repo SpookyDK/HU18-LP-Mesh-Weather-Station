@@ -59,6 +59,11 @@ typedef struct __attribute__((packed)) {
     sensor_payload_t payload;
 } full_packet_t;
 
+typedef struct __attribute__((packed)) {
+    packet_header_t head;
+    uint16_t nonce;
+} pairing_packet_t;
+
 enum PACKET_BIT_FLAG {
     FLAG_DHT = BIT(7),
     FLAG_DS18B20 = BIT(6),
