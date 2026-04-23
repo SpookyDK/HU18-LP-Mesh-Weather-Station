@@ -3,6 +3,8 @@
 #include "esp_log.h"
 #include "esp_random.h"
 #include "freertos/idf_additions.h"
+#include "freertos/projdefs.h"
+#include "freertos/semphr.h"
 #include "i2c_tasks.h"
 #include "inter_comm.h"
 #include "lora.h"
@@ -16,6 +18,7 @@
 #include <stdint.h>
 
 static const char *TAG = "InComm";
+static SemaphoreHandle_t xSemaphore = NULL;
 
 /// =======================================================
 ///     The configuration of the node
@@ -109,6 +112,26 @@ static void prepare_packet(full_packet_t *packet) {
     }
 }
 
+static void packet_worker() {
+    TickType_t last_send_tick = xTaskGetTickCount();
+    const TickType_t send_interval = pdMS_TO_TICKS(DUTY_CYCLES_MS);
+    full_packet_t packet = {0};
+    packet.head.hop_count = PACKET_TIME_TO_LIVE;
+
+    while (1) {
+        xTaskDelayUntil(&last_send_tick, send_interval);
+        prepare_packet(&packet);
+
+        if (xSemaphoreTake(xSemaphore, portMAX_DELAY) == pdTRUE) {
+            block_if_receiving();
+            lora_send_packet((uint8_t *)&packet, sizeof(full_packet_t));
+            ESP_LOGI(TAG, "Sent Packet with id: '%d'", packet.head.packet_id);
+
+            xSemaphoreGive(xSemaphore);
+        }
+    }
+}
+
 /// ===================================
 ///     Duplicate packet protection
 /// ===================================
@@ -182,27 +205,24 @@ void inter_comm_task(void *arg) {
     ESP_LOGI(TAG, "work");
     load_config_nvs();
 
+    xSemaphore = xSemaphoreCreateMutex();
+    if (xSemaphore == NULL) {
+        ESP_LOGE(TAG, "Failed to create semaphore, aborting");
+        vTaskDelete(NULL);
+    }
+
     lora_init();
     lora_dump_registers();
 
-    TickType_t last_send = xTaskGetTickCount();
-    const TickType_t interval = pdMS_TO_TICKS(DUTY_CYCLES_MS);
-    full_packet_t packet = {0};
-    packet.head.hop_count = PACKET_TIME_TO_LIVE;
+    xTaskCreate(packet_worker, "workerTask", 1024, NULL, 10, NULL);
 
     while (1) {
-        lora_receive();
-
-        if (lora_received()) {
-            receive_something();
-        }
-
-        if ((xTaskGetTickCount() - last_send) >= interval) {
-            prepare_packet(&packet);
-            block_if_receiving();
-            lora_send_packet((uint8_t *)&packet, sizeof(full_packet_t));
-            ESP_LOGI(TAG, "Sent Packet with id: '%d'", packet.head.packet_id);
-            last_send += interval;
+        if (xSemaphoreTake(xSemaphore, pdMS_TO_TICKS(100)) == pdTRUE) {
+            lora_receive();
+            if (lora_received()) {
+                receive_something();
+            }
+            xSemaphoreGive(xSemaphore);
         }
         vTaskDelay(10);
     }
