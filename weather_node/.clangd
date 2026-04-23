@@ -7,4 +7,5 @@ CompileFlags:
       -mfix-esp32-erratum-308,
       -fno-tree-copy-prop,
       -fno-tree-sink,
+      -fanalyzer,
     ]

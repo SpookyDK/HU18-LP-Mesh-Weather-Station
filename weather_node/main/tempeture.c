@@ -1,4 +1,3 @@
-#include "pin_config.h"
 #include "dht11.h"
 #include "ds18b20.h"
 #include "esp_err.h"
@@ -8,6 +7,8 @@
 #include "onewire_bus_impl_rmt.h"
 #include "onewire_device.h"
 #include "onewire_types.h"
+#include "packet_def.h"
+#include "pin_config.h"
 #include "portmacro.h"
 #include "tempeture.h"
 #include <stdbool.h>
@@ -19,8 +20,7 @@ static onewire_bus_handle_t bus = NULL;
 static int8_t ds18b20_device_num = 0;
 static ds18b20_device_handle_t ds18b20s[ONEWIRE_MAX_DEVS];
 
-bool dht_shared_air_tempeture_status = true;
-bool ds18b20_shared_status = true;
+static bool temp_initated = false;
 
 static void init_tempeture() {
     esp_err_t search_result;
@@ -57,44 +57,41 @@ static void init_tempeture() {
 
     ESP_ERROR_CHECK(onewire_del_device_iter(iter));
     ESP_LOGI(TAG, "Search over, %d ds18b20 devices found", ds18b20_device_num);
+    temp_initated = true;
 }
 
-uint8_t dht_shared_air_humidity = 0;
-int16_t dht_shared_air_tempeture = 0;
-/*
- * Note this value is raw and needs to be shifted 4 times, Like: val >> 4
- */
-int16_t ds18b20_shared_soil_tempeture[4] = {0};
-
-void temp_task(void *duty_cycle_ms) {
-    init_tempeture();
-
-    int16_t dht11_tempeture, dht11_humidity, ds18b20_temperature;
-    TickType_t PreviousWakeTime = xTaskGetTickCount();
-
-    while (true) {
-        if (dht_read_data(CONFIG_DHT11_PIN, &dht11_humidity, &dht11_tempeture) == ESP_OK) {
-            dht_shared_air_humidity = (uint8_t)(dht11_humidity / 10);
-            dht_shared_air_tempeture = dht11_tempeture;
-            dht_shared_air_tempeture_status = false;
-            ESP_LOGI("DHT11", "Temperature: %d  Humidity: %d", dht11_tempeture, dht11_humidity);
-        } else {
-            dht_shared_air_tempeture_status = true;
-            ESP_LOGW("DHT11", "Failed to read");
-        }
-
-        ESP_ERROR_CHECK(ds18b20_trigger_temperature_conversion_for_all(bus));
-        for (int i = 0; i < ds18b20_device_num; i++) {
-            if (ds18b20_get_temperature(ds18b20s[i], &ds18b20_temperature) == ESP_OK) {
-                ds18b20_shared_soil_tempeture[i] = ds18b20_temperature;
-                ESP_LOGI("DS18B20", "[%d] [Temperature]> %.2f, Shared> %d", i, (double)(ds18b20_temperature / 16.0f),
-                         ds18b20_shared_soil_tempeture[i]);
-                ds18b20_shared_status = false;
-            } else {
-                ds18b20_shared_status = true;
-                ESP_LOGW("DS18B20", "Failed to read");
-            }
-        }
-        vTaskDelayUntil(&PreviousWakeTime, pdMS_TO_TICKS((uint32_t)duty_cycle_ms));
+esp_err_t get_air_reads(sensor_payload_t *packet) {
+    if (!temp_initated) {
+        ESP_LOGW(TAG, "Temperature module not initated, initiating...");
+        init_tempeture();
     }
+    int16_t dht_humd, dht_temp;
+    if (dht_read_data(CONFIG_DHT11_PIN, &dht_humd, &dht_temp) == ESP_OK) {
+        packet->air_humidity = dht_humd;
+        packet->air_tempeture = dht_temp;
+    } else {
+        ESP_LOGW(TAG, "DHT11> Failed to read data");
+        return ESP_FAIL;
+    }
+    return ESP_OK;
+}
+esp_err_t get_soil_temp(sensor_payload_t *packet) {
+    if (!temp_initated) {
+        ESP_LOGW(TAG, "Temperature module not initated, initiating...");
+        init_tempeture();
+    }
+    int16_t temp_temp;
+    if (ds18b20_trigger_temperature_conversion_for_all(bus) != ESP_OK)
+        return ESP_FAIL;
+    for (int i = 0; i < ds18b20_device_num; i++) {
+        if (ds18b20_get_temperature(ds18b20s[i], &temp_temp) == ESP_OK) {
+            packet->soil_tempeture[i] = temp_temp;
+            // ESP_LOGI("DS18B20", "[%d] [Temperature]> %.2f, Shared> %d", i, (double)(temp_temp / 16.0f), temp_temp);
+        }
+    }
+    if (ds18b20_device_num != 4) {
+        ESP_LOGW(TAG, "DS18> Not found ideal number");
+        return ESP_ERR_NOT_FOUND;
+    }
+    return ESP_OK;
 }

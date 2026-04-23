@@ -1,6 +1,7 @@
 #ifndef PACKET_DEF_H
 #define PACKET_DEF_H
 
+#include "esp_bit_defs.h"
 #include <stdint.h>
 
 /**
@@ -58,4 +59,11 @@ typedef struct __attribute__((packed)) {
     sensor_payload_t payload;
 } full_packet_t;
 
+enum PACKET_BIT_FLAG {
+    FLAG_DHT = BIT(7),
+    FLAG_DS18B20 = BIT(6),
+    FLAG_PRESSURE = BIT(5),
+    FLAG_MOIST = BIT(4),
+    FLAG_SOLAR = BIT(3),
+};
 #endif // !PACKET_DEF_H

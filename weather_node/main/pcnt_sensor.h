@@ -2,6 +2,7 @@
 #define PCNT_SENSOR_H
 
 #include "esp_err.h"
+#include "packet_def.h"
 #include <stdint.h>
 
 #define PCNT_HIGH_LIMIT 1000
@@ -10,13 +11,7 @@
 #define CALIBRATION_FACTOR 0.75f
 #define PI 3.1415926f
 
-uint16_t get_rain();
-/**
- * @brief The task function to measure the wind,
- * @Important  The windPcntInit function needs to be called before starting the
- * task
- * @paramin uint32_t timedelay:  The time between measurements ms
- **/
-void pcnt_task(void *duty_cycle_ms);
+esp_err_t get_rain_read(sensor_payload_t *payload);
+esp_err_t get_wind_read(sensor_payload_t *payload);
 
 #endif // !PCNT_SENSOR_H

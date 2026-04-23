@@ -79,20 +79,20 @@ static const char *TAG = "tsl2591";
 // Calculation constants.
 #define TSL2591_LUX_DF 408.0F
 
-#define CHECK(x)                                                                                                       \
-    do {                                                                                                               \
-        esp_err_t __;                                                                                                  \
-        if ((__ = x) != ESP_OK)                                                                                        \
-            return __;                                                                                                 \
+#define CHECK(x)                                                                                                                           \
+    do {                                                                                                                                   \
+        esp_err_t __;                                                                                                                      \
+        if ((__ = x) != ESP_OK)                                                                                                            \
+            return __;                                                                                                                     \
     } while (0)
-#define CHECK_ARG(VAL)                                                                                                 \
-    do {                                                                                                               \
-        if (!(VAL))                                                                                                    \
-            return ESP_ERR_INVALID_ARG;                                                                                \
+#define CHECK_ARG(VAL)                                                                                                                     \
+    do {                                                                                                                                   \
+        if (!(VAL))                                                                                                                        \
+            return ESP_ERR_INVALID_ARG;                                                                                                    \
     } while (0)
-#define SLEEP_MS(x)                                                                                                    \
-    do {                                                                                                               \
-        vTaskDelay(pdMS_TO_TICKS(x));                                                                                  \
+#define SLEEP_MS(x)                                                                                                                        \
+    do {                                                                                                                                   \
+        vTaskDelay(pdMS_TO_TICKS(x));                                                                                                      \
     } while (0)
 
 static const uint32_t integration_time_ms[] = {
@@ -121,22 +121,14 @@ static inline esp_err_t write_special_function(tsl2591_t *dev, uint8_t special_f
 }
 
 // Read/write enable register.
-static inline esp_err_t write_enable_register(tsl2591_t *dev, uint8_t value) {
-    return write_register(dev, TSL2591_REG_ENABLE, value);
-}
+static inline esp_err_t write_enable_register(tsl2591_t *dev, uint8_t value) { return write_register(dev, TSL2591_REG_ENABLE, value); }
 
-static inline esp_err_t read_enable_register(tsl2591_t *dev, uint8_t *value) {
-    return read_register(dev, TSL2591_REG_ENABLE, value);
-}
+static inline esp_err_t read_enable_register(tsl2591_t *dev, uint8_t *value) { return read_register(dev, TSL2591_REG_ENABLE, value); }
 
 // Read/write control register.
-static inline esp_err_t write_control_register(tsl2591_t *dev, uint8_t value) {
-    return write_register(dev, TSL2591_REG_CONTROL, value);
-}
+static inline esp_err_t write_control_register(tsl2591_t *dev, uint8_t value) { return write_register(dev, TSL2591_REG_CONTROL, value); }
 
-static inline esp_err_t read_control_register(tsl2591_t *dev, uint8_t *value) {
-    return read_register(dev, TSL2591_REG_CONTROL, value);
-}
+static inline esp_err_t read_control_register(tsl2591_t *dev, uint8_t *value) { return read_register(dev, TSL2591_REG_CONTROL, value); }
 
 // Read 16 bit from two consecutive registers.
 // Note that the sensor will shadow for example C0DATAH if C0DATAL is read.
@@ -268,8 +260,7 @@ esp_err_t tsl2591_set_power_status(tsl2591_t *dev, tsl2591_power_status_t power_
 
     I2C_DEV_TAKE_MUTEX(&dev->i2c_dev);
 
-    I2C_DEV_CHECK(&dev->i2c_dev,
-                  write_enable_register(dev, (dev->settings.enable_reg & ~TSL2591_POWER_ON) | power_status));
+    I2C_DEV_CHECK(&dev->i2c_dev, write_enable_register(dev, (dev->settings.enable_reg & ~TSL2591_POWER_ON) | power_status));
     dev->settings.enable_reg = (dev->settings.enable_reg & ~TSL2591_POWER_ON) | power_status;
 
     I2C_DEV_GIVE_MUTEX(&dev->i2c_dev);
@@ -311,8 +302,7 @@ esp_err_t tsl2591_set_interrupt(tsl2591_t *dev, tsl2591_interrupt_t interrupt) {
 
     I2C_DEV_TAKE_MUTEX(&dev->i2c_dev);
 
-    I2C_DEV_CHECK(&dev->i2c_dev,
-                  write_enable_register(dev, (dev->settings.enable_reg & ~TSL2591_ALS_INTR_BOTH_ON) | interrupt));
+    I2C_DEV_CHECK(&dev->i2c_dev, write_enable_register(dev, (dev->settings.enable_reg & ~TSL2591_ALS_INTR_BOTH_ON) | interrupt));
     dev->settings.enable_reg = (dev->settings.enable_reg & ~TSL2591_ALS_INTR_BOTH_ON) | interrupt;
 
     uint8_t tmp = 0;
@@ -336,8 +326,7 @@ esp_err_t tsl2591_set_sleep_after_intr(tsl2591_t *dev, tsl2591_sleep_after_intr_
 
     I2C_DEV_TAKE_MUTEX(&dev->i2c_dev);
 
-    I2C_DEV_CHECK(&dev->i2c_dev,
-                  write_enable_register(dev, (dev->settings.enable_reg & ~TSL2591_SLEEP_AFTER_ON) | sleep_after_intr));
+    I2C_DEV_CHECK(&dev->i2c_dev, write_enable_register(dev, (dev->settings.enable_reg & ~TSL2591_SLEEP_AFTER_ON) | sleep_after_intr));
     dev->settings.enable_reg = (dev->settings.enable_reg & ~TSL2591_SLEEP_AFTER_ON) | sleep_after_intr;
 
     I2C_DEV_GIVE_MUTEX(&dev->i2c_dev);
@@ -404,8 +393,7 @@ esp_err_t tsl2591_set_persistence_filter(tsl2591_t *dev, tsl2591_persistence_fil
 
     I2C_DEV_TAKE_MUTEX(&dev->i2c_dev);
 
-    I2C_DEV_CHECK(&dev->i2c_dev, write_register(dev, TSL2591_REG_PERSIST,
-                                                (dev->settings.persistence_reg & ~TSL2591_60_CYCLES) | filter));
+    I2C_DEV_CHECK(&dev->i2c_dev, write_register(dev, TSL2591_REG_PERSIST, (dev->settings.persistence_reg & ~TSL2591_60_CYCLES) | filter));
     dev->settings.persistence_reg = (dev->settings.persistence_reg & ~TSL2591_60_CYCLES) | filter;
 
     I2C_DEV_GIVE_MUTEX(&dev->i2c_dev);

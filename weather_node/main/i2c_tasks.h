@@ -16,11 +16,15 @@
 #define INA219_VOLTAGE_LSB_MV 4 // 4mV per LSB
 #define INA219_CURRENT_LSB_MA 1 // 1mA per LSB
 #define INA219_POWER_LSB_MW 20  // 20x current LSB = 20mW per LSB
+
 #define POWER_ADDR_SOLAR 0x41
 #define POWER_ADDR_BATTERY 0x40
 
-void barometer_task(void *duty_cycle_ms);
-void light_sensor_task(void *duty_cycle_ms);
-void power_sensor_task(void *sensor_cnt);
+#include "esp_err.h"
+#include "packet_def.h"
+
+esp_err_t get_pres_read(sensor_payload_t *payload);
+esp_err_t get_light_read(sensor_payload_t *payload);
+esp_err_t get_power_read(sensor_payload_t *payload, uint8_t addr);
 
 #endif // !I2C_TASKS
