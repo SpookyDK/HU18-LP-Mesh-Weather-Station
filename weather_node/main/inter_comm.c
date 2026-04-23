@@ -15,10 +15,12 @@
 #include "pin_config.h"
 #include "portmacro.h"
 #include "tempeture.h"
+#include <limits.h>
 #include <stdint.h>
+#include <string.h>
 
 static const char *TAG = "InComm";
-static SemaphoreHandle_t xSemaphore = NULL;
+static TaskHandle_t commTask_handle;
 
 /// =======================================================
 ///     The configuration of the node
@@ -112,23 +114,18 @@ static void prepare_packet(full_packet_t *packet) {
     }
 }
 
+static full_packet_t data_packet = {0};
+
 static void packet_worker() {
     TickType_t last_send_tick = xTaskGetTickCount();
     const TickType_t send_interval = pdMS_TO_TICKS(DUTY_CYCLES_MS);
-    full_packet_t packet = {0};
-    packet.head.hop_count = PACKET_TIME_TO_LIVE;
+    data_packet.head.hop_count = PACKET_TIME_TO_LIVE;
 
     while (1) {
         xTaskDelayUntil(&last_send_tick, send_interval);
-        prepare_packet(&packet);
+        prepare_packet(&data_packet);
 
-        if (xSemaphoreTake(xSemaphore, portMAX_DELAY) == pdTRUE) {
-            block_if_receiving();
-            lora_send_packet((uint8_t *)&packet, sizeof(full_packet_t));
-            ESP_LOGI(TAG, "Sent Packet with id: '%d'", packet.head.packet_id);
-
-            xSemaphoreGive(xSemaphore);
-        }
+        xTaskNotify(commTask_handle, 0, eNoAction);
     }
 }
 
@@ -202,14 +199,9 @@ static void receive_something() {
 /// ============================
 
 void inter_comm_task(void *arg) {
-    ESP_LOGI(TAG, "work");
     load_config_nvs();
 
-    xSemaphore = xSemaphoreCreateMutex();
-    if (xSemaphore == NULL) {
-        ESP_LOGE(TAG, "Failed to create semaphore, aborting");
-        vTaskDelete(NULL);
-    }
+    commTask_handle = xTaskGetCurrentTaskHandle();
 
     lora_init();
     lora_dump_registers();
@@ -217,12 +209,15 @@ void inter_comm_task(void *arg) {
     xTaskCreate(packet_worker, "workerTask", 1024, NULL, 10, NULL);
 
     while (1) {
-        if (xSemaphoreTake(xSemaphore, pdMS_TO_TICKS(100)) == pdTRUE) {
-            lora_receive();
-            if (lora_received()) {
-                receive_something();
-            }
-            xSemaphoreGive(xSemaphore);
+        lora_receive();
+        if (lora_received()) {
+            receive_something();
+        }
+
+        if (xTaskNotifyWait(0, ULONG_MAX, NULL, 0) == pdPASS) {
+            block_if_receiving();
+            lora_send_packet((uint8_t *)&data_packet, sizeof(full_packet_t));
+            ESP_LOGI(TAG, "Sent Packet with id: '%d'", data_packet.head.packet_id);
         }
         vTaskDelay(10);
     }
