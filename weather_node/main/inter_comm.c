@@ -120,6 +120,7 @@ static void packet_worker() {
     TickType_t last_send_tick = xTaskGetTickCount();
     const TickType_t send_interval = pdMS_TO_TICKS(DUTY_CYCLES_MS);
     data_packet.head.hop_count = PACKET_TIME_TO_LIVE;
+    data_packet.head.header = PACKET_HEADER_VALUE;
 
     vTaskSuspend(NULL); // Get resumed externally to functionally begin
 
@@ -202,6 +203,7 @@ static void receive_something() {
 static pairing_packet_t pairing_packet = {0};
 static void pair_to_network() {
     pairing_packet.head.hop_count = PACKET_TIME_TO_LIVE;
+    pairing_packet.head.header = PACKET_HEADER_VALUE;
     esp_fill_random(&pairing_packet.nonce, sizeof(pairing_packet.nonce));
 
     block_if_receiving();

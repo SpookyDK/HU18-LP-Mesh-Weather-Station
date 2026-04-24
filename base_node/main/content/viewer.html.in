@@ -25,12 +25,14 @@ Idx:<input id="idxn" size="4" type="number" min="0" oninput="setIdx(Number(this.
 <div style="flex-grow:1;min-width:0;">
 <video style="width:100%;height:auto;display:block;" autoplay muted loop>
 <source src="https://media.tenor.com/lHUl-0nKsmUAAAPo/cocio-rolling.mp4" type="video/mp4"></video>
-<br><span id="error"></span>
 
+<br><p>Underneath here will all the pairing request come</p>
+<ul id="pair"></ul>
+
+<br><span id="error"></span>
 <div style="overflow-x:auto;flex-shrink:0;margin:10px auto;width:max-content;"><table><thead><tr>
 <th onclick="">Post Time</th><th onclick="">Node</th><th onclick="">Missing PktID</th>
 </tr></thead><tbody id="etb"></tbody></table></div>
-
 </div></div>
 <script>
 var ddict=new Proxy({},{get:(t,pid)=>pid in t?t[pid]:-1})
@@ -109,15 +111,24 @@ clearTimeout(heartbeatTimer);
 heartbeatTimer = setTimeout(()=>{
 console.warn("Heartbeat lost. Closing Conn");
 if (ws) ws.close();},10000);}
+function pair_cb(id){
+console.log("Called by "+id);
+ws.send("PAIRING:ACCEPTED:"+id);
+}
+function pairing(id){
+  let li=document.getElementById('pair');
+  li.innerHTML+=`<li>${id} Wants to pair  <button onclick="this.disabled=true;pair_cb('${id}')">Pair</button></li>`;
+}
 function conn(){
 document.getElementById('s').textContent='Connecting...';
 ws=new WebSocket('ws://'+target+'/data');
 ws.binaryType='arraybuffer';
-ws.onopen=function(){document.getElementById('s').textContent='Connected';ws.send(idx?'START_SD_STREAM:'+idx:'START_SD_STREAM');};
+ws.onopen=function(){document.getElementById('s').textContent='Connected';ws.send('START_SD_STREAM'+(idx?':'+idx:''));};
 ws.onclose=function(){document.getElementById('s').textContent='Disconnected';setTimeout(conn,2000);};
 ws.onmessage=function(e){
 if(e.data instanceof ArrayBuffer){handleData(e.data);}
 else if(e.data.startsWith('END_OF_TRANSMISSION')){setIdx(Number(e.data.split(':')[1]));}
+else if(e.data.startsWith('PAIRING')){pairing(e.data.split(':')[1])}
 else{console.log("Received unkown packet:"+e)}
 };}conn();
 </script></body></html>

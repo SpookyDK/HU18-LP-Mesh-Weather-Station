@@ -41,6 +41,7 @@ static esp_err_t get_handler_viewer(httpd_req_t *req) {
 }
 static httpd_uri_t uri_get_viewer = {.uri = "/", .method = HTTP_GET, .handler = get_handler_viewer, .user_ctx = NULL};
 
+static uint8_t ws_buf[WS_PUSH_CHUNK];
 static void ws_push_task(void *arg) {
     ws_push_args_t *a = (ws_push_args_t *)arg;
     httpd_handle_t hd = a->hd;
@@ -48,74 +49,78 @@ static void ws_push_task(void *arg) {
     size_t sd_tail_idx = a->start_idx;
     free(a);
 
-    uint8_t *buf = (uint8_t *)malloc(WS_PUSH_CHUNK);
-    if (!buf) {
-        ESP_LOGE(TAG, "Push task: OOM, exiting");
-        g_websocket_task = NULL;
-        vTaskDelete(NULL);
-        return;
-    }
     ESP_LOGI(TAG, "WS push task started, fd='%d' start_idx='%d'", fd, sd_tail_idx);
-    httpd_ws_frame_t ws_pkt = {.type = HTTPD_WS_TYPE_BINARY, .payload = buf};
+    httpd_ws_frame_t ws_pkt = {0};
 
     while (1) {
-        uint32_t notif = ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
-        (void)notif;
+        uint32_t notif;
+        xTaskNotifyWait(0, ULONG_MAX, &notif, portMAX_DELAY);
 
-        uint32_t bits = 0;
-        xTaskNotifyWait(0, NOTIFY_EXIT, &bits, 0);
-        if (bits & NOTIFY_EXIT) {
+        switch (notif & 0xffff) {
+        case NOTIF_WS_EXIT:
             ESP_LOGI(TAG, "WS push: Exit requested, fd='%d'", fd);
             goto cleanup;
-        }
-
-        size_t len = WS_PUSH_CHUNK;
-        READ_RETURN_STATE read_ret;
-        while ((read_ret = b_read_file(PACKET_FILE, sd_tail_idx, &len, buf)) != READ_FAILURE) {
-            if (len == 0)
-                break;
-            ws_pkt.type = HTTPD_WS_TYPE_BINARY;
-            ws_pkt.len = len;
-            ws_pkt.payload = buf;
-            esp_err_t ret = httpd_ws_send_frame_async(hd, fd, &ws_pkt);
-            if (ret != ESP_OK) {
-                ESP_LOGW(TAG, "WS push: send error %s, client gone", esp_err_to_name(ret));
-                goto cleanup;
+        case NOTIF_WS_NEW_DATA: {
+            size_t len = WS_PUSH_CHUNK;
+            READ_RETURN_STATE read_ret;
+            while ((read_ret = b_read_file(PACKET_FILE, sd_tail_idx, &len, ws_buf)) != READ_FAILURE) {
+                if (len == 0)
+                    break;
+                ws_pkt.type = HTTPD_WS_TYPE_BINARY;
+                ws_pkt.len = len;
+                ws_pkt.payload = ws_buf;
+                esp_err_t ret = httpd_ws_send_frame_async(hd, fd, &ws_pkt);
+                if (ret != ESP_OK) {
+                    ESP_LOGW(TAG, "WS push: send error %s, client gone", esp_err_to_name(ret));
+                    goto cleanup;
+                }
+                sd_tail_idx += len;
+                len = WS_PUSH_CHUNK;
+                if (read_ret == READ_DONE)
+                    break;
             }
-            sd_tail_idx += len;
-            len = WS_PUSH_CHUNK;
-            if (read_ret == READ_DONE)
-                break;
+            char end_msg[48];
+            snprintf(end_msg, sizeof(end_msg), "END_OF_TRANSMISSION:%d", sd_tail_idx);
+            httpd_ws_frame_t end_pkt = {.type = HTTPD_WS_TYPE_TEXT, .payload = (uint8_t *)end_msg, .len = strlen(end_msg)};
+            httpd_ws_send_frame_async(hd, fd, &end_pkt);
+            break;
         }
-        char end_msg[48];
-        snprintf(end_msg, sizeof(end_msg), "END_OF_TRANSMISSION:%d", sd_tail_idx);
-        httpd_ws_frame_t end_pkt = {.type = HTTPD_WS_TYPE_TEXT, .payload = (uint8_t *)end_msg, .len = strlen(end_msg)};
-        httpd_ws_send_frame_async(hd, fd, &end_pkt);
+        case NOTIF_WS_PAIRING:
+            ws_pkt.type = HTTPD_WS_TYPE_TEXT;
+            char pair_msg[64];
+            snprintf(pair_msg, sizeof(pair_msg), "PAIRING:%08X", notif >> 16);
+            ws_pkt.len = strlen(pair_msg);
+            ws_pkt.payload = (uint8_t *)pair_msg;
+            httpd_ws_send_frame_async(hd, fd, &ws_pkt);
+            break;
+        case NOTIF_WS_FLUSH:
+            ESP_LOGW(TAG, "Not used");
+            break;
+        default:
+            ESP_LOGW(TAG, "Unkown thing");
+            break;
+        }
     }
 cleanup:
     ESP_LOGI(TAG, "WS push: Task Exiting, fd='%d'", fd);
-    free(buf);
     g_websocket_task = NULL;
     vTaskDelete(NULL);
 }
-void notify_ws_new_sd_data(void) {
+void notify_websocket(uint32_t notif) {
     if (g_websocket_task != NULL) {
-        xTaskNotifyGive(g_websocket_task);
+        xTaskNotify(g_websocket_task, notif, eSetBits);
     }
 }
 static void stop_push_task(void) {
     if (g_websocket_task == NULL)
         return;
-
     ESP_LOGI(TAG, "Requesting push task exit");
-    xTaskNotify(g_websocket_task, NOTIFY_EXIT, eSetBits);
-
+    xTaskNotify(g_websocket_task, NOTIF_WS_EXIT, eSetBits);
     for (int i = 0; i < 10; i++) {
         vTaskDelay(pdMS_TO_TICKS(50));
         if (g_websocket_task == NULL)
             return;
     }
-
     ESP_LOGW(TAG, "Push task did not take exit in due time");
     if (g_websocket_task != NULL) {
         vTaskDelete(g_websocket_task);

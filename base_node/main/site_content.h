@@ -12,9 +12,15 @@ typedef struct {
     size_t start_idx;
 } ws_push_args_t;
 
-#define NOTIFY_NEW_DATA BIT(0)
-#define NOTIFY_FLUSH_NOW BIT(1)
-#define NOTIFY_EXIT BIT(2)
+/*
+ * @note This is limited to just the first 16 bits, as the latter is used for data passing
+ */
+enum notif_ws {
+    NOTIF_WS_NEW_DATA = 1,
+    NOTIF_WS_FLUSH,
+    NOTIF_WS_EXIT,
+    NOTIF_WS_PAIRING,
+};
 
 #define WS_PUSH_CHUNK 512
 
@@ -22,6 +28,6 @@ extern TaskHandle_t g_websocket_task;
 
 httpd_handle_t start_webserver(void);
 
-void notify_ws_new_sd_data(void);
+void notify_websocket(uint32_t notif);
 
 #endif // !SITE_CONTENT

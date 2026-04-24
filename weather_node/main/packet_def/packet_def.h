@@ -6,18 +6,22 @@
 
 /**
  * Packet Header
- * @version 3
+ * @version 4
+ * @param a staticly written header to identify the thing
  * @param packet_id Is a squential series that is incremented from each node
  * @param hop_count Decrementing until zero, then drop
- * @param flags Currently not used
+ * @param flags
  */
 typedef struct __attribute__((packed)) {
+    uint8_t header;
     uint8_t network_id;
     uint8_t orig_node_id;
     uint8_t packet_id;
     uint8_t hop_count;
     uint8_t flags;
 } packet_header_t;
+
+#define PACKET_HEADER_VALUE 0x69
 
 /**
  * Main Struct
