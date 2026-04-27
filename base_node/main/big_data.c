@@ -97,10 +97,10 @@ static void receive_something() {
     }
     packet_header_t head = {0};
     memcpy(&head, lora_buf, sizeof(packet_header_t));
-    if (head.header != PACKET_HEADER_VALUE) {
+    /* if (head.header != PACKET_HEADER_VALUE) {
         ESP_LOGI(TAG, "Invalid packet header, received='%02X', dropped", head.header);
         return;
-    }
+    } */
 
     switch (head.flags & 0b11) {
     case 0b01: {

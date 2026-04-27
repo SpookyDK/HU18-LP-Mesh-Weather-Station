@@ -13,7 +13,7 @@
  * @param flags
  */
 typedef struct __attribute__((packed)) {
-    uint8_t header;
+    /*     uint8_t header; */
     uint8_t network_id;
     uint8_t orig_node_id;
     uint8_t packet_id;

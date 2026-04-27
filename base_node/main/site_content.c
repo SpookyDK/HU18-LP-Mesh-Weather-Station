@@ -88,7 +88,7 @@ static void ws_push_task(void *arg) {
         case NOTIF_WS_PAIRING:
             ws_pkt.type = HTTPD_WS_TYPE_TEXT;
             char pair_msg[64];
-            snprintf(pair_msg, sizeof(pair_msg), "PAIRING:%08X", notif >> 16);
+            snprintf(pair_msg, sizeof(pair_msg), "PAIRING:%08lX", (unsigned long)(notif >> 16));
             ws_pkt.len = strlen(pair_msg);
             ws_pkt.payload = (uint8_t *)pair_msg;
             httpd_ws_send_frame_async(hd, fd, &ws_pkt);
@@ -167,6 +167,7 @@ static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
     }
 
     const char *target = "START_SD_STREAM";
+    const char *pairing = "PAIRING";
     if (ws_pkt.len >= strlen(target) && strncmp((char *)buf, target, strlen(target)) == 0) {
         size_t resume_idx = 0;
         if (ws_pkt.len > strlen(target) && buf[strlen(target)] == ':') {
@@ -185,7 +186,16 @@ static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
                 free(args);
                 g_websocket_task = NULL;
             }
-            notify_ws_new_sd_data();
+            notify_websocket(NOTIF_WS_NEW_DATA);
+        }
+    } else if (ws_pkt.len >= strlen(pairing) && strncmp((char *)buf, pairing, strlen(pairing)) == 0) {
+        ESP_LOGI(TAG, "WS Received a pairing response");
+        size_t offset = strlen(pairing) + 1;
+        const char *accepted = "ACCEPTED";
+        if (ws_pkt.len >= strlen(accepted) + offset && strncmp((char *)buf + offset, accepted, strlen(accepted)) == 0) {
+            ESP_LOGI(TAG, "WS> Pairing Accepted sending down the line");
+        } else {
+            ESP_LOGI(TAG, "WS> Pairing denied");
         }
     } else {
         ESP_LOGI(TAG, "WS Received: %s", (char *)buf);

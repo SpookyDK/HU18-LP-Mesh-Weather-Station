@@ -9,8 +9,7 @@ input,select{font:12px monospace;padding:4px 4px}button{font:12px monospace;padd
 Node:<input id="fn" size="4" oninput="render()">Flag:<input id="ff" size="8" oninput="render()">
 Max:<select id="mr" onchange="render()"><option>100</option><option>200</option><option>500</option><option>0</option></select>
 Page:<input id="pg" size="2" type="number" min="0" onchange="render()">
-Idx:<input id="idxn" size="4" type="number" min="0" oninput="setIdx(Number(this.value))">
-<button onclick="setIdx(0);rows=[];error=0;erows=[];render();erender()">Clear</button><button onclick="ws.send('START_SD_STREAM:'+idx)">Get New</button>
+<button onclick="idx=0;rows=[];error=0;erows=[];render();erender()">Clear</button><button onclick="ws.send('START_SD_STREAM:'+idx)">Get New</button>
 <button onclick="exportCSV()">CSV</button>
 &nbsp;<span id="cnt"></span>
 <div style="display:flex;align-items:flex-start;gap:10px;margin-top:6px;">
@@ -36,7 +35,7 @@ Idx:<input id="idxn" size="4" type="number" min="0" oninput="setIdx(Number(this.
 </div></div>
 <script>
 var ddict=new Proxy({},{get:(t,pid)=>pid in t?t[pid]:-1})
-var rows=[],sc='t',sd='d',error=0,erows=[];
+var rows=[],sc='t',sd='d',error=0,erows=[],ps=@FULL_PACKET@+4;
 function pp(buf){
 var v=new DataView(buf),o=0,r={};
 r.t=v.getInt32(o,1)*1000;o+=4;
@@ -52,7 +51,7 @@ r.solar_output=v.getUint8(o++)*4;r.bat_voltage=v.getUint8(o)/250+3.5;
 return r;}
 function handleData(b){
 let po=0;while(po<b.byteLength){
-const p=pp(b.slice(po,po+@FULL_PACKET@+4));rows.push(p);po+=@FULL_PACKET@+4;
+const p=pp(b.slice(po,po+ps));po+=ps;rows.push(p);
 if(p.pkt_id!==ddict[p.onid]+1){error++;
 erows.push({pkt_id:ddict[p.onid]+1,t:p.t,onid:p.onid});erender();
 }
@@ -102,9 +101,6 @@ var b=rows.map(function(r){return[new Date(r.t).toISOString(),r.onid,r.nid,r.pkt
 var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h+b],{type:'text/csv'}));
 a.download='sensors.csv';a.click();
 }
-const idxInput=document.getElementById("idxn");
-idxInput.oninput=(e)=>{idx=e.target.value;}
-function setIdx(nv){idx=nv;idxInput.value=nv;}
 var ws,idx=0,heartbeatTimer,target=location.hostname;
 function resetHeartbeat(){
 clearTimeout(heartbeatTimer);
@@ -116,8 +112,8 @@ console.log("Called by "+id);
 ws.send("PAIRING:ACCEPTED:"+id);
 }
 function pairing(id){
-  let li=document.getElementById('pair');
-  li.innerHTML+=`<li>${id} Wants to pair  <button onclick="this.disabled=true;pair_cb('${id}')">Pair</button></li>`;
+let li=document.getElementById('pair');
+li.innerHTML+=`<li>${id} Wants to pair  <button onclick="this.disabled=true;pair_cb('${id}')">Pair</button></li>`;
 }
 function conn(){
 document.getElementById('s').textContent='Connecting...';
@@ -127,7 +123,7 @@ ws.onopen=function(){document.getElementById('s').textContent='Connected';ws.sen
 ws.onclose=function(){document.getElementById('s').textContent='Disconnected';setTimeout(conn,2000);};
 ws.onmessage=function(e){
 if(e.data instanceof ArrayBuffer){handleData(e.data);}
-else if(e.data.startsWith('END_OF_TRANSMISSION')){setIdx(Number(e.data.split(':')[1]));}
+else if(e.data.startsWith('END_OF_TRANSMISSION')){idx=Number(e.data.split(':')[1]);}
 else if(e.data.startsWith('PAIRING')){pairing(e.data.split(':')[1])}
 else{console.log("Received unkown packet:"+e)}
 };}conn();

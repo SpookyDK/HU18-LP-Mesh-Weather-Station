@@ -1,0 +1,60 @@
+[0;32mI (609908) RxTask: Received full packet...[0m
+[0;32mI (609908) RxTask: Received packet id='36' from '170' at Mon Apr 27 11:01:33 2026[0m
+[0;32mI (609958) RxTask: Stored packet to SD card[0m
+[0;32mI (609958) RxTask: Packet signal thing  rssi='-101'  snr='5.500000'[0m
+[0;32mI (850968) RxTask: Received full packet...[0m
+[0;32mI (850968) RxTask: Received packet id='37' from '170' at Mon Apr 27 11:16:33 2026[0m
+[0;32mI (851018) RxTask: Stored packet to SD card[0m
+[0;32mI (851018) RxTask: Packet signal thing  rssi='-103'  snr='3.000000'[0m
+[0;32mI (1750928) RxTask: Received full packet...[0m
+[0;32mI (1750928) RxTask: Received packet id='38' from '170' at Mon Apr 27 11:31:33 2026[0m
+[0;32mI (1750968) RxTask: Stored packet to SD card[0m
+[0;32mI (1750968) RxTask: Packet signal thing  rssi='-103'  snr='2.000000'[0m
+[0;32mI (2650878) RxTask: Received full packet...[0m
+[0;32mI (2650878) RxTask: Received packet id='39' from '170' at Mon Apr 27 11:46:33 2026[0m
+[0;32mI (2650928) RxTask: Stored packet to SD card[0m
+[0;32mI (2650928) RxTask: Packet signal thing  rssi='-98'  snr='5.750000'[0m
+[0;32mI (3550828) RxTask: Received full packet...[0m
+[0;32mI (3550828) RxTask: Received packet id='40' from '170' at Mon Apr 27 12:01:33 2026[0m
+[0;32mI (3550878) RxTask: Stored packet to SD card[0m
+[0;32mI (3550878) RxTask: Packet signal thing  rssi='-97'  snr='6.000000'[0m
+[0;32mI (4450878) RxTask: Received full packet...[0m
+[0;32mI (4450878) RxTask: Received packet id='41' from '170' at Mon Apr 27 12:16:33 2026[0m
+[0;32mI (4450928) RxTask: Stored packet to SD card[0m
+[0;32mI (4450928) RxTask: Packet signal thing  rssi='-103'  snr='4.750000'[0m
+[0;32mI (167968) RxTask: Received full packet...[0m
+[0;32mI (167968) RxTask: Received packet id='43' from '170' at Mon Apr 27 12:46:33 2026[0m
+[0;32mI (167988) RxTask: Stored packet to SD card[0m
+[0;32mI (167988) RxTask: Packet signal thing  rssi='-107'  snr='2.000000'[0m
+[0;32mI (1068018) RxTask: Received full packet...[0m
+[0;32mI (1068028) RxTask: Received packet id='44' from '170' at Mon Apr 27 13:01:33 2026[0m
+[0;32mI (1068068) RxTask: Stored packet to SD card[0m
+[0;32mI (1068068) RxTask: Packet signal thing  rssi='-102'  snr='4.750000'[0m
+[0;32mI (1967978) RxTask: Received full packet...[0m
+[0;32mI (1967978) RxTask: Received packet id='45' from '170' at Mon Apr 27 13:16:33 2026[0m
+[0;32mI (1968008) RxTask: Stored packet to SD card[0m
+[0;32mI (1968008) RxTask: Packet signal thing  rssi='-98'  snr='6.000000'[0m
+[0;32mI (2867928) RxTask: Received full packet...[0m
+[0;32mI (2867928) RxTask: Received packet id='46' from '170' at Mon Apr 27 13:31:33 2026[0m
+[0;32mI (2867978) RxTask: Stored packet to SD card[0m
+[0;32mI (2867978) RxTask: Packet signal thing  rssi='-99'  snr='6.000000'[0m
+[0;32mI (3767878) RxTask: Received full packet...[0m
+[0;32mI (3767878) RxTask: Received packet id='47' from '170' at Mon Apr 27 13:46:33 2026[0m
+[0;32mI (3767928) RxTask: Stored packet to SD card[0m
+[0;32mI (3767928) RxTask: Packet signal thing  rssi='-102'  snr='4.500000'[0m
+[0;32mI (4667938) RxTask: Received full packet...[0m
+[0;32mI (4667938) RxTask: Received packet id='48' from '170' at Mon Apr 27 14:01:33 2026[0m
+[0;32mI (4667948) RxTask: Stored packet to SD card[0m
+[0;32mI (4667958) RxTask: Packet signal thing  rssi='-98'  snr='5.500000'[0m
+[0;32mI (5567898) RxTask: Received full packet...[0m
+[0;32mI (5567898) RxTask: Received packet id='49' from '170' at Mon Apr 27 14:16:33 2026[0m
+[0;32mI (5567918) RxTask: Stored packet to SD card[0m
+[0;32mI (5567918) RxTask: Packet signal thing  rssi='-98'  snr='5.250000'[0m
+[0;32mI (6467848) RxTask: Received full packet...[0m
+[0;32mI (6467848) RxTask: Received packet id='50' from '170' at Mon Apr 27 14:31:33 2026[0m
+[0;32mI (6467868) RxTask: Stored packet to SD card[0m
+[0;32mI (6467868) RxTask: Packet signal thing  rssi='-100'  snr='4.000000'[0m
+[0;32mI (7367908) RxTask: Received full packet...[0m
+[0;32mI (7367908) RxTask: Received packet id='51' from '170' at Mon Apr 27 14:46:33 2026[0m
+[0;32mI (7367918) RxTask: Stored packet to SD card[0m
+[0;32mI (7367918) RxTask: Packet signal thing  rssi='-104'  snr='-0.250000'[0m
