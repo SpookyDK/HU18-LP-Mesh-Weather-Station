@@ -27,7 +27,7 @@ static TaskHandle_t worker_taskhandle;
 ///     The configuration of the node
 /// =======================================================
 
-#define DUTY_CYCLES_MS (900 * 1000)
+#define DUTY_CYCLES_MS (5 * 1000)
 
 static uint8_t NETWORK_ID = 0;
 static uint8_t NODE_ID = 0;
@@ -278,7 +278,7 @@ void inter_comm_task(void *arg) {
     xTaskCreate(packet_worker, "workerTask", 4096, NULL, 10, &worker_taskhandle);
     vTaskDelay(pdMS_TO_TICKS(200));
 
-    // load_config_nvs();
+    load_config_nvs();
     if (NODE_ID && NETWORK_ID) {
         vTaskResume(worker_taskhandle);
     } else {
