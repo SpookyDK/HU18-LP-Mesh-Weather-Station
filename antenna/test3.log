@@ -1,0 +1,452 @@
+Executing action: monitor
+Serial port /dev/ttyUSB0
+Connecting....
+Detecting chip type... ESP32-C3
+Running idf_monitor in directory /home/zadd/Programming/P4-The-Good-Ones/base_node
+Executing "/home/zadd/.espressif/python_env/idf5.5_py3.14_env/bin/python /home/zadd/.esp/esp-idf/tools/idf_monitor.py -p /dev/ttyUSB0 -b 115200 --toolchain-prefix riscv32-esp-elf- --target esp32c3 --revision 3 --decode-panic backtrace /home/zadd/Programming/P4-The-Good-Ones/base_node/build/template.elf /home/zadd/Programming/P4-The-Good-Ones/base_node/build/bootloader/bootloader.elf -m '/home/zadd/.espressif/python_env/idf5.5_py3.14_env/bin/python' '/home/zadd/.esp/esp-idf/tools/idf.py'"...
+ESP-ROM:esp32c3-api1-20210207
+Build:Feb  7 2021
+rst:0x1 (POWERON),boot:0xc (SPI_FAST_FLASH_BOOT)
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fcd5820,len:0x15ac
+load:0x403cbf10,len:0xc34
+load:0x403ce710,len:0x2fd0
+entry 0x403cbf1a
+[0;32mI (30) boot: ESP-IDF v5.5.1-dirty 2nd stage bootloader[0m
+[0;32mI (30) boot: compile time Mar 31 2026 12:10:00[0m
+[0;32mI (30) boot: chip revision: v0.3[0m
+[0;32mI (31) boot: efuse block revision: v1.2[0m
+[0;32mI (34) boot.esp32c3: SPI Speed      : 80MHz[0m
+[0;32mI (38) boot.esp32c3: SPI Mode       : DIO[0m
+[0;32mI (42) boot.esp32c3: SPI Flash Size : 4MB[0m
+[0;32mI (46) boot: Enabling RNG early entropy source...[0m
+[0;32mI (50) boot: Partition Table:[0m
+[0;32mI (53) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (59) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (66) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (72) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (79) boot: End of partition table[0m
+[0;32mI (82) esp_image: segment 0: paddr=00010020 vaddr=3c0c0020 size=26fb4h (159668) map[0m
+[0;32mI (115) esp_image: segment 1: paddr=00036fdc vaddr=3fc98000 size=02fech ( 12268) load[0m
+[0;32mI (117) esp_image: segment 2: paddr=00039fd0 vaddr=40380000 size=06048h ( 24648) load[0m
+[0;32mI (123) esp_image: segment 3: paddr=00040020 vaddr=42000020 size=b7158h (749912) map[0m
+[0;32mI (246) esp_image: segment 4: paddr=000f7180 vaddr=40386048 size=11f8ch ( 73612) load[0m
+[0;32mI (259) esp_image: segment 5: paddr=00109114 vaddr=50000000 size=00020h (    32) load[0m
+[0;32mI (267) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (267) boot: Disabling RNG early entropy source...[0m
+[0;32mI (277) cpu_start: Unicore app[0m
+[0;32mI (285) cpu_start: Pro cpu start user code[0m
+[0;32mI (286) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (286) app_init: Application information:[0m
+[0;32mI (286) app_init: Project name:     template[0m
+[0;32mI (290) app_init: App version:      8307ac3-dirty[0m
+[0;32mI (294) app_init: Compile time:     Apr 30 2026 11:51:07[0m
+[0;32mI (299) app_init: ELF file SHA256:  a8f964caf...[0m
+[0;32mI (303) app_init: ESP-IDF:          v5.5.1-dirty[0m
+[0;32mI (308) efuse_init: Min chip rev:     v0.3[0m
+[0;32mI (312) efuse_init: Max chip rev:     v1.99 [0m
+[0;32mI (316) efuse_init: Chip rev:         v0.3[0m
+[0;32mI (319) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (326) heap_init: At 3FC9FC00 len 00020400 (129 KiB): RAM[0m
+[0;32mI (331) heap_init: At 3FCC0000 len 0001C710 (113 KiB): Retention RAM[0m
+[0;32mI (337) heap_init: At 3FCDC710 len 00002950 (10 KiB): Retention RAM[0m
+[0;32mI (343) heap_init: At 50000020 len 00001FC8 (7 KiB): RTCRAM[0m
+[0;32mI (349) spi_flash: detected chip: generic[0m
+[0;32mI (352) spi_flash: flash io: dio[0m
+[0;32mI (355) sleep_gpio: Configure to isolate all GPIO pins in sleep state[0m
+[0;32mI (361) sleep_gpio: Enable automatic switching of GPIO sleep configuration[0m
+[0;32mI (368) main_task: Started on CPU0[0m
+[0;32mI (398) main_task: Calling app_main()[0m
+[0;32mI (398) main: Starting SPI[0m
+[0;32mI (398) main: Starting Data Collection[0m
+00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F
+01 81 1A 0B 00 52 D9 00 00 8F 09 2B 23 24 00 00 
+00 00 00 00 00 00 00 00 10 00 00 00 00 72 B4 64 
+00 08 01 FF 00 00 04 00 00 00 00 00 00 50 14 45 
+55 C3 05 27 1C 0A 03 0A 42 12 49 1D 00 AF 00 00 
+
+[0;32mI (418) main: Starting SD Card[0m
+[0;32mI (418) SD_CARD: Initializing SD Card[0m
+[0;32mI (418) SD_CARD: Mounting file system[0m
+[0;32mI (468) sdspi_transaction: cmd=5, R1 response: command not supported[0m
+[0;32mI (488) SD_CARD: Filesystem mounted[0m
+Name: SD64G
+Type: SDHC
+Speed: 20.00 MHz (limit: 20.00 MHz)
+Size: 59344MB
+CSD: ver=2, sector_size=512, capacity=121536512 read_bl_len=9
+SSR: bus_width=1
+[0;32mI (488) main: Starting Wi-Fi as Access Point[0m
+[0;32mI (508) pp: pp rom version: 9387209[0m
+[0;32mI (508) net80211: net80211 rom version: 9387209[0m
+[0;32mI (518) wifi:wifi driver task: 3fcb1b2c, prio:23, stack:6656, core=0[0m
+[0;32mI (518) wifi:wifi firmware version: 14da9b7[0m
+[0;32mI (518) wifi:wifi certification version: v7.0[0m
+[0;32mI (518) wifi:config NVS flash: enabled[0m
+[0;32mI (518) wifi:config nano formatting: disabled[0m
+[0;32mI (528) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (528) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (538) wifi:Init management short buffer num: 32[0m
+[0;32mI (538) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (548) wifi:Init static tx FG buffer num: 2[0m
+[0;32mI (548) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (548) wifi:Init static rx buffer num: 10[0m
+[0;32mI (558) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (558) wifi_init: rx ba win: 6[0m
+[0;32mI (558) wifi_init: accept mbox: 6[0m
+[0;32mI (568) wifi_init: tcpip mbox: 32[0m
+[0;32mI (568) wifi_init: udp mbox: 6[0m
+[0;32mI (568) wifi_init: tcp mbox: 6[0m
+[0;32mI (578) wifi_init: tcp tx win: 5760[0m
+[0;32mI (578) wifi_init: tcp rx win: 5760[0m
+[0;32mI (578) wifi_init: tcp mss: 1440[0m
+[0;32mI (588) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (588) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (598) phy_init: phy_version 1201,bae5dd99,Mar  3 2025,15:36:21[0m
+[0;32mI (628) wifi:mode : softAP (58:cf:79:da:4a:55)[0m
+[0;32mI (628) wifi:Total power save buffer number: 16[0m
+[0;32mI (628) wifi:Init max length of beacon: 752/752[0m
+[0;32mI (638) wifi:Init max length of beacon: 752/752[0m
+[0;32mI (638) esp_netif_lwip: DHCP server started on interface WIFI_AP_DEF with IP: 192.168.4.1[0m
+[0;32mI (648) wifi: wifi_init_softap finished. SSID:MyShittyESP32  password:idgaf123 channel:1[0m
+[0;32mI (658) webserver: Registring uri[0m
+[0;32mI (658) webserver: Registred all uri[0m
+[0;32mI (658) main: Starting GPS task[0m
+[0;32mI (658) uart: queue free spaces: 20[0m
+[0;33mW (2628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (2628) RxTask: Lora Packet too small, dropped[0m
+[0;32mI (2678) GPS: Wiping settings...[0m
+[0;32mI (2868) GPS: Success from CFG-CFG[0m
+[0;32mI (3368) GPS: Disabling all NMEA Communication[0m
+[0;32mI (4068) GPS: Setting Communication protocol to only UBX...[0m
+[0;32mI (4158) GPS: Success from CFG-PRT[0m
+[0;32mI (4358) GPS: Setting to Stationary...[0m
+[0;32mI (4438) GPS: Success from CFG-NAV5[0m
+[0;32mI (4938) GPS_HotStart: Attempting to resume with HotStart...[0m
+[0;32mI (5788) GPS_FIX: There is good fix after 1 attempts[0m
+[0;32mI (5788) GPS_FIX: Time to first fix 674  ms since start/reset 327172[0m
+[0;32mI (6798) GPS_HotStart: Sending Poll request...[0m
+[0;32mI (6818) wifi:new:<1,1>, old:<1,1>, ap:<1,1>, sta:<255,255>, prof:1, snd_ch_cfg:0x0[0m
+[0;32mI (6818) wifi:station: 00:45:e2:77:82:09 join, AID=1, bgn, 40U[0m
+[0;32mI (6878) wifi:<ba-add>idx:2 (ifx:1, 00:45:e2:77:82:09), tid:0, ssn:1, winSize:64[0m
+[0;32mI (6878) esp_netif_lwip: DHCP server assigned IP to a client, IP is: 192.168.4.2[0m
+[0;32mI (7628) RxTask: Received full packet...[0m
+[0;32mI (7628) RxTask: Received packet id='78' from '69' at Tue Apr 28 15:11:30 2026[0m
+[0;32mI (7628) RxTask: Packet signal thing  rssi='-57'  snr='8.250000'[0m
+[0;32mI (7828) GPS_HotStart: Recieved hot start data[0m
+[0;32mI (7838) GPS_HotStart: Data saved[0m
+[0;32mI (8838) GPS: Init Complete.[0m
+[0;32mI (11578) wifi:new:<1,1>, old:<1,1>, ap:<1,1>, sta:<255,255>, prof:1, snd_ch_cfg:0x0[0m
+[0;32mI (11578) wifi:station: a8:93:4a:c8:4f:d3 join, AID=2, bgn, 40U[0m
+[0;32mI (11748) wifi:<ba-add>idx:3 (ifx:1, a8:93:4a:c8:4f:d3), tid:0, ssn:0, winSize:64[0m
+[0;32mI (12628) RxTask: Received full packet...[0m
+[0;32mI (12628) RxTask: Received packet id='79' from '69' at Thu Apr 30 12:05:23 2026[0m
+[0;32mI (12628) RxTask: Packet signal thing  rssi='-55'  snr='10.250000'[0m
+[0;32mI (17628) RxTask: Received full packet...[0m
+[0;32mI (17628) RxTask: Received packet id='80' from '69' at Thu Apr 30 12:05:28 2026[0m
+[0;32mI (17628) RxTask: Packet signal thing  rssi='-56'  snr='8.500000'[0m
+[0;32mI (22628) RxTask: Received full packet...[0m
+[0;32mI (22628) RxTask: Received packet id='81' from '69' at Thu Apr 30 12:05:33 2026[0m
+[0;32mI (22628) RxTask: Packet signal thing  rssi='-61'  snr='7.250000'[0m
+[0;33mW (27628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (27628) RxTask: Lora Packet too small, dropped[0m
+[0;32mI (32628) RxTask: Received full packet...[0m
+[0;32mI (32628) RxTask: Received packet id='83' from '69' at Thu Apr 30 12:05:43 2026[0m
+[0;32mI (32628) RxTask: Packet signal thing  rssi='-62'  snr='5.250000'[0m
+[0;32mI (37628) RxTask: Received full packet...[0m
+[0;32mI (37628) RxTask: Received packet id='84' from '69' at Thu Apr 30 12:05:48 2026[0m
+[0;32mI (37628) RxTask: Packet signal thing  rssi='-63'  snr='12.500000'[0m
+[0;32mI (42628) RxTask: Received full packet...[0m
+[0;32mI (42628) RxTask: Received packet id='85' from '69' at Thu Apr 30 12:05:53 2026[0m
+[0;32mI (42628) RxTask: Packet signal thing  rssi='-61'  snr='11.750000'[0m
+[0;32mI (47628) RxTask: Received full packet...[0m
+[0;32mI (47628) RxTask: Received packet id='86' from '69' at Thu Apr 30 12:05:58 2026[0m
+[0;32mI (47628) RxTask: Packet signal thing  rssi='-57'  snr='8.250000'[0m
+[0;33mW (52628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (52628) RxTask: Lora Packet too small, dropped[0m
+[0;33mW (57628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (57628) RxTask: Lora Packet too small, dropped[0m
+[0;32mI (62628) RxTask: Received full packet...[0m
+[0;32mI (62628) RxTask: Received packet id='89' from '69' at Thu Apr 30 12:06:13 2026[0m
+[0;32mI (62628) RxTask: Packet signal thing  rssi='-56'  snr='11.000000'[0m
+[0;32mI (67628) RxTask: Received full packet...[0m
+[0;32mI (67628) RxTask: Received packet id='90' from '69' at Thu Apr 30 12:06:18 2026[0m
+[0;32mI (67628) RxTask: Packet signal thing  rssi='-54'  snr='9.000000'[0m
+[0;32mI (72628) RxTask: Received full packet...[0m
+[0;32mI (72628) RxTask: Received packet id='91' from '69' at Thu Apr 30 12:06:23 2026[0m
+[0;32mI (72628) RxTask: Packet signal thing  rssi='-53'  snr='10.250000'[0m
+[0;33mW (77628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (77628) RxTask: Lora Packet too small, dropped[0m
+[0;33mW (82628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (82628) RxTask: Lora Packet too small, dropped[0m
+[0;32mI (87628) RxTask: Received full packet...[0m
+[0;32mI (87628) RxTask: Received packet id='94' from '69' at Thu Apr 30 12:06:38 2026[0m
+[0;32mI (87628) RxTask: Packet signal thing  rssi='-54'  snr='7.500000'[0m
+[0;32mI (92628) RxTask: Received full packet...[0m
+[0;32mI (92628) RxTask: Received packet id='95' from '69' at Thu Apr 30 12:06:43 2026[0m
+[0;32mI (92628) RxTask: Packet signal thing  rssi='-55'  snr='13.000000'[0m
+[0;33mW (97628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (97628) RxTask: Lora Packet too small, dropped[0m
+[0;33mW (102628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (102628) RxTask: Lora Packet too small, dropped[0m
+[0;32mI (107628) RxTask: Received full packet...[0m
+[0;32mI (107628) RxTask: Received packet id='98' from '69' at Thu Apr 30 12:06:58 2026[0m
+[0;32mI (107628) RxTask: Packet signal thing  rssi='-55'  snr='8.250000'[0m
+[0;32mI (112628) RxTask: Received full packet...[0m
+[0;32mI (112628) RxTask: Received packet id='99' from '69' at Thu Apr 30 12:07:03 2026[0m
+[0;32mI (112628) RxTask: Packet signal thing  rssi='-55'  snr='12.250000'[0m
+[0;32mI (117628) RxTask: Received full packet...[0m
+[0;32mI (117628) RxTask: Received packet id='100' from '69' at Thu Apr 30 12:07:08 2026[0m
+[0;32mI (117628) RxTask: Packet signal thing  rssi='-56'  snr='13.750000'[0m
+[0;32mI (122628) RxTask: Received full packet...[0m
+[0;32mI (122628) RxTask: Received packet id='101' from '69' at Thu Apr 30 12:07:13 2026[0m
+[0;32mI (122628) RxTask: Packet signal thing  rssi='-59'  snr='10.250000'[0m
+[0;32mI (127628) RxTask: Received full packet...[0m
+[0;32mI (127628) RxTask: Received packet id='102' from '69' at Thu Apr 30 12:07:18 2026[0m
+[0;32mI (127628) RxTask: Packet signal thing  rssi='-56'  snr='12.500000'[0m
+[0;32mI (132628) RxTask: Received full packet...[0m
+[0;32mI (132628) RxTask: Received packet id='103' from '69' at Thu Apr 30 12:07:23 2026[0m
+[0;32mI (132628) RxTask: Packet signal thing  rssi='-56'  snr='11.750000'[0m
+[0;32mI (137628) RxTask: Received full packet...[0m
+[0;32mI (137628) RxTask: Received packet id='104' from '69' at Thu Apr 30 12:07:28 2026[0m
+[0;32mI (137628) RxTask: Packet signal thing  rssi='-56'  snr='11.500000'[0m
+[0;32mI (142628) RxTask: Received full packet...[0m
+[0;32mI (142628) RxTask: Received packet id='105' from '69' at Thu Apr 30 12:07:33 2026[0m
+[0;32mI (142628) RxTask: Packet signal thing  rssi='-56'  snr='11.000000'[0m
+[0;32mI (147628) RxTask: Received full packet...[0m
+[0;32mI (147628) RxTask: Received packet id='106' from '69' at Thu Apr 30 12:07:38 2026[0m
+[0;32mI (147628) RxTask: Packet signal thing  rssi='-57'  snr='10.250000'[0m
+[0;32mI (152628) RxTask: Received full packet...[0m
+[0;32mI (152628) RxTask: Received packet id='107' from '69' at Thu Apr 30 12:07:43 2026[0m
+[0;32mI (152628) RxTask: Packet signal thing  rssi='-56'  snr='9.500000'[0m
+[0;32mI (157628) RxTask: Received full packet...[0m
+[0;32mI (157628) RxTask: Received packet id='108' from '69' at Thu Apr 30 12:07:48 2026[0m
+[0;32mI (157628) RxTask: Packet signal thing  rssi='-57'  snr='6.000000'[0m
+[0;32mI (162628) RxTask: Received full packet...[0m
+[0;32mI (162628) RxTask: Received packet id='109' from '69' at Thu Apr 30 12:07:53 2026[0m
+[0;32mI (162628) RxTask: Packet signal thing  rssi='-55'  snr='12.500000'[0m
+[0;32mI (167628) RxTask: Received full packet...[0m
+[0;32mI (167628) RxTask: Received packet id='110' from '69' at Thu Apr 30 12:07:58 2026[0m
+[0;32mI (167628) RxTask: Packet signal thing  rssi='-57'  snr='10.250000'[0m
+[0;33mW (172628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (172628) RxTask: Lora Packet too small, dropped[0m
+[0;33mW (177628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (177628) RxTask: Lora Packet too small, dropped[0m
+[0;33mW (182628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (182628) RxTask: Lora Packet too small, dropped[0m
+[0;32mI (187628) RxTask: Received full packet...[0m
+[0;32mI (187628) RxTask: Received packet id='114' from '69' at Thu Apr 30 12:08:18 2026[0m
+[0;32mI (187628) RxTask: Packet signal thing  rssi='-56'  snr='12.750000'[0m
+[0;32mI (192628) RxTask: Received full packet...[0m
+[0;32mI (192628) RxTask: Received packet id='115' from '69' at Thu Apr 30 12:08:23 2026[0m
+[0;32mI (192628) RxTask: Packet signal thing  rssi='-58'  snr='12.250000'[0m
+[0;33mW (197628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (197628) RxTask: Lora Packet too small, dropped[0m
+[0;33mW (202628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (202628) RxTask: Lora Packet too small, dropped[0m
+[0;32mI (207628) RxTask: Received full packet...[0m
+[0;32mI (207628) RxTask: Received packet id='118' from '69' at Thu Apr 30 12:08:38 2026[0m
+[0;32mI (207628) RxTask: Packet signal thing  rssi='-56'  snr='7.750000'[0m
+[0;32mI (212628) RxTask: Received full packet...[0m
+[0;32mI (212628) RxTask: Received packet id='119' from '69' at Thu Apr 30 12:08:43 2026[0m
+[0;32mI (212628) RxTask: Packet signal thing  rssi='-57'  snr='7.000000'[0m
+[0;32mI (217628) RxTask: Received full packet...[0m
+[0;32mI (217628) RxTask: Received packet id='120' from '69' at Thu Apr 30 12:08:48 2026[0m
+[0;32mI (217628) RxTask: Packet signal thing  rssi='-57'  snr='7.000000'[0m
+[0;32mI (222628) RxTask: Received full packet...[0m
+[0;32mI (222628) RxTask: Received packet id='121' from '69' at Thu Apr 30 12:08:53 2026[0m
+[0;32mI (222628) RxTask: Packet signal thing  rssi='-57'  snr='9.250000'[0m
+[0;32mI (227628) RxTask: Received full packet...[0m
+[0;32mI (227628) RxTask: Received packet id='122' from '69' at Thu Apr 30 12:08:58 2026[0m
+[0;32mI (227628) RxTask: Packet signal thing  rssi='-57'  snr='9.250000'[0m
+[0;32mI (232628) RxTask: Received full packet...[0m
+[0;32mI (232628) RxTask: Received packet id='123' from '69' at Thu Apr 30 12:09:03 2026[0m
+[0;32mI (232628) RxTask: Packet signal thing  rssi='-56'  snr='11.000000'[0m
+[0;32mI (237628) RxTask: Received full packet...[0m
+[0;32mI (237628) RxTask: Received packet id='124' from '69' at Thu Apr 30 12:09:08 2026[0m
+[0;32mI (237628) RxTask: Packet signal thing  rssi='-54'  snr='10.000000'[0m
+[0;33mW (242628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (242628) RxTask: Lora Packet too small, dropped[0m
+[0;33mW (247628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (247628) RxTask: Lora Packet too small, dropped[0m
+[0;32mI (252628) RxTask: Received full packet...[0m
+[0;32mI (252628) RxTask: Received packet id='127' from '69' at Thu Apr 30 12:09:23 2026[0m
+[0;32mI (252628) RxTask: Packet signal thing  rssi='-56'  snr='8.500000'[0m
+[0;32mI (257628) RxTask: Received full packet...[0m
+[0;32mI (257628) RxTask: Received packet id='128' from '69' at Thu Apr 30 12:09:28 2026[0m
+[0;32mI (257628) RxTask: Packet signal thing  rssi='-60'  snr='8.750000'[0m
+[0;32mI (262628) RxTask: Received full packet...[0m
+[0;32mI (262628) RxTask: Received packet id='129' from '69' at Thu Apr 30 12:09:33 2026[0m
+[0;32mI (262628) RxTask: Packet signal thing  rssi='-55'  snr='10.250000'[0m
+[0;32mI (267628) RxTask: Received full packet...[0m
+[0;32mI (267628) RxTask: Received packet id='130' from '69' at Thu Apr 30 12:09:38 2026[0m
+[0;32mI (267628) RxTask: Packet signal thing  rssi='-65'  snr='6.250000'[0m
+[0;32mI (272628) RxTask: Received full packet...[0m
+[0;32mI (272628) RxTask: Received packet id='131' from '69' at Thu Apr 30 12:09:43 2026[0m
+[0;32mI (272628) RxTask: Packet signal thing  rssi='-57'  snr='11.500000'[0m
+[0;32mI (277628) RxTask: Received full packet...[0m
+[0;32mI (277628) RxTask: Received packet id='132' from '69' at Thu Apr 30 12:09:48 2026[0m
+[0;32mI (277628) RxTask: Packet signal thing  rssi='-57'  snr='8.000000'[0m
+[0;32mI (282628) RxTask: Received full packet...[0m
+[0;32mI (282628) RxTask: Received packet id='133' from '69' at Thu Apr 30 12:09:53 2026[0m
+[0;32mI (282628) RxTask: Packet signal thing  rssi='-64'  snr='10.500000'[0m
+[0;33mW (287628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (287628) RxTask: Lora Packet too small, dropped[0m
+[0;32mI (292628) RxTask: Received full packet...[0m
+[0;32mI (292628) RxTask: Received packet id='135' from '69' at Thu Apr 30 12:10:03 2026[0m
+[0;32mI (292628) RxTask: Packet signal thing  rssi='-64'  snr='8.000000'[0m
+[0;32mI (297628) RxTask: Received full packet...[0m
+[0;32mI (297628) RxTask: Received packet id='136' from '69' at Thu Apr 30 12:10:08 2026[0m
+[0;32mI (297628) RxTask: Packet signal thing  rssi='-70'  snr='10.000000'[0m
+[0;32mI (302628) RxTask: Received full packet...[0m
+[0;32mI (302628) RxTask: Received packet id='137' from '69' at Thu Apr 30 12:10:13 2026[0m
+[0;32mI (302628) RxTask: Packet signal thing  rssi='-64'  snr='6.250000'[0m
+[0;32mI (307628) RxTask: Received full packet...[0m
+[0;32mI (307628) RxTask: Received packet id='138' from '69' at Thu Apr 30 12:10:18 2026[0m
+[0;32mI (307628) RxTask: Packet signal thing  rssi='-65'  snr='8.750000'[0m
+[0;32mI (312628) RxTask: Received full packet...[0m
+[0;32mI (312628) RxTask: Received packet id='139' from '69' at Thu Apr 30 12:10:23 2026[0m
+[0;32mI (312628) RxTask: Packet signal thing  rssi='-64'  snr='7.250000'[0m
+[0;32mI (312838) webserver: Handshake done, client connected fd'57'[0m
+[0;32mI (312838) webserver: Resuming SD stream from byte 77883[0m
+[0;32mI (312838) webserver: WS push task started, fd='57' start_idx='77883'[0m
+[0;32mI (317628) RxTask: Received full packet...[0m
+[0;32mI (317628) RxTask: Received packet id='140' from '69' at Thu Apr 30 12:10:28 2026[0m
+[0;32mI (317628) RxTask: Packet signal thing  rssi='-65'  snr='10.250000'[0m
+[0;32mI (322628) RxTask: Received full packet...[0m
+[0;32mI (322628) RxTask: Received packet id='141' from '69' at Thu Apr 30 12:10:33 2026[0m
+[0;32mI (322628) RxTask: Packet signal thing  rssi='-69'  snr='6.750000'[0m
+[0;32mI (327628) RxTask: Received full packet...[0m
+[0;32mI (327628) RxTask: Received packet id='142' from '69' at Thu Apr 30 12:10:38 2026[0m
+[0;32mI (327628) RxTask: Packet signal thing  rssi='-66'  snr='8.250000'[0m
+[0;33mW (332628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (332628) RxTask: Lora Packet too small, dropped[0m
+[0;32mI (337628) RxTask: Received full packet...[0m
+[0;32mI (337628) RxTask: Received packet id='144' from '69' at Thu Apr 30 12:10:48 2026[0m
+[0;32mI (337628) RxTask: Packet signal thing  rssi='-62'  snr='6.000000'[0m
+[0;32mI (342628) RxTask: Received full packet...[0m
+[0;32mI (342628) RxTask: Received packet id='145' from '69' at Thu Apr 30 12:10:53 2026[0m
+[0;32mI (342628) RxTask: Packet signal thing  rssi='-63'  snr='10.250000'[0m
+[0;33mW (347628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (347628) RxTask: Lora Packet too small, dropped[0m
+[0;33mW (352628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (352628) RxTask: Lora Packet too small, dropped[0m
+[0;33mW (357628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (357628) RxTask: Lora Packet too small, dropped[0m
+[0;32mI (362628) RxTask: Received full packet...[0m
+[0;32mI (362628) RxTask: Received packet id='149' from '69' at Thu Apr 30 12:11:13 2026[0m
+[0;32mI (362628) RxTask: Packet signal thing  rssi='-64'  snr='4.250000'[0m
+[0;32mI (367628) RxTask: Received full packet...[0m
+[0;32mI (367628) RxTask: Received packet id='150' from '69' at Thu Apr 30 12:11:18 2026[0m
+[0;32mI (367628) RxTask: Packet signal thing  rssi='-69'  snr='10.250000'[0m
+[0;32mI (372628) RxTask: Received full packet...[0m
+[0;32mI (372628) RxTask: Received packet id='151' from '69' at Thu Apr 30 12:11:23 2026[0m
+[0;32mI (372628) RxTask: Packet signal thing  rssi='-69'  snr='7.500000'[0m
+[0;32mI (377628) RxTask: Received full packet...[0m
+[0;32mI (377628) RxTask: Received packet id='152' from '69' at Thu Apr 30 12:11:28 2026[0m
+[0;32mI (377628) RxTask: Packet signal thing  rssi='-71'  snr='8.000000'[0m
+[0;32mI (382628) RxTask: Received full packet...[0m
+[0;32mI (382628) RxTask: Received packet id='153' from '69' at Thu Apr 30 12:11:33 2026[0m
+[0;32mI (382628) RxTask: Packet signal thing  rssi='-72'  snr='12.500000'[0m
+[0;33mW (387628) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (387628) RxTask: Lora Packet too small, dropped[0m
+[0;32mI (392628) RxTask: Received full packet...[0m
+[0;32mI (392628) RxTask: Received packet id='155' from '69' at Thu Apr 30 12:11:43 2026[0m
+[0;32mI (392628) RxTask: Packet signal thing  rssi='-65'  snr='10.250000'[0m
+[0;32mI (397628) RxTask: Received full packet...[0m
+[0;32mI (397628) RxTask: Received packet id='156' from '69' at Thu Apr 30 12:11:48 2026[0m
+[0;32mI (397628) RxTask: Packet signal thing  rssi='-70'  snr='9.500000'[0m
+[0;32mI (402628) RxTask: Received full packet...[0m
+[0;32mI (402628) RxTask: Received packet id='157' from '69' at Thu Apr 30 12:11:53 2026[0m
+[0;32mI (402628) RxTask: Packet signal thing  rssi='-68'  snr='10.000000'[0m
+[0;32mI (407628) RxTask: Received full packet...[0m
+[0;32mI (407628) RxTask: Received packet id='158' from '69' at Thu Apr 30 12:11:58 2026[0m
+[0;32mI (407628) RxTask: Packet signal thing  rssi='-69'  snr='11.000000'[0m
+[0;32mI (412628) RxTask: Received full packet...[0m
+[0;32mI (412628) RxTask: Received packet id='159' from '69' at Thu Apr 30 12:12:03 2026[0m
+[0;32mI (412628) RxTask: Packet signal thing  rssi='-76'  snr='7.750000'[0m
+[0;32mI (417628) RxTask: Received full packet...[0m
+[0;32mI (417628) RxTask: Received packet id='160' from '69' at Thu Apr 30 12:12:08 2026[0m
+[0;32mI (417628) RxTask: Packet signal thing  rssi='-76'  snr='8.750000'[0m
+[0;33mW (422618) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (422628) RxTask: Lora Packet too small, dropped[0m
+[0;33mW (427618) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (427628) RxTask: Lora Packet too small, dropped[0m
+[0;33mW (432618) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (432628) RxTask: Lora Packet too small, dropped[0m
+[0;32mI (437628) RxTask: Received full packet...[0m
+[0;32mI (437628) RxTask: Received packet id='164' from '69' at Thu Apr 30 12:12:28 2026[0m
+[0;32mI (437628) RxTask: Packet signal thing  rssi='-62'  snr='5.750000'[0m
+[0;32mI (442628) RxTask: Received full packet...[0m
+[0;32mI (442628) RxTask: Received packet id='165' from '69' at Thu Apr 30 12:12:33 2026[0m
+[0;32mI (442628) RxTask: Packet signal thing  rssi='-67'  snr='9.750000'[0m
+[0;32mI (447628) RxTask: Received full packet...[0m
+[0;32mI (447628) RxTask: Received packet id='166' from '69' at Thu Apr 30 12:12:38 2026[0m
+[0;32mI (447628) RxTask: Packet signal thing  rssi='-69'  snr='12.000000'[0m
+[0;32mI (452628) RxTask: Received full packet...[0m
+[0;32mI (452628) RxTask: Received packet id='167' from '69' at Thu Apr 30 12:12:43 2026[0m
+[0;32mI (452628) RxTask: Packet signal thing  rssi='-78'  snr='5.500000'[0m
+[0;32mI (457628) RxTask: Received full packet...[0m
+[0;32mI (457628) RxTask: Received packet id='168' from '69' at Thu Apr 30 12:12:48 2026[0m
+[0;32mI (457628) RxTask: Packet signal thing  rssi='-67'  snr='6.250000'[0m
+[0;32mI (462628) RxTask: Received full packet...[0m
+[0;32mI (462628) RxTask: Received packet id='169' from '69' at Thu Apr 30 12:12:53 2026[0m
+[0;32mI (462628) RxTask: Packet signal thing  rssi='-66'  snr='9.000000'[0m
+[0;32mI (467628) RxTask: Received full packet...[0m
+[0;32mI (467628) RxTask: Received packet id='170' from '69' at Thu Apr 30 12:12:58 2026[0m
+[0;32mI (467628) RxTask: Packet signal thing  rssi='-68'  snr='11.500000'[0m
+[0;32mI (472628) RxTask: Received full packet...[0m
+[0;32mI (472628) RxTask: Received packet id='171' from '69' at Thu Apr 30 12:13:03 2026[0m
+[0;32mI (472628) RxTask: Packet signal thing  rssi='-68'  snr='7.250000'[0m
+[0;32mI (477628) RxTask: Received full packet...[0m
+[0;32mI (477628) RxTask: Received packet id='172' from '69' at Thu Apr 30 12:13:08 2026[0m
+[0;32mI (477628) RxTask: Packet signal thing  rssi='-68'  snr='9.500000'[0m
+[0;32mI (482628) RxTask: Received full packet...[0m
+[0;32mI (482628) RxTask: Received packet id='173' from '69' at Thu Apr 30 12:13:13 2026[0m
+[0;32mI (482628) RxTask: Packet signal thing  rssi='-66'  snr='11.000000'[0m
+[0;33mW (487618) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (487618) RxTask: Lora Packet too small, dropped[0m
+[0;32mI (492628) RxTask: Received full packet...[0m
+[0;32mI (492628) RxTask: Received packet id='175' from '69' at Thu Apr 30 12:13:23 2026[0m
+[0;32mI (492628) RxTask: Packet signal thing  rssi='-65'  snr='8.000000'[0m
+[0;32mI (497628) RxTask: Received full packet...[0m
+[0;32mI (497628) RxTask: Received packet id='176' from '69' at Thu Apr 30 12:13:28 2026[0m
+[0;32mI (497628) RxTask: Packet signal thing  rssi='-66'  snr='7.500000'[0m
+[0;32mI (502628) RxTask: Received full packet...[0m
+[0;32mI (502628) RxTask: Received packet id='177' from '69' at Thu Apr 30 12:13:33 2026[0m
+[0;32mI (502628) RxTask: Packet signal thing  rssi='-66'  snr='6.750000'[0m
+[0;33mW (507618) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (507618) RxTask: Lora Packet too small, dropped[0m
+[0;33mW (512618) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (512618) RxTask: Lora Packet too small, dropped[0m
+[0;32mI (517618) RxTask: Received full packet...[0m
+[0;32mI (517628) RxTask: Received packet id='180' from '69' at Thu Apr 30 12:13:48 2026[0m
+[0;32mI (517628) RxTask: Packet signal thing  rssi='-72'  snr='5.000000'[0m
+[0;32mI (522618) RxTask: Received full packet...[0m
+[0;32mI (522628) RxTask: Received packet id='181' from '69' at Thu Apr 30 12:13:53 2026[0m
+[0;32mI (522628) RxTask: Packet signal thing  rssi='-72'  snr='8.750000'[0m
+[0;32mI (527618) RxTask: Received full packet...[0m
+[0;32mI (527628) RxTask: Received packet id='182' from '69' at Thu Apr 30 12:13:58 2026[0m
+[0;32mI (527628) RxTask: Packet signal thing  rssi='-66'  snr='9.250000'[0m
+[0;33mW (532618) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (532618) RxTask: Lora Packet too small, dropped[0m
+[0;32mI (537618) RxTask: Received full packet...[0m
+[0;32mI (537628) RxTask: Received packet id='184' from '69' at Thu Apr 30 12:14:08 2026[0m
+[0;32mI (537628) RxTask: Packet signal thing  rssi='-70'  snr='7.750000'[0m
+[0;33mW (542618) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (542618) RxTask: Lora Packet too small, dropped[0m
+[0;33mW (547618) LoRa_Source: Failed to read due to CRC Masking error[0m
+[0;32mI (547618) RxTask: Lora Packet too small, dropped[0m
+[0;32mI (552618) RxTask: Received full packet...[0m
+[0;32mI (552628) RxTask: Received packet id='187' from '69' at Thu Apr 30 12:14:23 2026[0m
+[0;32mI (552628) RxTask: Packet signal thing  rssi='-72'  snr='6.000000'[0m
+[0;32mI (557618) RxTask: Received full packet...[0m
+[0;32mI (557628) RxTask: Received packet id='188' from '69' at Thu Apr 30 12:14:28 2026[0m
+[0;32mI (557628) RxTask: Packet signal thing  rssi='-71'  snr='7.750000'[0m
+[0;32mI (562618) RxTask: Received full packet...[0m
+[0;32mI (562628) RxTask: Received packet id='189' from '69' at Thu Apr 30 12:14:33 2026[0m
+[0;32mI (562628) RxTask: Packet signal thing  rssi='-67'  snr='11.500000'[0m
+[0;32mI (567618) RxTask: Received full packet...[0m
+[0;32mI (567628) RxTask: Received packet id='190' from '69' at Thu Apr 30 12:14:38 2026[0m
+[0;32mI (567628) RxTask: Packet signal thing  rssi='-70'  snr='9.500000'[0m

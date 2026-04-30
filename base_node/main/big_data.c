@@ -87,11 +87,11 @@ static void receive_something() {
         memcpy(&full_packet, lora_buf, lora_buf_len);
         if (full_packet.head.network_id != NETWORK_ID) {
             ESP_LOGI(TAG, "Ignoring received Packet from other Network '%d'", full_packet.head.network_id);
-            return;
+            break;
         }
         if (is_duplicate(full_packet.head)) {
             ESP_LOGI(TAG, "Ignoring received cached packet id='%d' node='%d'", full_packet.head.packet_id, full_packet.head.orig_node_id);
-            return;
+            break;
         }
 
         clock_gettime(CLOCK_REALTIME, &ts_now);
@@ -100,7 +100,7 @@ static void receive_something() {
 
         ESP_LOGI(TAG, "Received packet id='%d' from '%d' at %s", full_packet.head.packet_id, full_packet.head.orig_node_id, strtime_buf);
         if (head.orig_node_id != 170)
-            return; // WARNING: REMOVE THIS
+            break; // WARNING: REMOVE THIS
         if (b_append_file(PACKET_FILE, full_packet) == ESP_OK) {
             ESP_LOGI(TAG, "Stored packet to SD card");
             // Notify site_content.c that it needs to send new data through websocket
@@ -108,7 +108,6 @@ static void receive_something() {
         } else {
             ESP_LOGW(TAG, "Failed to store packet");
         }
-        ESP_LOGI(TAG, "Packet signal thing  rssi='%d'  snr='%f'", lora_packet_rssi(), (double)lora_packet_snr());
         break;
     }
     case 0b10: {
@@ -122,6 +121,7 @@ static void receive_something() {
         ESP_LOGW(TAG, "Unrecognized packet type %02b", head.flags & 0b11);
         break;
     }
+    ESP_LOGI(TAG, "Packet signal thing  rssi='%d'  snr='%f'", lora_packet_rssi(), (double)lora_packet_snr());
 }
 
 static void send_pairing_confirmation(uint16_t nonce) {
