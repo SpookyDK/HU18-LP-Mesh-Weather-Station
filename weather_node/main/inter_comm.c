@@ -16,6 +16,7 @@
 #include "portmacro.h"
 #include "tempeture.h"
 #include <limits.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -27,7 +28,7 @@ static TaskHandle_t worker_taskhandle;
 ///     The configuration of the node
 /// =======================================================
 
-#define DUTY_CYCLES_MS (5 * 1000)
+#define DUTY_CYCLES_MS (10 * 1000)
 
 static uint8_t NETWORK_ID = 0;
 static uint8_t NODE_ID = 0;
@@ -119,20 +120,25 @@ static void prepare_packet(full_packet_t *packet) {
 static full_packet_t data_packet = {0};
 
 static void packet_worker() {
-    TickType_t last_send_tick = xTaskGetTickCount();
     const TickType_t send_interval = pdMS_TO_TICKS(DUTY_CYCLES_MS);
     data_packet.head.hop_count = PACKET_TIME_TO_LIVE;
-    // data_packet.head.header = PACKET_HEADER_VALUE;
+    data_packet.head.header = PACKET_HEADER_VALUE;
     const char *name = pcTaskGetName(NULL);
 
-    ESP_LOGI(name, "Going to sleep.");
+    /* ESP_LOGI(name, "Going to sleep.");
     vTaskSuspend(NULL); // Get resumed externally to functionally begin
-    ESP_LOGI(name, "Rizzle");
-    data_packet.head.network_id = NETWORK_ID;
-    data_packet.head.orig_node_id = NODE_ID;
+    ESP_LOGI(name, "Rizzle"); */
 
+    uint32_t notif = 0;
+    TickType_t last_send_tick = xTaskGetTickCount();
     while (1) {
         xTaskDelayUntil(&last_send_tick, send_interval);
+        xTaskNotifyWait(0, 0, &notif, 0);
+        if (!notif) {
+            continue;
+        }
+        data_packet.head.network_id = NETWORK_ID;
+        data_packet.head.orig_node_id = NODE_ID;
         ESP_LOGI(name, "Begun prepping packet...");
         prepare_packet(&data_packet);
         ESP_LOGI(name, "Notifying comm task...");
@@ -168,6 +174,23 @@ static bool is_duplicate(packet_header_t head) {
     return false;
 }
 
+/// =======================
+///     Pairing Request
+/// =======================
+
+static pairing_packet_t pairing_packet = {0};
+static void pair_to_network() {
+    pairing_packet.head.hop_count = PACKET_TIME_TO_LIVE;
+    pairing_packet.head.flags = 0b10;
+    pairing_packet.head.header = PACKET_HEADER_VALUE;
+    esp_fill_random(&EXPECTING_PAIRING, sizeof(uint16_t));
+    pairing_packet.nonce = EXPECTING_PAIRING;
+
+    block_if_receiving();
+    lora_send_packet((uint8_t *)&pairing_packet, sizeof(pairing_packet_t));
+    ESP_LOGI(TAG, "Sent pairing request, with nonce='%04X'", EXPECTING_PAIRING);
+}
+
 /// ==============================
 ///     Packet interpretation
 /// ==============================
@@ -183,10 +206,10 @@ static void receive_something() {
     }
     packet_header_t head = {0};
     memcpy(&head, lora_buf, sizeof(packet_header_t));
-    /* if (head.header != PACKET_HEADER_VALUE) {
+    if (head.header != PACKET_HEADER_VALUE) {
         ESP_LOGI(TAG, "Invalid packet header, received='%02X', dropped", head.header);
         return;
-    } */
+    }
 
     switch (head.flags & 0b11) {
     case 0b01: {
@@ -225,11 +248,26 @@ static void receive_something() {
 
             save_config_nvs();
             EXPECTING_PAIRING = 0;
-            vTaskResume(worker_taskhandle);
+            xTaskNotify(worker_taskhandle, 1, eSetValueWithOverwrite);
+
+            ESP_LOGI(TAG, "Returning acknowledgement packet");
+            pkt.nonce = 0;
+            pkt.head.orig_node_id = NODE_ID;
+            pkt.head.packet_id = 0;
+            block_if_receiving();
+            lora_send_packet((uint8_t *)&pkt, sizeof(pairing_packet_t));
             break;
         }
         if (NETWORK_ID && pkt.head.network_id != 0 && NETWORK_ID != pkt.head.network_id) {
             ESP_LOGI(TAG, "Dropped due to pairing response from other network");
+            break;
+        }
+        if (pkt.head.orig_node_id == NODE_ID && pkt.nonce == 0xffff) {
+            ESP_LOGI(TAG, "I was disconnected :(");
+            xTaskNotify(worker_taskhandle, 0, eSetValueWithOverwrite);
+            NODE_ID = 0;
+            NETWORK_ID = 0;
+            pair_to_network();
             break;
         }
         if (--pkt.head.hop_count <= 0) {
@@ -248,23 +286,6 @@ static void receive_something() {
     }
 }
 
-/// ======================
-///     Pairing logic
-/// ======================
-
-static pairing_packet_t pairing_packet = {0};
-static void pair_to_network() {
-    pairing_packet.head.hop_count = PACKET_TIME_TO_LIVE;
-    pairing_packet.head.flags = 0b10;
-    // pairing_packet.head.header = PACKET_HEADER_VALUE;
-    esp_fill_random(&EXPECTING_PAIRING, sizeof(uint16_t));
-    pairing_packet.nonce = EXPECTING_PAIRING;
-
-    block_if_receiving();
-    lora_send_packet((uint8_t *)&pairing_packet, sizeof(pairing_packet_t));
-    ESP_LOGI(TAG, "Sent pairing request, with nonce='%04x'", EXPECTING_PAIRING);
-}
-
 /// ============================
 ///     Main listening loop
 /// ============================
@@ -280,11 +301,14 @@ void inter_comm_task(void *arg) {
 
     load_config_nvs();
     if (NODE_ID && NETWORK_ID) {
-        vTaskResume(worker_taskhandle);
+        /* vTaskResume(worker_taskhandle); */
+        xTaskNotify(worker_taskhandle, 1, eSetValueWithOverwrite);
     } else {
         ESP_LOGI(TAG, "Node is not connected to network");
         pair_to_network();
     }
+    const TickType_t interval = pdMS_TO_TICKS(30000);
+    TickType_t last_interval = xTaskGetTickCount();
 
     while (1) {
         lora_receive();
@@ -296,6 +320,13 @@ void inter_comm_task(void *arg) {
             block_if_receiving();
             lora_send_packet((uint8_t *)&data_packet, sizeof(full_packet_t));
             ESP_LOGI(TAG, "Sent Packet with id: '%d'", data_packet.head.packet_id);
+        }
+
+        if (EXPECTING_PAIRING && xTaskGetTickCount() > interval + last_interval) {
+            ESP_LOGI(TAG, "Sending Pairing request again, with uid='%04X'", pairing_packet.nonce);
+            block_if_receiving();
+            lora_send_packet((uint8_t *)&pairing_packet, sizeof(pairing_packet_t));
+            last_interval = xTaskGetTickCount();
         }
         vTaskDelay(10);
     }

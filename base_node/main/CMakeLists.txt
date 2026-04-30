@@ -1,13 +1,14 @@
 set(EXTERNAL_LIBS "../../weather_node/main/my_drivers")
 
 idf_component_register(SRCS "main.c" "site_content.c" "web_server.c" "big_data.c" "sd_card.c" "${EXTERNAL_LIBS}/lora.c" "${EXTERNAL_LIBS}/NEO_6M_UART.c" "fun_cache.c"
-  INCLUDE_DIRS "." "${EXTERNAL_LIBS}/../packet_def" "${EXTERNAL_LIBS}/"
+  INCLUDE_DIRS "." "${EXTERNAL_LIBS}/../packet_def/" "${EXTERNAL_LIBS}/"
                     EMBED_FILES "content/favicon.ico"
                     REQUIRES esp_wifi nvs_flash esp_http_server fatfs esp_timer driver)
 
 include(CheckTypeSize)
 set(CMAKE_EXTRA_INCLUDE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/${EXTERNAL_LIBS}/../packet_def/packet_def.h")
 check_type_size("full_packet_t" FULL_PACKET)
+
 # Read the file content into a variable
 file(READ "${CMAKE_EXTRA_INCLUDE_FILES}" HEADER_CONTENTS)
 

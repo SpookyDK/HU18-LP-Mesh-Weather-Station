@@ -17,10 +17,6 @@
 static const char *TAG = "temp_sensor";
 
 esp_err_t get_air_reads(sensor_payload_t *packet) {
-    // if (!dht11_exists(CONFIG_DHT11_PIN)) {
-    //     ESP_LOGW(TAG, "DHT11 does not exist");
-    //     return ESP_FAIL;
-    // }
     int16_t dht_humd, dht_temp;
     if (dht_read_data(CONFIG_DHT11_PIN, &dht_humd, &dht_temp) == ESP_OK) {
         packet->air_humidity = dht_humd;

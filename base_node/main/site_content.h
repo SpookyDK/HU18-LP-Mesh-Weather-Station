@@ -9,7 +9,6 @@
 typedef struct {
     httpd_handle_t hd;
     int fd;
-    size_t start_idx;
 } ws_push_args_t;
 
 /*
@@ -20,6 +19,7 @@ enum notif_ws {
     NOTIF_WS_FLUSH,
     NOTIF_WS_EXIT,
     NOTIF_WS_PAIRING,
+    NOTIF_WS_PAIRING_ACK,
 };
 
 #define WS_PUSH_CHUNK 512

@@ -15,7 +15,6 @@
 #include <stdio.h>
 
 static const char *TAG = "moisture-soil";
-bool moist_shared_status = true;
 static bool initiated_moist = false;
 static adc_oneshot_unit_handle_t adc_handle;
 static adc_cali_handle_t cali_handle;
@@ -25,18 +24,18 @@ static adc_cali_handle_t cali_handle;
 #define ADC_WET_VALUE 200 // Wet reference achieved by placing sensor in dirt fully saturated by water
 
 // Convert raw ADC value to percentage (0% = dry, 100% = wet)
-static inline uint8_t voltage_to_percent(int32_t raw) {
+static inline uint8_t voltage_to_percent(int32_t raw, bool *out_of_bounds) {
     if (raw >= ADC_DRY_VALUE) {
         ESP_LOGW(TAG, "The measured dryness reached or exceeded expected values, Expected=%d, Got=%d", ADC_DRY_VALUE, raw);
-        moist_shared_status = true;
+        *out_of_bounds = true;
         return 0;
     }
     if (raw <= ADC_WET_VALUE) {
         ESP_LOGW(TAG, "The measured wetness is equal to or lower than expected values, Expected=%d, Got=%d", ADC_WET_VALUE, raw);
-        moist_shared_status = true;
+        *out_of_bounds = true;
         return 100;
     }
-    moist_shared_status = false;
+    *out_of_bounds = false;
     return (uint8_t)((ADC_DRY_VALUE - raw) * 100 / (ADC_DRY_VALUE - ADC_WET_VALUE));
 }
 
@@ -79,7 +78,10 @@ esp_err_t get_moist_read(sensor_payload_t *payload) {
     }
     adc_cali_raw_to_voltage(cali_handle, raw, &voltage);
 
-    payload->soil_moisture = voltage_to_percent(voltage);
+    bool out_of_bounds;
+    payload->soil_moisture = voltage_to_percent(voltage, &out_of_bounds);
     // ESP_LOGI(TAG, "Raw: %4d | Voltage: %4d mV | Moisture: %3d%%", raw, voltage, moist_shared_percentage);
+    if (out_of_bounds)
+        return ESP_FAIL;
     return ESP_OK;
 }

@@ -97,11 +97,14 @@ static inline esp_err_t dht_fetch_data(gpio_num_t pin, uint8_t data[DHT_DATA_BYT
     gpio_set_level(pin, 1);
 
     // Step through Phase 'B', 40us
-    ESP_ERROR_CHECK(dht_await_pin_state(pin, 40, 0, NULL));
+    if (dht_await_pin_state(pin, 40, 0, NULL) != ESP_OK)
+        return ESP_ERR_TIMEOUT;
     // Step through Phase 'C', 88us
-    ESP_ERROR_CHECK(dht_await_pin_state(pin, 88, 1, NULL));
+    if (dht_await_pin_state(pin, 88, 1, NULL) != ESP_OK)
+        return ESP_ERR_TIMEOUT;
     // Step through Phase 'D', 88us
-    ESP_ERROR_CHECK(dht_await_pin_state(pin, 88, 0, NULL));
+    if (dht_await_pin_state(pin, 88, 0, NULL) != ESP_OK)
+        return ESP_ERR_TIMEOUT;
 
     // Read in each of the 40 bits of data...
     for (int i = 0; i < DHT_DATA_BITS; i++) {

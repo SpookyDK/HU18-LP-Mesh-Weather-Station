@@ -4,6 +4,7 @@
 #include "esp_log.h"
 #include "freertos/idf_additions.h"
 #include "freertos/projdefs.h"
+#include "fun_cache.h"
 #include "http_parser.h"
 #include "portmacro.h"
 #include "sd_card.h"
@@ -47,15 +48,16 @@ static void ws_push_task(void *arg) {
     ws_push_args_t *a = (ws_push_args_t *)arg;
     httpd_handle_t hd = a->hd;
     int fd = a->fd;
-    size_t sd_tail_idx = a->start_idx;
+    size_t sd_tail_idx = 0;
     free(a);
 
-    ESP_LOGI(TAG, "WS push task started, fd='%d' start_idx='%d'", fd, sd_tail_idx);
+    ESP_LOGI(TAG, "WS push task started, fd='%d'", fd);
     httpd_ws_frame_t ws_pkt = {0};
 
     while (1) {
         uint32_t notif;
         xTaskNotifyWait(0, ULONG_MAX, &notif, portMAX_DELAY);
+        char msg[64] = {0};
 
         switch (notif & 0xffff) {
         case NOTIF_WS_EXIT:
@@ -80,20 +82,29 @@ static void ws_push_task(void *arg) {
                 if (read_ret == READ_DONE)
                     break;
             }
-            char end_msg[48];
-            snprintf(end_msg, sizeof(end_msg), "END_OF_TRANSMISSION:%d", sd_tail_idx);
-            httpd_ws_frame_t end_pkt = {.type = HTTPD_WS_TYPE_TEXT, .payload = (uint8_t *)end_msg, .len = strlen(end_msg)};
-            httpd_ws_send_frame_async(hd, fd, &end_pkt);
+            /* snprintf(msg, sizeof(msg), "END_OF_TRANSMISSION:%d", sd_tail_idx);
+            httpd_ws_frame_t end_pkt = {.type = HTTPD_WS_TYPE_TEXT, .payload = (uint8_t *)msg, .len = strlen(msg)};
+            httpd_ws_send_frame_async(hd, fd, &end_pkt); */
             break;
         }
-        case NOTIF_WS_PAIRING:
+        case NOTIF_WS_PAIRING: {
             ws_pkt.type = HTTPD_WS_TYPE_TEXT;
-            char pair_msg[64];
-            snprintf(pair_msg, sizeof(pair_msg), "PAIRING:%04X", (uint16_t)(notif >> 16));
-            ws_pkt.len = strlen(pair_msg);
-            ws_pkt.payload = (uint8_t *)pair_msg;
+            uint16_t nonce = (uint16_t)(notif >> 16);
+            snprintf(msg, sizeof(msg), "PAIRING:%04X", nonce);
+            ws_pkt.len = strlen(msg);
+            ws_pkt.payload = (uint8_t *)msg;
             httpd_ws_send_frame_async(hd, fd, &ws_pkt);
             break;
+        }
+        case NOTIF_WS_PAIRING_ACK: {
+            ws_pkt.type = HTTPD_WS_TYPE_TEXT;
+            uint16_t nonce = (uint16_t)(notif >> 16);
+            snprintf(msg, sizeof(msg), "PAIRING_ACK:%04X:%d", nonce, is_nonce_known(nonce));
+            ws_pkt.len = strlen(msg);
+            ws_pkt.payload = (uint8_t *)msg;
+            httpd_ws_send_frame_async(hd, fd, &ws_pkt);
+            break;
+        }
         case NOTIF_WS_FLUSH:
             ESP_LOGW(TAG, "Not used");
             break;
@@ -169,19 +180,20 @@ static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
 
     const char *target = "START_SD_STREAM";
     const char *pairing = "PAIRING";
+    const char *disconnect = "DISCONNECT";
     if (ws_pkt.len >= strlen(target) && strncmp((char *)buf, target, strlen(target)) == 0) {
-        size_t resume_idx = 0;
+        /* size_t resume_idx = 0;
         if (ws_pkt.len > strlen(target) && buf[strlen(target)] == ':') {
             resume_idx = (size_t)atoi((char *)&buf[strlen(target) + 1]);
             ESP_LOGI(TAG, "Resuming SD stream from byte %d", resume_idx);
         } else {
             ESP_LOGI(TAG, "Starting fresh SD stream");
-        }
+        } */
+        ESP_LOGI(TAG, "Starting SD stream");
         ws_push_args_t *args = (ws_push_args_t *)malloc(sizeof(ws_push_args_t));
         if (args) {
             args->hd = req->handle;
             args->fd = httpd_req_to_sockfd(req);
-            args->start_idx = resume_idx;
             if (xTaskCreate(ws_push_task, "ws_push", 4096, args, 5, &g_websocket_task) != pdPASS) {
                 ESP_LOGE(TAG, "Failed to create WS push task");
                 free(args);
@@ -196,17 +208,17 @@ static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
         if (ws_pkt.len >= strlen(accepted) + offset && strncmp((char *)buf + offset, accepted, strlen(accepted)) == 0) {
             ESP_LOGI(TAG, "WS> Pairing Accepted sending down the line");
             const size_t ofset = offset + strlen(accepted) + 1;
-            char *end_ptr;
-            uint16_t val = strtoul((char *)&buf[ofset], &end_ptr, 16);
-            if (*end_ptr == '\0') {
-                ESP_LOGI(TAG, "WS> Pairing had value='%04x'", val);
-                notify_big_data(NOTIF_LORA_PAIRING | ((uint32_t)val << 16));
-            } else {
-                ESP_LOGW(TAG, "WS> Failed to parse Pairing value: %s", end_ptr);
-            }
+            uint16_t val = strtoul((char *)&buf[ofset], NULL, 16);
+            ESP_LOGI(TAG, "WS> Pairing had value='%04x'", val);
+            notify_big_data(NOTIF_LORA_PAIRING | ((uint32_t)val << 16));
         } else {
             ESP_LOGI(TAG, "WS> Pairing denied");
         }
+    } else if (ws_pkt.len >= strlen(disconnect) && strncmp((char *)buf, disconnect, strlen(disconnect)) == 0) {
+        const size_t offset = strlen(disconnect) + 1;
+        uint8_t node_id = strtoul((char *)&buf[offset], NULL, 10);
+        ESP_LOGI(TAG, "WS> node id %d has been disconnected", node_id);
+        notify_big_data(NOTIF_LORA_DISCONNECT | ((uint32_t)node_id << 16));
     } else {
         ESP_LOGI(TAG, "WS Received: %s", (char *)buf);
     }

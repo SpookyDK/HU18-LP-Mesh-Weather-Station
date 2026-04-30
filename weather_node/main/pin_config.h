@@ -32,7 +32,7 @@
 #define I2C_MASTER_SCL_IO 11
 #define I2C_MASTER_SDA_IO 10
 
-// Otehr config
+// Other config
 #define PACKET_TIME_TO_LIVE 3
 
 // NVS keys

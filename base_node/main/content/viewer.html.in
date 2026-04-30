@@ -35,14 +35,14 @@ Page:<input id="pg" size="2" type="number" min="0" onchange="render()">
 </div></div>
 <script>
 var ddict=new Proxy({},{get:(t,pid)=>pid in t?t[pid]:-1})
-var rows=[],sc='t',sd='d',error=0,erows=[],ps=@FULL_PACKET@+4;
+var rows=[],sc='t',sd='d',error=0,erows=[],ps=40;
 function pp(buf){
 var v=new DataView(buf),o=0,r={};
-r.t=v.getInt32(o,1)*1000;o+=4;
+r.t=v.getInt32(o,1)*1000;o+=5;
 r.nid=v.getUint8(o++);r.onid=v.getUint8(o++);
 r.pkt_id=v.getUint8(o++);r.hop_count=v.getUint8(o++);r.flags=v.getUint8(o++);
 r.lot=v.getInt32(o,1)/1e7;o+=4;r.lat=v.getInt32(o,1)/1e7;o+=4;
-r.air_humidity=v.getUint8(o++);r.air_temp=v.getInt16(o,1)/10;o+=2;
+r.air_humidity=v.getUint8(o++)/10;r.air_temp=v.getInt16(o,1)/10;o+=2;
 r.soil_temps=[];for(var i=0;i<4;i++){r.soil_temps.push(v.getInt16(o,1)/16);o+=2;}
 r.soil_m=v.getUint8(o++);r.pressure=(v.getInt16(o,1)+100000)/100;o+=2;
 r.lux=v.getUint16(o,1);o+=2;r.precipitation=v.getUint16(o,1)/10;o+=2;
@@ -101,35 +101,37 @@ var b=rows.map(function(r){return[new Date(r.t).toISOString(),r.onid,r.nid,r.pkt
 var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h+b],{type:'text/csv'}));
 a.download='sensors.csv';a.click();
 }
-var ws,idx=0,heartbeatTimer,target=location.hostname;
+var ws,idx=0,heartbeatTimer,denounced=new Set(),target="192.168.4.1"; // WARNING: Target should not be statically defined
 function resetHeartbeat(){
 clearTimeout(heartbeatTimer);
 heartbeatTimer = setTimeout(()=>{
 console.warn("Heartbeat lost. Closing Conn");
 if (ws) ws.close();},10000);}
 function pair_cb(id,btn){
-console.log("Called by "+id);
 ws.send("PAIRING:ACCEPTED:"+id);
-  const lI = btn.closest('li');
-  lI.innerHTML = `${id} Is awaiting an acknowledgement...`
-}
-function deleteItem(btn){
-  const lI = btn.closest('li');
-  lI.remove();
+btn.closest('li').innerHTML = `${id} Is awaiting an acknowledgement...`;
 }
 function pairing(id){
-let li=document.getElementById('pair');
-li.innerHTML+=`<li>${id} Wants to pair  <button onclick="pair_cb('${id}',this)">Accept</button> <button onclick="this.disabled=true;deleteItem(this)">Deny</button></li>`;
+  if (document.getElementById('pair-'+id)||denounced.has(id))return;
+  document.getElementById('pair').innerHTML+=`<li id="pair-${id}">${id} Wants to pair  <button onclick="pair_cb('${id}',this)">Accept</button> <button onclick="denounced.add('${id}');this.closest('li').remove()">Deny</button></li>`;
+}
+function dis_pair(id,nonce){
+  document.getElementById('pair-'+nonce).remove();
+  ws.send("DISCONNECT:"+id);
+}
+function pair_ack(str){
+  const [,nonce,id] = str.split(':');
+  document.getElementById('pair-'+nonce).innerHTML = `${nonce} is connected as node id ${id} <button onclick="dis_pair('${id}','${nonce}')">Disconnect</button>`;
 }
 function conn(){
 document.getElementById('s').textContent='Connecting...';
 ws=new WebSocket('ws://'+target+'/data');
 ws.binaryType='arraybuffer';
-ws.onopen=function(){document.getElementById('s').textContent='Connected';ws.send('START_SD_STREAM'+(idx?':'+idx:''));};
+ws.onopen=function(){document.getElementById('s').textContent='Connected';ws.send('START_SD_STREAM');};
 ws.onclose=function(){document.getElementById('s').textContent='Disconnected';setTimeout(conn,2000);};
 ws.onmessage=function(e){
 if(e.data instanceof ArrayBuffer){handleData(e.data);}
-else if(e.data.startsWith('END_OF_TRANSMISSION')){idx=Number(e.data.split(':')[1]);}
+else if(e.data.startsWith('PAIRING_ACK')){pair_ack(e.data);}
 else if(e.data.startsWith('PAIRING')){pairing(e.data.split(':')[1])}
 else{console.log("Received unkown packet:"+e)}
 };}conn();

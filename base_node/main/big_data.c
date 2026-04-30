@@ -72,10 +72,10 @@ static void receive_something() {
     }
     packet_header_t head = {0};
     memcpy(&head, lora_buf, sizeof(packet_header_t));
-    /* if (head.header != PACKET_HEADER_VALUE) {
+    if (head.header != PACKET_HEADER_VALUE) {
         ESP_LOGI(TAG, "Invalid packet header, received='%02X', dropped", head.header);
         return;
-    } */
+    }
 
     switch (head.flags & 0b11) {
     case 0b01: {
@@ -99,8 +99,6 @@ static void receive_something() {
         strftime(strtime_buf, sizeof(strtime_buf), "%c", &timeinfo);
 
         ESP_LOGI(TAG, "Received packet id='%d' from '%d' at %s", full_packet.head.packet_id, full_packet.head.orig_node_id, strtime_buf);
-        if (head.orig_node_id != 170)
-            break; // WARNING: REMOVE THIS
         if (b_append_file(PACKET_FILE, full_packet) == ESP_OK) {
             ESP_LOGI(TAG, "Stored packet to SD card");
             // Notify site_content.c that it needs to send new data through websocket
@@ -111,10 +109,21 @@ static void receive_something() {
         break;
     }
     case 0b10: {
-        pairing_packet_t pair_packet = {0};
-        memcpy(&pair_packet, lora_buf, sizeof(pairing_packet_t));
-        ESP_LOGI(TAG, "Received a Pairing packet with Nonce='%04x'", pair_packet.nonce);
-        notify_websocket((pair_packet.nonce << 16) | NOTIF_WS_PAIRING);
+        pairing_packet_t pkt = {0};
+        memcpy(&pkt, lora_buf, sizeof(pairing_packet_t));
+        ESP_LOGI(TAG, "Received a Pairing packet with Nonce='%04X',  node_id='%d'", pkt.nonce, pkt.head.orig_node_id);
+        if (pkt.nonce) {
+            if (is_nonce_known(pkt.nonce))
+                break;
+            notify_websocket((pkt.nonce << 16) | NOTIF_WS_PAIRING);
+        } else {
+            set_node_id_state(pkt.head.orig_node_id, true);
+            uint16_t nonce = is_node_known(pkt.head.orig_node_id);
+            if (nonce)
+                notify_websocket((nonce << 16) | NOTIF_WS_PAIRING_ACK);
+            else
+                ESP_LOGW(TAG, "Node not in cache");
+        }
         break;
     }
     default:
@@ -125,8 +134,10 @@ static void receive_something() {
 }
 
 static void send_pairing_confirmation(uint16_t nonce) {
+    ESP_LOGI(TAG, "Sending confirmation to %04X", nonce);
     pairing_packet_t pkt = {0};
-    pkt.head.packet_id = get_free_node_id();
+    pkt.head.header = PACKET_HEADER_VALUE;
+    pkt.head.packet_id = get_free_node_id(nonce);
     if (pkt.head.packet_id == 0) {
         ESP_LOGW(TAG, "Not enough free node ids");
         return;
@@ -135,6 +146,19 @@ static void send_pairing_confirmation(uint16_t nonce) {
     pkt.head.network_id = NETWORK_ID;
     pkt.head.hop_count = 5; // Higher than normal
     pkt.nonce = nonce;
+
+    block_if_receiving();
+    lora_send_packet((uint8_t *)&pkt, sizeof(pairing_packet_t));
+}
+
+static void send_disconnect(uint8_t node_id) {
+    pairing_packet_t pkt = {0};
+    pkt.head.header = PACKET_HEADER_VALUE;
+    pkt.head.network_id = NETWORK_ID;
+    pkt.head.orig_node_id = node_id;
+    pkt.head.hop_count = 3;
+    pkt.head.flags = 0b10;
+    pkt.nonce = 0xffff; // disconnect message
 
     block_if_receiving();
     lora_send_packet((uint8_t *)&pkt, sizeof(pairing_packet_t));
@@ -154,11 +178,17 @@ static void receive_task(void *p) {
         lora_receive();
         uint32_t notif;
         xTaskNotifyWait(0, ULONG_MAX, &notif, portMAX_DELAY);
-        if (lora_received()) {
-            receive_something();
-        }
-        if ((notif & 0xffff) == NOTIF_LORA_PAIRING) {
+        switch (notif & 0xffff) {
+        case NOTIF_LORA_PAIRING:
             send_pairing_confirmation(notif >> 16);
+            break;
+        case NOTIF_LORA_DISCONNECT:
+            send_disconnect((uint8_t)(notif >> 16));
+            break;
+        default:
+            if (lora_received())
+                receive_something();
+            break;
         }
         vTaskDelay(pdMS_TO_TICKS(10));
     }
