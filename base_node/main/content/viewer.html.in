@@ -107,13 +107,19 @@ clearTimeout(heartbeatTimer);
 heartbeatTimer = setTimeout(()=>{
 console.warn("Heartbeat lost. Closing Conn");
 if (ws) ws.close();},10000);}
-function pair_cb(id){
+function pair_cb(id,btn){
 console.log("Called by "+id);
 ws.send("PAIRING:ACCEPTED:"+id);
+  const lI = btn.closest('li');
+  lI.innerHTML = `${id} Is awaiting an acknowledgement...`
+}
+function deleteItem(btn){
+  const lI = btn.closest('li');
+  lI.remove();
 }
 function pairing(id){
 let li=document.getElementById('pair');
-li.innerHTML+=`<li>${id} Wants to pair  <button onclick="this.disabled=true;pair_cb('${id}')">Pair</button></li>`;
+li.innerHTML+=`<li>${id} Wants to pair  <button onclick="pair_cb('${id}',this)">Accept</button> <button onclick="this.disabled=true;deleteItem(this)">Deny</button></li>`;
 }
 function conn(){
 document.getElementById('s').textContent='Connecting...';

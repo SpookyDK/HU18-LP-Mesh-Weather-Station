@@ -27,7 +27,7 @@ static TaskHandle_t worker_taskhandle;
 ///     The configuration of the node
 /// =======================================================
 
-#define DUTY_CYCLES_MS (30 * 1000)
+#define DUTY_CYCLES_MS (900 * 1000)
 
 static uint8_t NETWORK_ID = 0;
 static uint8_t NODE_ID = 0;
@@ -127,7 +127,7 @@ static void packet_worker() {
 
     ESP_LOGI(name, "Going to sleep.");
     vTaskSuspend(NULL); // Get resumed externally to functionally begin
-    ESP_LOGI(name, "Awoken");
+    ESP_LOGI(name, "Rizzle");
     data_packet.head.network_id = NETWORK_ID;
     data_packet.head.orig_node_id = NODE_ID;
 
@@ -215,10 +215,11 @@ static void receive_something() {
         break;
     }
     case 0b10: {
-        ESP_LOGI(TAG, "Its a pairing thingy");
+        ESP_LOGI(TAG, "Its a pairing thingy...");
         pairing_packet_t pkt = {0};
         memcpy(&pkt, lora_buf, sizeof(pairing_packet_t));
-        if (EXPECTING_PAIRING && pkt.nonce == EXPECTING_PAIRING) {
+        if (EXPECTING_PAIRING && pkt.head.network_id && pkt.nonce == EXPECTING_PAIRING) {
+            ESP_LOGI(TAG, "Pairing packet has been consumed");
             NODE_ID = pkt.head.packet_id;
             NETWORK_ID = pkt.head.network_id;
 
@@ -232,12 +233,12 @@ static void receive_something() {
             break;
         }
         if (--pkt.head.hop_count <= 0) {
-            ESP_LOGI(TAG, "Dropped due to low hop cpount");
+            ESP_LOGI(TAG, "Dropped due to low hop count");
             break;
         }
         block_if_receiving();
         lora_send_packet((uint8_t *)&pkt, sizeof(pairing_packet_t));
-        ESP_LOGI(TAG, "Bouncing packet");
+        ESP_LOGI(TAG, "Pairing packet not for me, bouncing it away");
         break;
     }
     default: {
@@ -254,13 +255,14 @@ static void receive_something() {
 static pairing_packet_t pairing_packet = {0};
 static void pair_to_network() {
     pairing_packet.head.hop_count = PACKET_TIME_TO_LIVE;
+    pairing_packet.head.flags = 0b10;
     // pairing_packet.head.header = PACKET_HEADER_VALUE;
     esp_fill_random(&EXPECTING_PAIRING, sizeof(uint16_t));
     pairing_packet.nonce = EXPECTING_PAIRING;
 
     block_if_receiving();
     lora_send_packet((uint8_t *)&pairing_packet, sizeof(pairing_packet_t));
-    ESP_LOGI(TAG, "Sent pairing request");
+    ESP_LOGI(TAG, "Sent pairing request, with nonce='%04x'", EXPECTING_PAIRING);
 }
 
 /// ============================

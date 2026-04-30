@@ -1,6 +1,7 @@
 #include "big_data.h"
 #include "driver/gpio.h"
 #include "esp_attr.h"
+#include "esp_bit_defs.h"
 #include "esp_err.h"
 #include "esp_log.h"
 #include "esp_random.h"
@@ -8,6 +9,7 @@
 #include "freertos/idf_additions.h"
 #include "freertos/projdefs.h"
 #include "freertos/task.h"
+#include "fun_cache.h"
 #include "hal/gpio_types.h"
 #include "lora.h"
 #include "packet_def.h"
@@ -52,34 +54,6 @@ void init_dio0_interrupt() {
 
     gpio_install_isr_service(0);
     gpio_isr_handler_add(LORA_DIO0_GPIO, lora_isr_handler, NULL);
-}
-
-/// ===================================
-///     Duplicate packet protection
-/// ===================================
-
-#define CACHE_SIZE 16
-#define CACHE_MASK (CACHE_SIZE - 1)
-
-typedef struct {
-    uint8_t packet_id;
-    uint8_t node_id;
-    // uint16_t nonce; might be needed dependant on how the nonce is implemented
-} packet_signature_t;
-
-static packet_signature_t packet_cache[CACHE_SIZE];
-static uint8_t write_idx = 0;
-
-static bool is_duplicate(packet_header_t head) {
-    for (int i = 0; i < CACHE_SIZE; i++) {
-        if (packet_cache[i].node_id == head.orig_node_id && packet_cache[i].packet_id == head.packet_id) {
-            return true;
-        }
-    }
-    packet_cache[write_idx].packet_id = head.packet_id;
-    packet_cache[write_idx].node_id = head.orig_node_id;
-    write_idx = (write_idx + 1) & CACHE_MASK;
-    return false;
 }
 
 /// ==============================
@@ -140,6 +114,7 @@ static void receive_something() {
     case 0b10: {
         pairing_packet_t pair_packet = {0};
         memcpy(&pair_packet, lora_buf, sizeof(pairing_packet_t));
+        ESP_LOGI(TAG, "Received a Pairing packet with Nonce='%04x'", pair_packet.nonce);
         notify_websocket((pair_packet.nonce << 16) | NOTIF_WS_PAIRING);
         break;
     }
@@ -149,12 +124,16 @@ static void receive_something() {
     }
 }
 
-static void send_pairing(uint16_t nonce) {
+static void send_pairing_confirmation(uint16_t nonce) {
     pairing_packet_t pkt = {0};
+    pkt.head.packet_id = get_free_node_id();
+    if (pkt.head.packet_id == 0) {
+        ESP_LOGW(TAG, "Not enough free node ids");
+        return;
+    }
     pkt.head.flags = 0b10;
     pkt.head.network_id = NETWORK_ID;
-    pkt.head.hop_count = 10; // Higher than normal
-    pkt.head.packet_id = 69; // Maybe use this as the targets new node id, i dont want to use the node id as 0 is to indicate the source
+    pkt.head.hop_count = 5; // Higher than normal
     pkt.nonce = nonce;
 
     block_if_receiving();
@@ -179,7 +158,7 @@ static void receive_task(void *p) {
             receive_something();
         }
         if ((notif & 0xffff) == NOTIF_LORA_PAIRING) {
-            send_pairing(notif >> 16);
+            send_pairing_confirmation(notif >> 16);
         }
         vTaskDelay(pdMS_TO_TICKS(10));
     }

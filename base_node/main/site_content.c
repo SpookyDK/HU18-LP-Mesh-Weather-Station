@@ -196,8 +196,14 @@ static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
         if (ws_pkt.len >= strlen(accepted) + offset && strncmp((char *)buf + offset, accepted, strlen(accepted)) == 0) {
             ESP_LOGI(TAG, "WS> Pairing Accepted sending down the line");
             const size_t ofset = offset + strlen(accepted) + 1;
-            const uint16_t val = *(uint16_t *)&buf[ofset];
-            notify_big_data(NOTIF_LORA_PAIRING | ((uint32_t)val << 16));
+            char *end_ptr;
+            uint16_t val = strtoul((char *)&buf[ofset], &end_ptr, 16);
+            if (*end_ptr == '\0') {
+                ESP_LOGI(TAG, "WS> Pairing had value='%04x'", val);
+                notify_big_data(NOTIF_LORA_PAIRING | ((uint32_t)val << 16));
+            } else {
+                ESP_LOGW(TAG, "WS> Failed to parse Pairing value: %s", end_ptr);
+            }
         } else {
             ESP_LOGI(TAG, "WS> Pairing denied");
         }

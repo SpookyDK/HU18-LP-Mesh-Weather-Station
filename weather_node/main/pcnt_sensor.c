@@ -105,7 +105,7 @@ esp_err_t get_wind_read(sensor_payload_t *payload) {
 
     int wind_cnt = 0;
     int64_t cur_time = esp_timer_get_time();
-    int64_t duration = cur_time - rain_last_time;
+    int64_t duration = cur_time - wind_last_time;
     float mms = 0;
 
     if (duration <= 0)
