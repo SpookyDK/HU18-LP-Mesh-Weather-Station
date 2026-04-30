@@ -14,7 +14,23 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-static const char *TAG = "temp_task";
+static const char *TAG = "temp_sensor";
+
+esp_err_t get_air_reads(sensor_payload_t *packet) {
+    if (!dht11_exists(CONFIG_DHT11_PIN)) {
+        ESP_LOGW(TAG, "DHT11 does not exist");
+        return ESP_FAIL;
+    }
+    int16_t dht_humd, dht_temp;
+    if (dht_read_data(CONFIG_DHT11_PIN, &dht_humd, &dht_temp) == ESP_OK) {
+        packet->air_humidity = dht_humd;
+        packet->air_tempeture = dht_temp;
+    } else {
+        ESP_LOGW(TAG, "DHT11> Failed to read data");
+        return ESP_FAIL;
+    }
+    return ESP_OK;
+}
 
 static onewire_bus_handle_t bus = NULL;
 static int8_t ds18b20_device_num = 0;
@@ -60,25 +76,14 @@ static void init_tempeture() {
     temp_initated = true;
 }
 
-esp_err_t get_air_reads(sensor_payload_t *packet) {
-    if (!temp_initated) {
-        ESP_LOGW(TAG, "Temperature module not initated, initiating...");
-        init_tempeture();
-    }
-    int16_t dht_humd, dht_temp;
-    if (dht_read_data(CONFIG_DHT11_PIN, &dht_humd, &dht_temp) == ESP_OK) {
-        packet->air_humidity = dht_humd;
-        packet->air_tempeture = dht_temp;
-    } else {
-        ESP_LOGW(TAG, "DHT11> Failed to read data");
-        return ESP_FAIL;
-    }
-    return ESP_OK;
-}
 esp_err_t get_soil_temp(sensor_payload_t *packet) {
     if (!temp_initated) {
         ESP_LOGW(TAG, "Temperature module not initated, initiating...");
         init_tempeture();
+    }
+    if (ds18b20_device_num != 4) {
+        ESP_LOGW(TAG, "Not correct amount of ds18b20 devices, there is %d", ds18b20_device_num);
+        return ESP_FAIL;
     }
     int16_t temp_temp;
     if (ds18b20_trigger_temperature_conversion_for_all(bus) != ESP_OK)

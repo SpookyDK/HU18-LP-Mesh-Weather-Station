@@ -15,6 +15,7 @@
 #include "portmacro.h"
 #include "sd_card.h"
 #include "site_content.h"
+#include <limits.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -91,7 +92,7 @@ static int lora_buf_len = 0;
 
 static void receive_something() {
     lora_buf_len = lora_receive_packet(lora_buf, LORA_BUF_MAX_LEN);
-    if (lora_buf_len < sizeof(packet_header_t)) {
+    if (lora_buf_len <= sizeof(packet_header_t)) {
         ESP_LOGI(TAG, "Lora Packet too small, dropped");
         return;
     }
@@ -124,6 +125,8 @@ static void receive_something() {
         strftime(strtime_buf, sizeof(strtime_buf), "%c", &timeinfo);
 
         ESP_LOGI(TAG, "Received packet id='%d' from '%d' at %s", full_packet.head.packet_id, full_packet.head.orig_node_id, strtime_buf);
+        if (head.orig_node_id != 170)
+            return; // WARNING: REMOVE THIS
         if (b_append_file(PACKET_FILE, full_packet) == ESP_OK) {
             ESP_LOGI(TAG, "Stored packet to SD card");
             // Notify site_content.c that it needs to send new data through websocket
@@ -137,13 +140,25 @@ static void receive_something() {
     case 0b10: {
         pairing_packet_t pair_packet = {0};
         memcpy(&pair_packet, lora_buf, sizeof(pairing_packet_t));
-        notify_websocket(pair_packet.nonce << 16 & NOTIF_WS_PAIRING);
+        notify_websocket((pair_packet.nonce << 16) | NOTIF_WS_PAIRING);
         break;
     }
     default:
         ESP_LOGW(TAG, "Unrecognized packet type %02b", head.flags & 0b11);
         break;
     }
+}
+
+static void send_pairing(uint16_t nonce) {
+    pairing_packet_t pkt = {0};
+    pkt.head.flags = 0b10;
+    pkt.head.network_id = NETWORK_ID;
+    pkt.head.hop_count = 10; // Higher than normal
+    pkt.head.packet_id = 69; // Maybe use this as the targets new node id, i dont want to use the node id as 0 is to indicate the source
+    pkt.nonce = nonce;
+
+    block_if_receiving();
+    lora_send_packet((uint8_t *)&pkt, sizeof(pairing_packet_t));
 }
 
 /// ============================
@@ -158,14 +173,22 @@ static void receive_task(void *p) {
 
     while (1) {
         lora_receive();
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        if (!lora_received()) {
-            vTaskDelay(pdMS_TO_TICKS(10));
-            continue;
+        uint32_t notif;
+        xTaskNotifyWait(0, ULONG_MAX, &notif, portMAX_DELAY);
+        if (lora_received()) {
+            receive_something();
         }
-        receive_something();
+        if ((notif & 0xffff) == NOTIF_LORA_PAIRING) {
+            send_pairing(notif >> 16);
+        }
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
     ESP_LOGW(TAG, "Left task");
+}
+void notify_big_data(uint32_t notif) {
+    if (lora_task_handle != NULL) {
+        xTaskNotify(lora_task_handle, notif, eSetBits);
+    }
 }
 
 void start_receive_task() { xTaskCreate(receive_task, TAG, 4096, NULL, 5, &lora_task_handle); }

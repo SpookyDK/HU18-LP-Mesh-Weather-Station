@@ -46,11 +46,12 @@ static esp_err_t init_barometer() {
         return ESP_FAIL;
     }
     uint8_t attempts = 0;
-    while (i2c_dev_check_present(&bmp.i2c_dev) != ESP_OK && ++attempts < 3) {
+    while (i2c_dev_check_present(&bmp.i2c_dev) != ESP_OK && ++attempts <= 3) {
         if (attempts >= 3) {
-            ESP_LOGW("Bar", "Failed to find Barometer, Terminating");
+            ESP_LOGW("Bar", "Failed to find Barometer, Giving up");
+            return ESP_FAIL;
         }
-        ESP_LOGE("Bar", "Failed to find bmp");
+        ESP_LOGW("Bar", "Failed to find bmp");
     }
 
     bmp280_config_t bmp_cfg = {
@@ -61,7 +62,7 @@ static esp_err_t init_barometer() {
         .standby = BMP280_STANDBY_250,
     };
     if (bmp280_init(&bmp, &bmp_cfg) != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to start BMP280");
+        ESP_LOGW(TAG, "Failed to start BMP280");
         return ESP_FAIL;
     }
 
@@ -78,8 +79,10 @@ static esp_err_t init_barometer() {
 esp_err_t get_pres_read(sensor_payload_t *payload) {
     if (!initiated_bmp) {
         ESP_LOGW(TAG, "BMP not initiated");
-        if (init_barometer() != ESP_OK)
+        if (init_barometer() != ESP_OK) {
+            bmp280_free_desc(&bmp);
             return ESP_FAIL;
+        }
     }
 
     int32_t bmp_tempeture;
@@ -115,7 +118,8 @@ esp_err_t get_light_read(sensor_payload_t *payload) {
     if (!initiated_tsl) {
         ESP_LOGW(TAG, "TSL> Not initiated");
         if (init_tsl() != ESP_OK) {
-            ESP_LOGE(TAG, "TSL> Failed to init module");
+            ESP_LOGW(TAG, "TSL> Failed to init module, giving up");
+            tsl2591_free_desc(&light_sensor_dev);
             return ESP_FAIL;
         }
     }
@@ -154,12 +158,12 @@ static esp_err_t init_power() {
             ESP_LOGI(TAG, "Found Power Sensor device addr='%02x'", devices[i].addr);
             devices_state[i] = true;
         } else {
-            ESP_LOGE(TAG, "Failed to find Power Sensor device addr='%02x'", devices[i].addr);
+            ESP_LOGW(TAG, "Failed to find Power Sensor device addr='%02x'", devices[i].addr);
             devices_state[i] = false;
         }
     }
     if (devices_state[0] | devices_state[1]) {
-        ESP_LOGE(TAG, "POWER> Failed to init both devices");
+        ESP_LOGW(TAG, "POWER> Failed to init both devices, Giving up on power");
         return ESP_FAIL;
     }
     // write to the calibration register which is required or the device returns nothing.
@@ -186,7 +190,7 @@ esp_err_t get_power_read(sensor_payload_t *payload, uint8_t addr) {
             dev_ptr = &devices[i];
     }
     if (dev_ptr == NULL) {
-        ESP_LOGE(TAG, "POWER> Device not available");
+        ESP_LOGW(TAG, "POWER> Device not available");
         return ESP_FAIL;
     }
 

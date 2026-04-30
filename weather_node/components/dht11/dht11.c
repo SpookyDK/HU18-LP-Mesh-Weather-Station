@@ -41,20 +41,20 @@
 
 static const char *TAG = "dht";
 
-#define CHECK_ARG(VAL)                                                                                                 \
-    do {                                                                                                               \
-        if (!(VAL))                                                                                                    \
-            return ESP_ERR_INVALID_ARG;                                                                                \
+#define CHECK_ARG(VAL)                                                                                                                     \
+    do {                                                                                                                                   \
+        if (!(VAL))                                                                                                                        \
+            return ESP_ERR_INVALID_ARG;                                                                                                    \
     } while (0)
 
-#define CHECK_LOGE(x, msg, ...)                                                                                        \
-    do {                                                                                                               \
-        esp_err_t __;                                                                                                  \
-        if ((__ = x) != ESP_OK) {                                                                                      \
-            PORT_EXIT_CRITICAL();                                                                                      \
-            ESP_LOGE(TAG, msg, ##__VA_ARGS__);                                                                         \
-            return __;                                                                                                 \
-        }                                                                                                              \
+#define CHECK_LOGE(x, msg, ...)                                                                                                            \
+    do {                                                                                                                                   \
+        esp_err_t __;                                                                                                                      \
+        if ((__ = x) != ESP_OK) {                                                                                                          \
+            PORT_EXIT_CRITICAL();                                                                                                          \
+            ESP_LOGE(TAG, msg, ##__VA_ARGS__);                                                                                             \
+            return __;                                                                                                                     \
+        }                                                                                                                                  \
     } while (0)
 
 /**
@@ -155,4 +155,27 @@ esp_err_t dht_read_data(gpio_num_t pin, int16_t *humidity, int16_t *temperature)
     ESP_LOGD(TAG, "Sensor data: humidity=%d, temp=%d", *humidity, *temperature);
 
     return ESP_OK;
+}
+
+bool dht11_exists(gpio_num_t gpio_pin) {
+    // 1. Send Start Signal
+    gpio_set_direction(gpio_pin, GPIO_MODE_OUTPUT);
+    gpio_set_level(gpio_pin, 0);
+    vTaskDelay(pdMS_TO_TICKS(20)); // Pull low for 20ms
+
+    gpio_set_level(gpio_pin, 1);
+    ets_delay_us(30); // Short wait
+
+    // 2. Switch to Input and check for "Presence Pulse"
+    gpio_set_direction(gpio_pin, GPIO_MODE_INPUT);
+
+    // Wait a moment for the DHT11 to pull the bus low
+    int timeout = 0;
+    while (gpio_get_level(gpio_pin) == 1) {
+        if (timeout++ > 100)
+            return false; // Sensor didn't respond
+        ets_delay_us(1);
+    }
+
+    return true; // Sensor is present!
 }

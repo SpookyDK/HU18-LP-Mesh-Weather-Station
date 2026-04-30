@@ -15,7 +15,7 @@
  * @param[out] temperature Temperature, degrees Celsius * 10, nullable
  * @return `ESP_OK` on success
  */
-esp_err_t dht_read_data(gpio_num_t pin, int16_t *humidity,
-                        int16_t *temperature);
+esp_err_t dht_read_data(gpio_num_t pin, int16_t *humidity, int16_t *temperature);
+bool dht11_exists(gpio_num_t gpio_pin);
 
 #endif // __DHT_H__

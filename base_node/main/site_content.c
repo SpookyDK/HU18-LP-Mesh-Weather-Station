@@ -1,3 +1,4 @@
+#include "big_data.h"
 #include "esp_err.h"
 #include "esp_http_server.h"
 #include "esp_log.h"
@@ -88,7 +89,7 @@ static void ws_push_task(void *arg) {
         case NOTIF_WS_PAIRING:
             ws_pkt.type = HTTPD_WS_TYPE_TEXT;
             char pair_msg[64];
-            snprintf(pair_msg, sizeof(pair_msg), "PAIRING:%08lX", (unsigned long)(notif >> 16));
+            snprintf(pair_msg, sizeof(pair_msg), "PAIRING:%04X", (uint16_t)(notif >> 16));
             ws_pkt.len = strlen(pair_msg);
             ws_pkt.payload = (uint8_t *)pair_msg;
             httpd_ws_send_frame_async(hd, fd, &ws_pkt);
@@ -190,10 +191,13 @@ static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
         }
     } else if (ws_pkt.len >= strlen(pairing) && strncmp((char *)buf, pairing, strlen(pairing)) == 0) {
         ESP_LOGI(TAG, "WS Received a pairing response");
-        size_t offset = strlen(pairing) + 1;
+        const size_t offset = strlen(pairing) + 1;
         const char *accepted = "ACCEPTED";
         if (ws_pkt.len >= strlen(accepted) + offset && strncmp((char *)buf + offset, accepted, strlen(accepted)) == 0) {
             ESP_LOGI(TAG, "WS> Pairing Accepted sending down the line");
+            const size_t ofset = offset + strlen(accepted) + 1;
+            const uint16_t val = *(uint16_t *)&buf[ofset];
+            notify_big_data(NOTIF_LORA_PAIRING | ((uint32_t)val << 16));
         } else {
             ESP_LOGI(TAG, "WS> Pairing denied");
         }

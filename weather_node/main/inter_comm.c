@@ -21,16 +21,18 @@
 
 static const char *TAG = "InComm";
 static TaskHandle_t comm_taskhandle;
+static TaskHandle_t worker_taskhandle;
 
 /// =======================================================
 ///     The configuration of the node
 /// =======================================================
 
-#define DUTY_CYCLES_MS (900 * 1000)
+#define DUTY_CYCLES_MS (30 * 1000)
 
 static uint8_t NETWORK_ID = 0;
 static uint8_t NODE_ID = 0;
 static uint8_t PACKET_ID = 0;
+static uint16_t EXPECTING_PAIRING = 0; // So nonce
 
 static void save_config_nvs(void) {
     ESP_LOGI(TAG, "Saving Config to NVS");
@@ -120,13 +122,20 @@ static void packet_worker() {
     TickType_t last_send_tick = xTaskGetTickCount();
     const TickType_t send_interval = pdMS_TO_TICKS(DUTY_CYCLES_MS);
     data_packet.head.hop_count = PACKET_TIME_TO_LIVE;
-    data_packet.head.header = PACKET_HEADER_VALUE;
+    // data_packet.head.header = PACKET_HEADER_VALUE;
+    const char *name = pcTaskGetName(NULL);
 
+    ESP_LOGI(name, "Going to sleep.");
     vTaskSuspend(NULL); // Get resumed externally to functionally begin
+    ESP_LOGI(name, "Awoken");
+    data_packet.head.network_id = NETWORK_ID;
+    data_packet.head.orig_node_id = NODE_ID;
 
     while (1) {
         xTaskDelayUntil(&last_send_tick, send_interval);
+        ESP_LOGI(name, "Begun prepping packet...");
         prepare_packet(&data_packet);
+        ESP_LOGI(name, "Notifying comm task...");
         xTaskNotify(comm_taskhandle, 0, eNoAction);
     }
 }
@@ -168,31 +177,73 @@ static uint8_t lora_buf[LORA_BUF_MAX_LEN];
 static int lora_buf_len = 0;
 static void receive_something() {
     lora_buf_len = lora_receive_packet(lora_buf, LORA_BUF_MAX_LEN);
+    if (lora_buf_len <= sizeof(packet_header_t)) {
+        ESP_LOGI(TAG, "Lora Packet too small, dropped");
+        return;
+    }
+    packet_header_t head = {0};
+    memcpy(&head, lora_buf, sizeof(packet_header_t));
+    /* if (head.header != PACKET_HEADER_VALUE) {
+        ESP_LOGI(TAG, "Invalid packet header, received='%02X', dropped", head.header);
+        return;
+    } */
 
-    if (lora_buf_len == sizeof(full_packet_t)) {
+    switch (head.flags & 0b11) {
+    case 0b01: {
         ESP_LOGI(TAG, "Its a packet");
         full_packet_t temp_packet = {0};
-        memcpy(&temp_packet, lora_buf, lora_buf_len);
+        memcpy(&temp_packet, lora_buf, sizeof(full_packet_t));
         if (temp_packet.head.network_id != NETWORK_ID) {
             ESP_LOGI(TAG, "Ignoring received Packet from other Network '%d'", temp_packet.head.network_id);
-            return;
+            break;
         }
         if (--temp_packet.head.hop_count <= 0) {
             ESP_LOGI(TAG, "Ignoring received packet with low hop_count");
-            return;
+            break;
         }
         if (temp_packet.head.orig_node_id == NODE_ID) {
             ESP_LOGI(TAG, "Ignoring received Own Packet id='%d'", temp_packet.head.packet_id);
-            return;
+            break;
         }
         if (is_duplicate(temp_packet.head)) {
             ESP_LOGI(TAG, "Ignoring received cached packet id='%d' node='%d'", temp_packet.head.packet_id, temp_packet.head.orig_node_id);
-            return;
+            break;
         }
-
         block_if_receiving();
         lora_send_packet((uint8_t *)&temp_packet, lora_buf_len);
         ESP_LOGI(TAG, "Bouncing packet from node='%d' id='%d'", temp_packet.head.orig_node_id, temp_packet.head.packet_id);
+        break;
+    }
+    case 0b10: {
+        ESP_LOGI(TAG, "Its a pairing thingy");
+        pairing_packet_t pkt = {0};
+        memcpy(&pkt, lora_buf, sizeof(pairing_packet_t));
+        if (EXPECTING_PAIRING && pkt.nonce == EXPECTING_PAIRING) {
+            NODE_ID = pkt.head.packet_id;
+            NETWORK_ID = pkt.head.network_id;
+
+            save_config_nvs();
+            EXPECTING_PAIRING = 0;
+            vTaskResume(worker_taskhandle);
+            break;
+        }
+        if (NETWORK_ID && pkt.head.network_id != 0 && NETWORK_ID != pkt.head.network_id) {
+            ESP_LOGI(TAG, "Dropped due to pairing response from other network");
+            break;
+        }
+        if (--pkt.head.hop_count <= 0) {
+            ESP_LOGI(TAG, "Dropped due to low hop cpount");
+            break;
+        }
+        block_if_receiving();
+        lora_send_packet((uint8_t *)&pkt, sizeof(pairing_packet_t));
+        ESP_LOGI(TAG, "Bouncing packet");
+        break;
+    }
+    default: {
+        ESP_LOGW(TAG, "Unrecognized packet type %02b", head.flags & 0b11);
+        break;
+    }
     }
 }
 
@@ -203,8 +254,9 @@ static void receive_something() {
 static pairing_packet_t pairing_packet = {0};
 static void pair_to_network() {
     pairing_packet.head.hop_count = PACKET_TIME_TO_LIVE;
-    pairing_packet.head.header = PACKET_HEADER_VALUE;
-    esp_fill_random(&pairing_packet.nonce, sizeof(pairing_packet.nonce));
+    // pairing_packet.head.header = PACKET_HEADER_VALUE;
+    esp_fill_random(&EXPECTING_PAIRING, sizeof(uint16_t));
+    pairing_packet.nonce = EXPECTING_PAIRING;
 
     block_if_receiving();
     lora_send_packet((uint8_t *)&pairing_packet, sizeof(pairing_packet_t));
@@ -221,10 +273,10 @@ void inter_comm_task(void *arg) {
     lora_init();
     lora_dump_registers();
 
-    TaskHandle_t worker_taskhandle;
-    xTaskCreate(packet_worker, "workerTask", 1024, NULL, 10, &worker_taskhandle);
+    xTaskCreate(packet_worker, "workerTask", 4096, NULL, 10, &worker_taskhandle);
+    vTaskDelay(pdMS_TO_TICKS(200));
 
-    load_config_nvs();
+    // load_config_nvs();
     if (NODE_ID && NETWORK_ID) {
         vTaskResume(worker_taskhandle);
     } else {
