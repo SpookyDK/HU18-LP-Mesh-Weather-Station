@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #define MOUNT_POINT "/sdcard"
+#define DATA_DIR "/data"
 #define PACKET_FILE MOUNT_POINT "/packets.bin"
 
 #define PIN_MISO 5
@@ -21,7 +22,7 @@ typedef enum {
 
 } READ_RETURN_STATE;
 
-esp_err_t b_append_file(const char *path, full_packet_t data);
+esp_err_t b_append_file(full_packet_time_t data);
 READ_RETURN_STATE b_read_file(const char *path, size_t start_idx, size_t *len, uint8_t *result);
 esp_err_t b_read_last_packet(const char *path, full_packet_t *result);
 void init_sd_card();

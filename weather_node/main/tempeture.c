@@ -16,11 +16,19 @@
 
 static const char *TAG = "temp_sensor";
 
+#define DHT_TEMP_MULT 0.8723
+#define DHT_TEMP_OFFSET -0.0601
+
+#define DS18B20_MULT 0.9094
+#define DS18B20_OFFSET 0.1375
+
 esp_err_t get_air_reads(sensor_payload_t *packet) {
     int16_t dht_humd, dht_temp;
+    double cor_dht_temp;
     if (dht_read_data(CONFIG_DHT11_PIN, &dht_humd, &dht_temp) == ESP_OK) {
         packet->air_humidity = dht_humd;
-        packet->air_tempeture = dht_temp;
+        cor_dht_temp = (double)dht_temp * DHT_TEMP_MULT + DHT_TEMP_OFFSET;
+        packet->air_tempeture = (int16_t)(cor_dht_temp);
     } else {
         ESP_LOGW(TAG, "DHT11> Failed to read data");
         return ESP_FAIL;
@@ -82,11 +90,13 @@ esp_err_t get_soil_temp(sensor_payload_t *packet) {
         return ESP_FAIL;
     }
     int16_t temp_temp;
+    double temp_cor;
     if (ds18b20_trigger_temperature_conversion_for_all(bus) != ESP_OK)
         return ESP_FAIL;
     for (int i = 0; i < ds18b20_device_num; i++) {
         if (ds18b20_get_temperature(ds18b20s[i], &temp_temp) == ESP_OK) {
-            packet->soil_tempeture[i] = temp_temp;
+            temp_cor = (double)temp_temp * DS18B20_MULT + DS18B20_OFFSET;
+            packet->soil_tempeture[i] = (int16_t)temp_cor;
             // ESP_LOGI("DS18B20", "[%d] [Temperature]> %.2f, Shared> %d", i, (double)(temp_temp / 16.0f), temp_temp);
         }
     }

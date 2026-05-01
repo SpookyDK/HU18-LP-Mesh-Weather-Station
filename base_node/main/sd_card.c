@@ -16,28 +16,56 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/param.h>
+#include <sys/stat.h>
 #include <time.h>
 
 static const char *TAG = "SD_CARD";
+static inline void ensure_directory_exist(const char *year_path, const char *month_path) {
+    mkdir(year_path, 700);
+    mkdir(month_path, 700);
+}
 
-#define MAX_BUF_SIZE 64
+esp_err_t b_append_file(full_packet_time_t data) {
+    // Get the current time
+    struct timespec ts = {.tv_sec = data.time};
+    struct tm timeinfo = {0};
+    localtime_r(&ts.tv_sec, &timeinfo);
 
-esp_err_t b_append_file(const char *path, full_packet_t data) {
-    ESP_LOGD(TAG, "Opening file to append, '%s'", path);
-    FILE *f = fopen(path, "ab");
+    char year_path[32] = {0};
+    char month_path[32] = {0};
+    char full_path[64] = {0};
+    snprintf(year_path, 32, "%s/%04d", MOUNT_POINT DATA_DIR, timeinfo.tm_year + 1900);
+    snprintf(month_path, 32, "%s/%02d", year_path, timeinfo.tm_mon + 1);
+    snprintf(full_path, 64, "%s/%04d-%02d-%02d.bin", month_path, timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday);
+
+    ensure_directory_exist(year_path, month_path);
+
+    ESP_LOGI(TAG, "Opening file to append, '%s'", full_path);
+    FILE *f = fopen(full_path, "ab");
     if (f == NULL) {
-        ESP_LOGE(TAG, "Failed to open file, '%s'", path);
+        ESP_LOGE(TAG, "Failed to open file, '%s'", full_path);
         return ESP_FAIL;
     }
-    // Get the current time
-    struct timespec ts_now = {0};
-    struct tm timeinfo = {0};
-    clock_gettime(CLOCK_REALTIME, &ts_now);
-    localtime_r(&ts_now.tv_sec, &timeinfo);
 
-    fwrite((uint8_t *)&ts_now.tv_sec, 4, 1, f); // 4 comes from time stamp size
     fwrite(&data, sizeof(full_packet_t), 1, f);
     fclose(f);
+    return ESP_OK;
+}
+
+esp_err_t b_read_date(uint8_t *result, struct tm timeinfo, size_t start, size_t *len) {
+    char path[64] = {0};
+    snprintf(path, 64, "%1$s/%2$04d/%3$02d/%2$04d-%3$02d-%4$02d.bin", MOUNT_POINT DATA_DIR, timeinfo.tm_year + 1900, timeinfo.tm_mon + 1,
+             timeinfo.tm_mday);
+    FILE *f = fopen(path, "rb");
+    if (f == NULL) {
+        ESP_LOGE(TAG, "Did not find file");
+        return ESP_FAIL;
+    }
+    const size_t max_read_to = start + *len;
+    const size_t file_len = fseek(f, 0, SEEK_END);
+
+    fseek(f, start, SEEK_SET);
+
     return ESP_OK;
 }
 

@@ -30,6 +30,7 @@
 static const char *TAG = "RxTask";
 
 static TaskHandle_t lora_task_handle = NULL;
+QueueHandle_t new_packet_queue;
 
 // This should be set somewhere else, but prototype it fine
 static uint8_t NETWORK_ID = 1;
@@ -80,9 +81,6 @@ static void receive_something() {
     switch (head.flags & 0b11) {
     case 0b01: {
         full_packet_t full_packet = {0};
-        struct timespec ts_now = {0};
-        struct tm timeinfo = {0};
-        char strtime_buf[64] = {0};
         ESP_LOGI(TAG, "Received full packet...");
         memcpy(&full_packet, lora_buf, lora_buf_len);
         if (full_packet.head.network_id != NETWORK_ID) {
@@ -93,16 +91,20 @@ static void receive_something() {
             ESP_LOGI(TAG, "Ignoring received cached packet id='%d' node='%d'", full_packet.head.packet_id, full_packet.head.orig_node_id);
             break;
         }
-
+        struct timespec ts_now = {0};
+        struct tm timeinfo = {0};
+        char strtime_buf[64] = {0};
         clock_gettime(CLOCK_REALTIME, &ts_now);
         localtime_r(&ts_now.tv_sec, &timeinfo);
         strftime(strtime_buf, sizeof(strtime_buf), "%c", &timeinfo);
+        full_packet_time_t data = {.time = ts_now.tv_sec, .pkt = full_packet};
 
         ESP_LOGI(TAG, "Received packet id='%d' from '%d' at %s", full_packet.head.packet_id, full_packet.head.orig_node_id, strtime_buf);
-        if (b_append_file(PACKET_FILE, full_packet) == ESP_OK) {
+        if (b_append_file(data) == ESP_OK) {
             ESP_LOGI(TAG, "Stored packet to SD card");
+            xQueueSend(new_packet_queue, &full_packet, 0);
             // Notify site_content.c that it needs to send new data through websocket
-            notify_websocket(NOTIF_WS_NEW_DATA);
+            notify_websocket(NOTIF_WS_NEW_PACKET);
         } else {
             ESP_LOGW(TAG, "Failed to store packet");
         }
@@ -200,4 +202,7 @@ void notify_big_data(uint32_t notif) {
     }
 }
 
-void start_receive_task() { xTaskCreate(receive_task, TAG, 4096, NULL, 5, &lora_task_handle); }
+void start_receive_task() {
+    new_packet_queue = xQueueCreate(5, sizeof(full_packet_time_t));
+    xTaskCreate(receive_task, TAG, 4096, NULL, 5, &lora_task_handle);
+}

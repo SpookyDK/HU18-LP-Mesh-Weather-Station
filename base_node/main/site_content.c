@@ -6,6 +6,7 @@
 #include "freertos/projdefs.h"
 #include "fun_cache.h"
 #include "http_parser.h"
+#include "packet_def.h"
 #include "portmacro.h"
 #include "sd_card.h"
 #include "site_content.h"
@@ -43,6 +44,7 @@ static esp_err_t get_handler_viewer(httpd_req_t *req) {
 }
 static httpd_uri_t uri_get_viewer = {.uri = "/", .method = HTTP_GET, .handler = get_handler_viewer, .user_ctx = NULL};
 
+extern QueueHandle_t new_packet_queue;
 static uint8_t ws_buf[WS_PUSH_CHUNK];
 static void ws_push_task(void *arg) {
     ws_push_args_t *a = (ws_push_args_t *)arg;
@@ -63,7 +65,7 @@ static void ws_push_task(void *arg) {
         case NOTIF_WS_EXIT:
             ESP_LOGI(TAG, "WS push: Exit requested, fd='%d'", fd);
             goto cleanup;
-        case NOTIF_WS_NEW_DATA: {
+        case NOTIF_WS_NEW_CON: {
             size_t len = WS_PUSH_CHUNK;
             READ_RETURN_STATE read_ret;
             while ((read_ret = b_read_file(PACKET_FILE, sd_tail_idx, &len, ws_buf)) != READ_FAILURE) {
@@ -85,6 +87,18 @@ static void ws_push_task(void *arg) {
             /* snprintf(msg, sizeof(msg), "END_OF_TRANSMISSION:%d", sd_tail_idx);
             httpd_ws_frame_t end_pkt = {.type = HTTPD_WS_TYPE_TEXT, .payload = (uint8_t *)msg, .len = strlen(msg)};
             httpd_ws_send_frame_async(hd, fd, &end_pkt); */
+            break;
+        }
+        case NOTIF_WS_NEW_PACKET: {
+            full_packet_time_t pkt = {0};
+            if (xQueueReceive(new_packet_queue, &pkt, pdMS_TO_TICKS(15000)) != pdTRUE) {
+                ESP_LOGW(TAG, "WS> Failed to get new packet from queue");
+                break;
+            }
+            ws_pkt.type = HTTPD_WS_TYPE_BINARY;
+            ws_pkt.len = sizeof(full_packet_time_t);
+            ws_pkt.payload = (uint8_t *)&pkt;
+            httpd_ws_send_frame_async(hd, fd, &ws_pkt);
             break;
         }
         case NOTIF_WS_PAIRING: {

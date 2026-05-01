@@ -3,6 +3,7 @@
 
 #include "esp_bit_defs.h"
 #include <stdint.h>
+#include <time.h>
 
 /**
  * Packet Header
@@ -62,6 +63,11 @@ typedef struct __attribute__((packed)) {
     packet_header_t head;
     sensor_payload_t payload;
 } full_packet_t;
+
+typedef struct __attribute__((packed)) {
+    time_t time;
+    full_packet_t pkt;
+} full_packet_time_t;
 
 typedef struct __attribute__((packed)) {
     packet_header_t head;

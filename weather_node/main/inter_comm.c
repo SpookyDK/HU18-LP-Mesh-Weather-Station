@@ -301,7 +301,6 @@ void inter_comm_task(void *arg) {
 
     load_config_nvs();
     if (NODE_ID && NETWORK_ID) {
-        /* vTaskResume(worker_taskhandle); */
         xTaskNotify(worker_taskhandle, 1, eSetValueWithOverwrite);
     } else {
         ESP_LOGI(TAG, "Node is not connected to network");

@@ -15,7 +15,8 @@ typedef struct {
  * @note This is limited to just the first 16 bits, as the latter is used for data passing
  */
 enum notif_ws {
-    NOTIF_WS_NEW_DATA = 1,
+    NOTIF_WS_NEW_CON = 1,
+    NOTIF_WS_NEW_PACKET,
     NOTIF_WS_FLUSH,
     NOTIF_WS_EXIT,
     NOTIF_WS_PAIRING,
