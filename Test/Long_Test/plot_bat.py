@@ -31,7 +31,7 @@ idx = np.isfinite(x_numeric) & np.isfinite(y_values)
 slope, intercept = np.polyfit(x_numeric[idx], y_values[idx], 1)
 trend_values = slope * x_numeric + intercept
 # Slope is in V/day because date2num units are days
-equation_label = f'Trend: {slope:.4f} V/day'
+equation_label = f'Trend: +{slope:.4f} V/day'
 
 # --- PLOTTING ---
 fig, ax1 = plt.subplots(figsize=(16, 10))
