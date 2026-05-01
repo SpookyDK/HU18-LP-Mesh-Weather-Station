@@ -195,16 +195,16 @@ esp_err_t get_power_read(sensor_payload_t *payload, uint8_t addr) {
     }
 
     uint16_t raw_voltage = 0, raw_power = 0, voltage = 0, power = 0;
-    // uint16_t raw_current = 0;
-    // int16_t current = 0;
+    uint16_t raw_current = 0;
+    int16_t current = 0;
 
     ERROR_CHECK(i2c_dev_read_reg(dev_ptr, INA219_REG_BUSVOLTAGE, &raw_voltage, 2), "POWER> Failed to read voltage");
-    // ERROR_CHECK(i2c_dev_read_reg(dev_ptr, INA219_REG_CURRENT, &raw_current, 2), "POWER> Failed to read current");
+    ERROR_CHECK(i2c_dev_read_reg(dev_ptr, INA219_REG_CURRENT, &raw_current, 2), "POWER> Failed to read current");
     ERROR_CHECK(i2c_dev_read_reg(dev_ptr, INA219_REG_POWER, &raw_power, 2), "POWER> Failed to read power");
 
     // The first 2 bits of voltage is information flags, which are discarded
     voltage = (i2c_swap16(raw_voltage) >> 3) * INA219_VOLTAGE_LSB_MV;
-    // current = (int16_t)(i2c_swap16(raw_current) * INA219_CURRENT_LSB_MA);
+    current = (int16_t)(i2c_swap16(raw_current) * INA219_CURRENT_LSB_MA);
     power = i2c_swap16(raw_power) * INA219_POWER_LSB_MW;
 
     if (addr == POWER_ADDR_BATTERY) {
@@ -212,5 +212,7 @@ esp_err_t get_power_read(sensor_payload_t *payload, uint8_t addr) {
     } else if (addr == POWER_ADDR_SOLAR) {
         payload->solar_output = (uint8_t)(power >> 2);
     }
+    ESP_LOGE("", "%d, %d", voltage, current);
+    // printf("%d, %d\n", voltage, current);
     return ESP_OK;
 }
