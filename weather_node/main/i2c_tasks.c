@@ -162,7 +162,7 @@ static esp_err_t init_power() {
             devices_state[i] = false;
         }
     }
-    if (devices_state[0] | devices_state[1]) {
+    if (!(devices_state[0] | devices_state[1])) {
         ESP_LOGW(TAG, "POWER> Failed to init both devices, Giving up on power");
         return ESP_FAIL;
     }
