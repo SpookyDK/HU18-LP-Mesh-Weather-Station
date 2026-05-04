@@ -1,27 +1,136 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
+from os import wait
+import matplotlib.pyplot as plt 
+import numpy as np 
+import pandas as pd 
+import matplotlib.font_manager as fm
+
+pagella_path = '/usr/share/texmf/fonts/opentype/public/tex-gyre/texgyrepagella-regular.otf'
+
+# Register it with Matplotlib
+fm.fontManager.addfont(pagella_path)
+plt.rcParams['font.family'] = 'TeX Gyre Pagella'
+
 csvBare = pd.read_csv("./power_bare.csv")
+csvFull = pd.read_csv("./power_full.csv") 
+csvHall = pd.read_csv("./power_hall.csv")
+csvTemp = pd.read_csv("./power_tempds.csv")
+csvLight = pd.read_csv("./power_light.csv")
+csvSoil = pd.read_csv("./power_soil.csv")
+
 print(csvBare.dtypes)
-
-csvFull = pd.read_csv("./power_full.csv")
-csvFull = csvFull[(csvFull['TIME'] <= 53000) & (csvFull['TIME'] >= 13000)]
 print(csvFull.dtypes)
+print(csvHall.dtypes)
+print(csvTemp.dtypes)
+print(csvLight.dtypes)
+print(csvSoil.dtypes)
 
-plt.plot(csvBare['TIME'], csvBare['AMP'], label="Only MainBoard")
-plt.plot(csvFull['TIME']-800, csvFull['AMP'], label="With all Ext Sensors")
-plt.legend()
+csvBare = csvBare[csvBare['TIME'].between(5000, 45000)]
+
+csvFull['TIME'] = csvFull['TIME'] + 4605
+csvFull = csvFull[csvFull['TIME'].between(5000, 45000)]
+
+csvHall['TIME'] = csvHall['TIME'] + 2000
+csvHall = csvHall[csvHall['TIME'].between(5000, 45000)]
+
+csvTemp['TIME'] = csvTemp['TIME'] + 0
+csvTemp = csvTemp[csvTemp['TIME'].between(5000, 45000)]
+csvLight['TIME'] = csvLight['TIME'] - 6100 - 20
+csvLight = csvLight[csvLight['TIME'].between(5000, 45000)]
+
+csvSoil['TIME'] = csvSoil['TIME'] + 1100 - 20
+csvSoil = csvSoil[csvSoil['TIME'].between(5000, 45000)]
+# plt.plot(csvBare['TIME'], csvBare['AMP'], label=('BARE BOARD: Avg = ', 1, 'mA'))
+# plt.plot(csvFull['TIME'], csvFull['AMP'], label='FULL')
+# plt.plot(csvHall['TIME'], csvHall['AMP'], label='Hall')
+# plt.plot(csvTemp['TIME'], csvTemp['AMP'], label='DS18B20')
+# plt.plot(csvLight['TIME'], csvLight['AMP'], label='LIGHT')
+# plt.plot(csvSoil['TIME'], csvSoil['AMP'], label='Soil Moist')
+
+time_in_seconds = (csvBare['TIME'] - csvBare['TIME'].min())
+time_in_hours = time_in_seconds / 36000
+
+# 2. Calculate the Integrals (Area Under the Curve)
+# Using the Trapezoidal Rule: np.trapz(y_values, x_values)
+BarePower = np.trapezoid(csvBare['AMP'], x=time_in_hours)
+FullPower = np.trapezoid(csvFull['AMP'], x=time_in_hours)
+HallPower = np.trapezoid(csvHall['AMP'], x=time_in_hours)
+TempPower = np.trapezoid(csvTemp['AMP'], x=time_in_hours)
+LightPower = np.trapezoid(csvLight['AMP'], x=time_in_hours)
+SoilPower = np.trapezoid(csvSoil['AMP'], x=time_in_hours)
+
+BarePowerAvg = csvBare['AMP'].mean()
+FullPowerAvg = csvFull['AMP'].mean()
+HallPowerAvg = csvHall['AMP'].mean()
+TempPowerAvg = csvTemp['AMP'].mean()
+LightPowerAvg = csvLight['AMP'].mean()
+SoilPowerAvg = csvSoil['AMP'].mean()
+
+
+FullPowerDif = FullPowerAvg - BarePowerAvg 
+HallPowerDif = HallPowerAvg - BarePowerAvg
+TempPowerDif = TempPowerAvg - BarePowerAvg
+LightPowerDif = LightPowerAvg - BarePowerAvg
+SoilPowerDif = SoilPowerAvg - BarePowerAvg
+
+print("BarePowerAvg = ", BarePowerAvg, "mA")
+print("FullPowerAvg = ", FullPowerAvg, "mA")
+print("HallPowerAvg = ", HallPowerAvg, "mA")
+print("TempPowerAvg = ", TempPowerAvg, "mA")
+print("LightPowerAvg = ", LightPowerAvg, "mA")
+print("SoilPowerAvg = ", SoilPowerAvg, "mA")
+
+
+
+print("BarePowerInt = ", BarePower)
+print("FullPowerInt = ", FullPower)
+print("HallPowerInt = ", HallPower)
+print("TempPowerInt = ", TempPower)
+print("LightPowerInt = ", LightPower)
+print("SoilPowerInt = ", SoilPower)
+
+print("FullPowerDif = ", FullPowerDif)
+print("HallPowerDif = ", HallPowerDif)
+print("TempPowerDif = ", TempPowerDif)
+print("LightPowerDif = ", LightPowerDif)
+print("SoilPowerDif = ", SoilPowerDif)
+
+TotalAvg = (BarePowerAvg + HallPowerDif + TempPowerDif + LightPowerDif + SoilPowerDif)
+print("Bare + All = ", TotalAvg)
+
+
+plt.xlabel('Time[ms]', fontsize=30)
+plt.ylabel('mA', fontsize=30)
+plt.tick_params(axis='y', labelsize=28)
+plt.tick_params(axis='x', labelsize=28)
+plt.title("Cumulative Power Draw of Main Board and External Sensors On the Weather Station",fontsize=35)
+
+
+BareLabel = f'MainBoard Power Share: +{BarePowerAvg:.1f} mA'
+plt.plot(csvBare['TIME'], csvBare['AMP'])
+plt.fill_between(csvBare['TIME'], csvBare['AMP'], 0, color = 'gray', alpha = 0.2, label=BareLabel)
+
+
+
+LightLabel = f'Light Sensor Power Share: +{LightPowerDif:.1f} mA'
+plt.plot(csvBare['TIME'], csvBare['AMP'] + LightPowerDif, color='yellow')
+plt.fill_between(csvBare['TIME'], csvBare['AMP'],csvBare['AMP']+LightPowerDif, color='yellow', alpha=0.2, label=LightLabel)
+
+TempLabel = f'Ds18b20 Temp Power Share: +{TempPowerDif:.1f} mA'
+plt.plot(csvBare['TIME'], csvBare['AMP'] + LightPowerDif + TempPowerDif, color='blue')
+plt.fill_between(csvBare['TIME'], csvBare['AMP']+LightPowerDif,csvBare['AMP']+LightPowerDif+TempPowerDif, color='blue', alpha=0.2, label=TempLabel)
+
+
+SoilLabel = f'Soil Moisture Power Share: +{SoilPowerDif:.1f} mA'
+plt.plot(csvBare['TIME'], csvBare['AMP'] + SoilPowerDif + LightPowerDif + TempPowerDif, color='red')
+plt.fill_between(csvBare['TIME'], csvBare['AMP']+LightPowerDif+TempPowerDif,csvBare['AMP']+LightPowerDif+TempPowerDif+SoilPowerDif, color='red', alpha=0.2, label=SoilLabel)
+
+HallLabel = f'Hall Effect Power Share: +{HallPowerDif:.1f} mA'
+plt.plot(csvBare['TIME'], csvBare['AMP'] + SoilPowerDif + LightPowerDif + TempPowerDif + HallPowerDif, color='green')
+plt.fill_between(csvBare['TIME'], csvBare['AMP']+LightPowerDif+TempPowerDif+SoilPowerDif,csvBare['AMP']+LightPowerDif+TempPowerDif+SoilPowerDif+HallPowerDif, color='green', alpha=0.2, label=HallLabel)
+
+FullLabel = f'Full PowerDraw: +{TotalAvg:.1f} mA'
+plt.fill_between(csvBare['TIME'], csvBare['AMP']+LightPowerDif+TempPowerDif+SoilPowerDif,csvBare['AMP']+LightPowerDif+TempPowerDif+SoilPowerDif+HallPowerDif, color='green', alpha=0.0, label=FullLabel)
+
+plt.legend(fontsize = 24, loc="upper right", frameon=True, shadow=True, fancybox=True)
+plt.subplots_adjust(left=0.08, right=0.92, top=0.92, bottom=0.12)
 plt.show()
-
-bare_time_in_seconds = (csvBare['TIME'] - csvBare['TIME'].min())
-bare_time_in_hours = bare_time_in_seconds / 3600
-powerBareArea = np.trapezoid(csvBare['AMP'], x=bare_time_in_hours)
-
-full_time_in_seconds = (csvFull['TIME'] - csvFull['TIME'].min())
-full_time_in_hours = full_time_in_seconds / 3600
-powerFullArea = np.trapezoid(csvFull['AMP'], x=full_time_in_hours)
-print("BARE = ", powerBareArea,"mA")
-print("FULL = ", powerFullArea, "mA")
-
-
-

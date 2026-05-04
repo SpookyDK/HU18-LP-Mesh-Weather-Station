@@ -28,7 +28,7 @@ static TaskHandle_t worker_taskhandle;
 ///     The configuration of the node
 /// =======================================================
 
-#define DUTY_CYCLES_MS (10 * 1000)
+#define DUTY_CYCLES_MS (900 * 1000)
 
 static uint8_t NETWORK_ID = 0;
 static uint8_t NODE_ID = 0;
