@@ -5,8 +5,8 @@
 #include "packet_def.h"
 #include <stdint.h>
 
-#define PCNT_HIGH_LIMIT 1000
-#define PCNT_LOW_LIMIT -1000
+#define PCNT_HIGH_LIMIT 2147483647
+#define PCNT_LOW_LIMIT -2147483647
 #define WIND_CUP_DIAMETER 0.97
 #define CALIBRATION_FACTOR 0.75
 #define PI 3.1415926
