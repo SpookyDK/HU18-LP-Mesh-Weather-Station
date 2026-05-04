@@ -24,6 +24,7 @@ typedef enum {
 
 esp_err_t b_append_file(full_packet_time_t data);
 READ_RETURN_STATE b_read_file(const char *path, size_t start_idx, size_t *len, uint8_t *result);
+READ_RETURN_STATE b_read_date(uint8_t *result, struct tm timeinfo, size_t start, size_t *len);
 esp_err_t b_read_last_packet(const char *path, full_packet_t *result);
 void init_sd_card();
 

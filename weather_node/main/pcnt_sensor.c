@@ -114,7 +114,7 @@ esp_err_t get_wind_read(sensor_payload_t *payload) {
     ESP_RETURN_ON_ERROR(pcnt_unit_get_count(wind_pcnt_unit, &wind_cnt), TAG, "WIND> Failed to read count");
     pcnt_unit_clear_count(wind_pcnt_unit);
 
-    mms = PI * WIND_CUP_DIAMETER * CALIBRATION_FACTOR * wind_cnt * (double)(1000000000.0 / duration);
+    mms = PI * WIND_CUP_DIAMETER * CALIBRATION_FACTOR * wind_cnt * 1000000000.0 / duration;
     payload->wind_speed = (uint16_t)(mms);
     // ESP_LOGI(TAG, "pulses = %ld, mms = %f, shared = %d", wind_cnt, (double)mms, wind_shared_speed);
 

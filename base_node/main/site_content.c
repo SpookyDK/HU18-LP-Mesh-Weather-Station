@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 static const char *TAG = "webserver";
 TaskHandle_t g_websocket_task = NULL;
@@ -55,6 +56,8 @@ static void ws_push_task(void *arg) {
 
     ESP_LOGI(TAG, "WS push task started, fd='%d'", fd);
     httpd_ws_frame_t ws_pkt = {0};
+    struct tm timeinfo = {0};
+    struct timespec ts = {0};
 
     while (1) {
         uint32_t notif;
@@ -66,9 +69,12 @@ static void ws_push_task(void *arg) {
             ESP_LOGI(TAG, "WS push: Exit requested, fd='%d'", fd);
             goto cleanup;
         case NOTIF_WS_NEW_CON: {
+            clock_gettime(CLOCK_REALTIME, &ts);
+            localtime_r(&ts.tv_sec, &timeinfo);
+
             size_t len = WS_PUSH_CHUNK;
             READ_RETURN_STATE read_ret;
-            while ((read_ret = b_read_file(PACKET_FILE, sd_tail_idx, &len, ws_buf)) != READ_FAILURE) {
+            while ((read_ret = b_read_date(ws_buf, timeinfo, sd_tail_idx, &len)) != READ_FAILURE) {
                 if (len == 0)
                     break;
                 ws_pkt.type = HTTPD_WS_TYPE_BINARY;
@@ -84,9 +90,6 @@ static void ws_push_task(void *arg) {
                 if (read_ret == READ_DONE)
                     break;
             }
-            /* snprintf(msg, sizeof(msg), "END_OF_TRANSMISSION:%d", sd_tail_idx);
-            httpd_ws_frame_t end_pkt = {.type = HTTPD_WS_TYPE_TEXT, .payload = (uint8_t *)msg, .len = strlen(msg)};
-            httpd_ws_send_frame_async(hd, fd, &end_pkt); */
             break;
         }
         case NOTIF_WS_NEW_PACKET: {
@@ -192,19 +195,26 @@ static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
         return ESP_OK;
     }
 
-    const char *target = "START_SD_STREAM";
+    const char *start_sd = "START_SD_STREAM";
     const char *pairing = "PAIRING";
     const char *disconnect = "DISCONNECT";
-    if (ws_pkt.len >= strlen(target) && strncmp((char *)buf, target, strlen(target)) == 0) {
-        /* size_t resume_idx = 0;
-        if (ws_pkt.len > strlen(target) && buf[strlen(target)] == ':') {
-            resume_idx = (size_t)atoi((char *)&buf[strlen(target) + 1]);
-            ESP_LOGI(TAG, "Resuming SD stream from byte %d", resume_idx);
+    if (ws_pkt.len >= strlen(start_sd) && strncmp((char *)buf, start_sd, strlen(start_sd)) == 0) {
+        ESP_LOGI(TAG, "Full query  '%s'", (char *)buf);
+        ws_push_args_t *args = (ws_push_args_t *)calloc(1, sizeof(ws_push_args_t));
+        if (sscanf((char *)buf, "START_SD_STREAM:%d-%d-%d:%d-%d-%d", &args->time_from.tm_year, &args->time_from.tm_mon,
+                   &args->time_from.tm_mday, &args->time_to.tm_year, &args->time_to.tm_mon, &args->time_to.tm_mday) == 6) {
+            args->time_from.tm_isdst = -1;
+            args->time_from.tm_year -= 1900;
+            args->time_from.tm_mon -= 1;
+            args->time_to.tm_isdst = -1;
+            args->time_to.tm_year -= 1900;
+            args->time_to.tm_mon -= 1;
+            mktime(&args->time_from);
+            mktime(&args->time_to);
         } else {
-            ESP_LOGI(TAG, "Starting fresh SD stream");
-        } */
+            // TODO: Make the default values ie today
+        }
         ESP_LOGI(TAG, "Starting SD stream");
-        ws_push_args_t *args = (ws_push_args_t *)malloc(sizeof(ws_push_args_t));
         if (args) {
             args->hd = req->handle;
             args->fd = httpd_req_to_sockfd(req);
@@ -213,7 +223,7 @@ static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
                 free(args);
                 g_websocket_task = NULL;
             }
-            notify_websocket(NOTIF_WS_NEW_DATA);
+            notify_websocket(NOTIF_WS_NEW_CON);
         }
     } else if (ws_pkt.len >= strlen(pairing) && strncmp((char *)buf, pairing, strlen(pairing)) == 0) {
         ESP_LOGI(TAG, "WS Received a pairing response");

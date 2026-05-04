@@ -102,7 +102,7 @@ static void receive_something() {
         ESP_LOGI(TAG, "Received packet id='%d' from '%d' at %s", full_packet.head.packet_id, full_packet.head.orig_node_id, strtime_buf);
         if (b_append_file(data) == ESP_OK) {
             ESP_LOGI(TAG, "Stored packet to SD card");
-            xQueueSend(new_packet_queue, &full_packet, 0);
+            xQueueSend(new_packet_queue, &data, 0);
             // Notify site_content.c that it needs to send new data through websocket
             notify_websocket(NOTIF_WS_NEW_PACKET);
         } else {

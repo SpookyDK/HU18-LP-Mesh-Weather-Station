@@ -5,10 +5,13 @@
 #include "freertos/idf_additions.h"
 #include <stddef.h>
 #include <stdint.h>
+#include <time.h>
 
 typedef struct {
     httpd_handle_t hd;
     int fd;
+    struct tm time_from;
+    struct tm time_to;
 } ws_push_args_t;
 
 /*

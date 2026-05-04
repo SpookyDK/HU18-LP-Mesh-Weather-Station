@@ -21,6 +21,7 @@
 
 static const char *TAG = "SD_CARD";
 static inline void ensure_directory_exist(const char *year_path, const char *month_path) {
+    mkdir(MOUNT_POINT DATA_DIR, 700);
     mkdir(year_path, 700);
     mkdir(month_path, 700);
 }
@@ -31,42 +32,48 @@ esp_err_t b_append_file(full_packet_time_t data) {
     struct tm timeinfo = {0};
     localtime_r(&ts.tv_sec, &timeinfo);
 
-    char year_path[32] = {0};
-    char month_path[32] = {0};
-    char full_path[64] = {0};
-    snprintf(year_path, 32, "%s/%04d", MOUNT_POINT DATA_DIR, timeinfo.tm_year + 1900);
-    snprintf(month_path, 32, "%s/%02d", year_path, timeinfo.tm_mon + 1);
-    snprintf(full_path, 64, "%s/%04d-%02d-%02d.bin", month_path, timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday);
+    char year_path[20] = {0};
+    char month_path[25] = {0};
+    char full_path[48] = {0};
+    snprintf(year_path, 20, "%s/%04d", MOUNT_POINT DATA_DIR, (timeinfo.tm_year + 1900) & 0xFFF);
+    snprintf(month_path, 25, "%s/%02d", year_path, (timeinfo.tm_mon + 1) & 0xF);
+    snprintf(full_path, 48, "%s/%02d-data.bin", month_path, timeinfo.tm_mday & 0x2F);
 
     ensure_directory_exist(year_path, month_path);
 
-    ESP_LOGI(TAG, "Opening file to append, '%s'", full_path);
+    ESP_LOGD(TAG, "Opening file to append, '%s'", full_path);
     FILE *f = fopen(full_path, "ab");
     if (f == NULL) {
         ESP_LOGE(TAG, "Failed to open file, '%s'", full_path);
         return ESP_FAIL;
     }
 
-    fwrite(&data, sizeof(full_packet_t), 1, f);
+    fwrite(&data, sizeof(full_packet_time_t), 1, f);
     fclose(f);
     return ESP_OK;
 }
 
-esp_err_t b_read_date(uint8_t *result, struct tm timeinfo, size_t start, size_t *len) {
-    char path[64] = {0};
-    snprintf(path, 64, "%1$s/%2$04d/%3$02d/%2$04d-%3$02d-%4$02d.bin", MOUNT_POINT DATA_DIR, timeinfo.tm_year + 1900, timeinfo.tm_mon + 1,
-             timeinfo.tm_mday);
+READ_RETURN_STATE b_read_date(uint8_t *result, struct tm timeinfo, size_t start, size_t *len) {
+    char path[48] = {0};
+    snprintf(path, 48, "%s/%04d/%02d/%02d-data.bin", MOUNT_POINT DATA_DIR, (timeinfo.tm_year + 1900) & 0xFFF, (timeinfo.tm_mon + 1) & 0xF,
+             timeinfo.tm_mday & 0x2F);
     FILE *f = fopen(path, "rb");
     if (f == NULL) {
-        ESP_LOGE(TAG, "Did not find file");
-        return ESP_FAIL;
+        ESP_LOGE(TAG, "Did not find file :  %s", path);
+        return READ_FAILURE;
     }
-    const size_t max_read_to = start + *len;
-    const size_t file_len = fseek(f, 0, SEEK_END);
+    const size_t max_read = *len;
+    const size_t read_amount = max_read / sizeof(full_packet_time_t);
 
     fseek(f, start, SEEK_SET);
+    size_t segments_read = fread(result, sizeof(full_packet_time_t), read_amount, f);
+    fclose(f);
 
-    return ESP_OK;
+    *len = segments_read * sizeof(full_packet_time_t);
+
+    if (read_amount == segments_read)
+        return READ_NOT_DONE;
+    return READ_DONE;
 }
 
 READ_RETURN_STATE b_read_file(const char *path, size_t start_idx, size_t *len, uint8_t *result) {

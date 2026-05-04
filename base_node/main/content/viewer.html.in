@@ -6,10 +6,17 @@ input,select{font:12px monospace;padding:4px 4px}button{font:12px monospace;padd
 <meta name="color-scheme" content="light dark"/></head><body>
 <b>Sensor Viewer</b> &nbsp;
 <span id="s">Connecting...</span><br><br>
-Node:<input id="fn" size="4" oninput="render()">Flag:<input id="ff" size="8" oninput="render()">
+Node:<input id="fn" size="4" oninput="render()"> Flag:<input id="ff" size="8" oninput="render()">
 Max:<select id="mr" onchange="render()"><option>100</option><option>200</option><option>500</option><option>0</option></select>
 Page:<input id="pg" size="2" type="number" min="0" onchange="render()">
-<button onclick="idx=0;rows=[];error=0;erows=[];render();erender()">Clear</button><button onclick="ws.send('START_SD_STREAM:'+idx)">Get New</button>
+<form style="display:inline-flex;align-items:center;gap:3px;">
+  <label for="datfr">Date From: </label>
+  <input id="datfr" name="datfr" type="date" value="2026-05-04" min="2026-01-01">
+  <label for="datto"> To:</label>
+  <input id="datto" name="datto" type="date" value="2026-05-04" min="2026-01-01">
+  <input type="submit" value="Submit">
+</form>
+<button onclick="idx=0;rows=[];error=0;erows=[];render();erender()">Clear</button>
 <button onclick="exportCSV()">CSV</button>
 &nbsp;<span id="cnt"></span>
 <div style="display:flex;align-items:flex-start;gap:10px;margin-top:6px;">
@@ -35,10 +42,10 @@ Page:<input id="pg" size="2" type="number" min="0" onchange="render()">
 </div></div>
 <script>
 var ddict=new Proxy({},{get:(t,pid)=>pid in t?t[pid]:-1})
-var rows=[],sc='t',sd='d',error=0,erows=[],ps=40;
+var rows=[],sc='t',sd='d',error=0,erows=[],ps=44;
 function pp(buf){
 var v=new DataView(buf),o=0,r={};
-r.t=v.getInt32(o,1)*1000;o+=5;
+r.t=Number(v.getBigInt64(o,1))*1000;o+=9;
 r.nid=v.getUint8(o++);r.onid=v.getUint8(o++);
 r.pkt_id=v.getUint8(o++);r.hop_count=v.getUint8(o++);r.flags=v.getUint8(o++);
 r.lot=v.getInt32(o,1)/1e7;o+=4;r.lat=v.getInt32(o,1)/1e7;o+=4;
@@ -101,7 +108,7 @@ var b=rows.map(function(r){return[new Date(r.t).toISOString(),r.onid,r.nid,r.pkt
 var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h+b],{type:'text/csv'}));
 a.download='sensors.csv';a.click();
 }
-var ws,idx=0,heartbeatTimer,denounced=new Set(),target="192.168.4.1"; // WARNING: Target should not be statically defined
+var ws,idx=0,heartbeatTimer,denounced=new Set(),target="192.168.4.1";
 function resetHeartbeat(){
 clearTimeout(heartbeatTimer);
 heartbeatTimer = setTimeout(()=>{
@@ -112,22 +119,24 @@ ws.send("PAIRING:ACCEPTED:"+id);
 btn.closest('li').innerHTML = `${id} Is awaiting an acknowledgement...`;
 }
 function pairing(id){
-  if (document.getElementById('pair-'+id)||denounced.has(id))return;
-  document.getElementById('pair').innerHTML+=`<li id="pair-${id}">${id} Wants to pair  <button onclick="pair_cb('${id}',this)">Accept</button> <button onclick="denounced.add('${id}');this.closest('li').remove()">Deny</button></li>`;
+if (document.getElementById('pair-'+id)||denounced.has(id))return;
+document.getElementById('pair').innerHTML+=`<li id="pair-${id}">${id} Wants to pair  <button onclick="pair_cb('${id}',this)">Accept</button> <button onclick="denounced.add('${id}');this.closest('li').remove()">Deny</button></li>`;
 }
 function dis_pair(id,nonce){
-  document.getElementById('pair-'+nonce).remove();
-  ws.send("DISCONNECT:"+id);
+document.getElementById('pair-'+nonce).remove();
+ws.send("DISCONNECT:"+id);
 }
 function pair_ack(str){
-  const [,nonce,id] = str.split(':');
-  document.getElementById('pair-'+nonce).innerHTML = `${nonce} is connected as node id ${id} <button onclick="dis_pair('${id}','${nonce}')">Disconnect</button>`;
+const [,nonce,id] = str.split(':');
+document.getElementById('pair-'+nonce).innerHTML = `${nonce} is connected as node id ${id} <button onclick="dis_pair('${id}','${nonce}')">Disconnect</button>`;
 }
 function conn(){
 document.getElementById('s').textContent='Connecting...';
 ws=new WebSocket('ws://'+target+'/data');
 ws.binaryType='arraybuffer';
-ws.onopen=function(){document.getElementById('s').textContent='Connected';ws.send('START_SD_STREAM');};
+ws.onopen=function(){
+  const upar=new URLSearchParams(window.location.search);
+  document.getElementById('s').textContent='Connected';ws.send('START_SD_STREAM'+(upar.get('datfr')?`:${upar.get('datfr')}:${upar.get('datto')}`:''));};
 ws.onclose=function(){document.getElementById('s').textContent='Disconnected';setTimeout(conn,2000);};
 ws.onmessage=function(e){
 if(e.data instanceof ArrayBuffer){handleData(e.data);}
