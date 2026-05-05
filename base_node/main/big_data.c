@@ -27,7 +27,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-static const char *TAG = "RxTask";
+static const char *TAG = "RxTxTask";
 
 static TaskHandle_t lora_task_handle = NULL;
 QueueHandle_t new_packet_queue;
