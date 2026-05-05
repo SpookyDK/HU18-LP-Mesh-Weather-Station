@@ -31,17 +31,15 @@ Page:<input id="pg" size="2" type="number" min="0" onchange="render()">
 <div style="flex-grow:1;min-width:0;">
 <video style="width:100%;height:auto;display:block;" autoplay muted loop>
 <source src="https://media.tenor.com/lHUl-0nKsmUAAAPo/cocio-rolling.mp4" type="video/mp4"></video>
-
-<br><p>Underneath here will all the pairing request come</p>
+<br><p>The following is both pairing requests and the connected devices</p>
 <ul id="pair"></ul>
-
 <br><span id="error"></span>
 <div style="overflow-x:auto;flex-shrink:0;margin:10px auto;width:max-content;"><table><thead><tr>
 <th onclick="">Post Time</th><th onclick="">Node</th><th onclick="">Missing PktID</th>
 </tr></thead><tbody id="etb"></tbody></table></div>
 </div></div>
 <script>
-var ddict=new Proxy({},{get:(t,pid)=>pid in t?t[pid]:-1})
+var ddict=new Proxy({},{get:(t,pid)=>pid in t?t[pid]:NaN})
 var rows=[],sc='t',sd='d',error=0,erows=[],ps=44;
 function pp(buf){
 var v=new DataView(buf),o=0,r={};
@@ -59,13 +57,13 @@ return r;}
 function handleData(b){
 let po=0;while(po<b.byteLength){
 const p=pp(b.slice(po,po+ps));po+=ps;rows.push(p);
+if(!isNaN(ddict[p.onid])){
 if(p.pkt_id!==ddict[p.onid]+1){error++;
-erows.push({pkt_id:ddict[p.onid]+1,t:p.t,onid:p.onid});erender();
-}
+erows.push({pkt_id:ddict[p.onid]+1,t:p.t,onid:p.onid});erender();}
 const span=document.getElementById("error");
-if(span){span.textContent="Of all packets in buffer "+error+" / "+rows.length+" = "+(error/rows.length*100).toFixed(2)+"% Failed."}
-ddict[p.onid]=p.pkt_id;ddict[p.onid]=ddict[p.onid]==255?-1:ddict[p.onid];}
-render();}
+if(span){span.textContent="Of all packets in buffer "+error+" / "+rows.length+" = "+(error/rows.length*100).toFixed(2)+"% Failed."}}
+ddict[p.onid]=p.pkt_id;ddict[p.onid]=ddict[p.onid]==255?-1:ddict[p.onid];}render();
+}
 function erender(){
 document.getElementById("etb").innerHTML = erows.slice().reverse()
 .map(function (x) {
@@ -108,18 +106,22 @@ var b=rows.map(function(r){return[new Date(r.t).toISOString(),r.onid,r.nid,r.pkt
 var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h+b],{type:'text/csv'}));
 a.download='sensors.csv';a.click();
 }
-var ws,idx=0,heartbeatTimer,denounced=new Set(),target="192.168.4.1";
+var ws,idx=0,heartbeatTimer,denounced=new Set(),target="192.168.4.1",upar=new URLSearchParams(window.location.search);
+var df=upar.get('datfr'),dt=upar.get('datto');
+if(df){document.getElementById('datfr').value=df;}
+if(dt){document.getElementById('datto').value=dt;}
 function resetHeartbeat(){
+  console.log("Am i ever used???");
 clearTimeout(heartbeatTimer);
-heartbeatTimer = setTimeout(()=>{
+heartbeatTimer=setTimeout(()=>{
 console.warn("Heartbeat lost. Closing Conn");
-if (ws) ws.close();},10000);}
+if(ws)ws.close();},10000);}
 function pair_cb(id,btn){
 ws.send("PAIRING:ACCEPTED:"+id);
-btn.closest('li').innerHTML = `${id} Is awaiting an acknowledgement...`;
+btn.closest('li').innerHTML=`${id} Is awaiting an acknowledgement...`;
 }
 function pairing(id){
-if (document.getElementById('pair-'+id)||denounced.has(id))return;
+if(document.getElementById('pair-'+id)||denounced.has(id))return;
 document.getElementById('pair').innerHTML+=`<li id="pair-${id}">${id} Wants to pair  <button onclick="pair_cb('${id}',this)">Accept</button> <button onclick="denounced.add('${id}');this.closest('li').remove()">Deny</button></li>`;
 }
 function dis_pair(id,nonce){
@@ -127,17 +129,15 @@ document.getElementById('pair-'+nonce).remove();
 ws.send("DISCONNECT:"+id);
 }
 function pair_ack(str){
-const [,nonce,id] = str.split(':');
-document.getElementById('pair-'+nonce).innerHTML = `${nonce} is connected as node id ${id} <button onclick="dis_pair('${id}','${nonce}')">Disconnect</button>`;
+const [,nonce,id]=str.split(':');
+document.getElementById('pair-'+nonce).innerHTML=`${nonce} is connected as node id ${id}<button onclick="dis_pair('${id}','${nonce}')">Disconnect</button>`;
 }
-
 function conn(){
 document.getElementById('s').textContent='Connecting...';
 ws=new WebSocket('ws://'+target+'/data');
 ws.binaryType='arraybuffer';
 ws.onopen=function(){
-const upar=new URLSearchParams(window.location.search);
-document.getElementById('s').textContent='Connected';ws.send('START_SD_STREAM'+(upar.get('datfr')?`:${upar.get('datfr')}:${upar.get('datto')}`:''));};
+document.getElementById('s').textContent='Connected';ws.send('START_SD_STREAM'+(df?`:${df}:${dt}`:''));};
 ws.onclose=function(){document.getElementById('s').textContent='Disconnected';setTimeout(conn,2000);};
 ws.onmessage=function(e){
 if(e.data instanceof ArrayBuffer){handleData(e.data);}

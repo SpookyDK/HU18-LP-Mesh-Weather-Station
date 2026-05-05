@@ -91,6 +91,7 @@ static void receive_something() {
             ESP_LOGI(TAG, "Ignoring received cached packet id='%d' node='%d'", full_packet.head.packet_id, full_packet.head.orig_node_id);
             break;
         }
+        set_node_id_state(full_packet.head.orig_node_id, true);
         struct timespec ts_now = {0};
         struct tm timeinfo = {0};
         char strtime_buf[64] = {0};
