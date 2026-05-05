@@ -201,6 +201,7 @@ static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
         return ESP_OK;
     }
 
+    // TODO: Somehow tell the client the first date with find_oldest_log
     const char *start_sd = "START_SD_STREAM";
     const char *pairing = "PAIRING";
     const char *disconnect = "DISCONNECT";
@@ -223,6 +224,7 @@ static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
             localtime_r(&ts.tv_sec, &args->time_from);
             localtime_r(&ts.tv_sec, &args->time_to);
         }
+        // TODO: Make find_oldest_log called here to ensure its not going to old
         ESP_LOGI(TAG, "Starting SD stream");
         if (args) {
             args->hd = req->handle;

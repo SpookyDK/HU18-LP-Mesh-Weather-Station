@@ -32,20 +32,58 @@ static inline void ensure_directory_exist(const char *year_path, const char *mon
         mkdir(month_path, 700);
 }
 
-int find_first_dir(const char *path) {
+static char *find_first_entry(const char *path, const char *format_pattern) {
     struct dirent **namelist;
-    int n;
+    char *result = NULL;
 
-    n = scandir(path, &namelist, NULL, alphasort);
+    int n = scandir(path, &namelist, NULL, alphasort);
     if (n < 0)
-        return -1;
+        return NULL;
 
     for (int i = 0; i < n; i++) {
-        printf("%s\n", namelist[i]->d_name);
+        if (result == NULL) {
+            int dummy;
+            if (sscanf(namelist[i]->d_name, format_pattern, &dummy) == 1) {
+                result = strdup(namelist[i]->d_name);
+            }
+        }
         free(namelist[i]);
     }
     free(namelist);
-    return 2026;
+    return result;
+}
+
+struct tm *oldest_log_tm = NULL;
+bool find_oldest_log(struct tm *a) {
+    if (oldest_log_tm != NULL) {
+        memcpy(a, oldest_log_tm, sizeof(struct tm));
+        return true;
+    }
+    char path[128];
+
+    char *year_str = find_first_entry(MOUNT_POINT DATA_DIR, "%d");
+    if (!year_str)
+        return false;
+    oldest_log_tm->tm_year = atoi(year_str) - 1900;
+    snprintf(path, sizeof(path), MOUNT_POINT DATA_DIR "/%s", year_str);
+    free(year_str);
+
+    char *month_str = find_first_entry(path, "%d");
+    if (!month_str)
+        return false;
+    oldest_log_tm->tm_mon = atoi(month_str) - 1;
+    strlcat(path, "/", sizeof(path));
+    strlcat(path, month_str, sizeof(path));
+    free(month_str);
+
+    char *file_str = find_first_entry(path, "%d-data.bin");
+    if (!file_str)
+        return false;
+    oldest_log_tm->tm_mday = atoi(file_str);
+
+    memcpy(a, oldest_log_tm, sizeof(struct tm));
+    free(file_str);
+    return true;
 }
 
 esp_err_t b_append_file(full_packet_time_t data) {
@@ -76,7 +114,6 @@ esp_err_t b_append_file(full_packet_time_t data) {
 }
 
 READ_RETURN_STATE b_read_date(uint8_t *result, struct tm timeinfo, size_t start, size_t *len) {
-    ESP_LOGI(TAG, "The value dont matter %d", find_first_dir(MOUNT_POINT DATA_DIR));
     char path[48] = {0};
     snprintf(path, 48, "%s/%04d/%02d/%02d-data.bin", MOUNT_POINT DATA_DIR, (timeinfo.tm_year + 1900) & 0xFFF, (timeinfo.tm_mon + 1) & 0xF,
              timeinfo.tm_mday & 0x2F);
