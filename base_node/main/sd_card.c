@@ -2,6 +2,7 @@
 #include "esp_err.h"
 #include "esp_log.h"
 #include "esp_vfs_fat.h"
+#include "ff.h"
 #include "freertos/idf_additions.h"
 #include "freertos/projdefs.h"
 #include "hal/spi_types.h"
@@ -20,10 +21,14 @@
 #include <time.h>
 
 static const char *TAG = "SD_CARD";
+static inline bool dir_exists(const char *path) { return (f_stat(path, NULL) == FR_OK); }
 static inline void ensure_directory_exist(const char *year_path, const char *month_path) {
-    mkdir(MOUNT_POINT DATA_DIR, 700);
-    mkdir(year_path, 700);
-    mkdir(month_path, 700);
+    if (!dir_exists(MOUNT_POINT DATA_DIR))
+        mkdir(MOUNT_POINT DATA_DIR, 700);
+    if (!dir_exists(year_path))
+        mkdir(year_path, 700);
+    if (!dir_exists(month_path))
+        mkdir(month_path, 700);
 }
 
 esp_err_t b_append_file(full_packet_time_t data) {

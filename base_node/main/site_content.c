@@ -45,19 +45,24 @@ static esp_err_t get_handler_viewer(httpd_req_t *req) {
 }
 static httpd_uri_t uri_get_viewer = {.uri = "/", .method = HTTP_GET, .handler = get_handler_viewer, .user_ctx = NULL};
 
+static inline int dates_cmp(time_t a, time_t b) {
+    return (a < b) - (a > b); // Returns 1, -1, or 0
+}
 extern QueueHandle_t new_packet_queue;
 static uint8_t ws_buf[WS_PUSH_CHUNK];
 static void ws_push_task(void *arg) {
     ws_push_args_t *a = (ws_push_args_t *)arg;
     httpd_handle_t hd = a->hd;
     int fd = a->fd;
-    size_t sd_tail_idx = 0;
+    struct tm date_from = {0};
+    struct tm date_to = {0};
+    memcpy(&date_from, &a->time_from, sizeof(struct tm));
+    memcpy(&date_to, &a->time_to, sizeof(struct tm));
     free(a);
 
+    size_t sd_tail_idx = 0;
     ESP_LOGI(TAG, "WS push task started, fd='%d'", fd);
     httpd_ws_frame_t ws_pkt = {0};
-    struct tm timeinfo = {0};
-    struct timespec ts = {0};
 
     while (1) {
         uint32_t notif;
@@ -69,26 +74,27 @@ static void ws_push_task(void *arg) {
             ESP_LOGI(TAG, "WS push: Exit requested, fd='%d'", fd);
             goto cleanup;
         case NOTIF_WS_NEW_CON: {
-            clock_gettime(CLOCK_REALTIME, &ts);
-            localtime_r(&ts.tv_sec, &timeinfo);
-
-            size_t len = WS_PUSH_CHUNK;
             READ_RETURN_STATE read_ret;
-            while ((read_ret = b_read_date(ws_buf, timeinfo, sd_tail_idx, &len)) != READ_FAILURE) {
-                if (len == 0)
-                    break;
-                ws_pkt.type = HTTPD_WS_TYPE_BINARY;
-                ws_pkt.len = len;
-                ws_pkt.payload = ws_buf;
-                esp_err_t ret = httpd_ws_send_frame_async(hd, fd, &ws_pkt);
-                if (ret != ESP_OK) {
-                    ESP_LOGW(TAG, "WS push: send error %s, client gone", esp_err_to_name(ret));
-                    goto cleanup;
-                }
-                sd_tail_idx += len;
+            size_t len = 0;
+            const time_t date_to_sec = mktime(&date_to);
+            while ((dates_cmp(mktime(&date_from), date_to_sec)) != -1) {
                 len = WS_PUSH_CHUNK;
-                if (read_ret == READ_DONE)
-                    break;
+                while ((read_ret = b_read_date(ws_buf, date_from, sd_tail_idx, &len)) != READ_FAILURE) {
+                    if (len == 0)
+                        break;
+                    ws_pkt.type = HTTPD_WS_TYPE_BINARY;
+                    ws_pkt.len = len;
+                    ws_pkt.payload = ws_buf;
+                    if (httpd_ws_send_frame_async(hd, fd, &ws_pkt) != ESP_OK) {
+                        ESP_LOGW(TAG, "WS push: send error %s, client gone");
+                        goto cleanup;
+                    }
+                    sd_tail_idx += len;
+                    len = WS_PUSH_CHUNK;
+                    if (read_ret == READ_DONE)
+                        break;
+                }
+                date_from.tm_mday += 1;
             }
             break;
         }
@@ -212,7 +218,10 @@ static esp_err_t get_handler_dataviewer(httpd_req_t *req) {
             mktime(&args->time_from);
             mktime(&args->time_to);
         } else {
-            // TODO: Make the default values ie today
+            struct timespec ts = {0};
+            clock_gettime(CLOCK_REALTIME, &ts);
+            localtime_r(&ts.tv_sec, &args->time_from);
+            localtime_r(&ts.tv_sec, &args->time_to);
         }
         ESP_LOGI(TAG, "Starting SD stream");
         if (args) {

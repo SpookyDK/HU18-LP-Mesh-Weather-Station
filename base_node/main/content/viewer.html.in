@@ -130,13 +130,14 @@ function pair_ack(str){
 const [,nonce,id] = str.split(':');
 document.getElementById('pair-'+nonce).innerHTML = `${nonce} is connected as node id ${id} <button onclick="dis_pair('${id}','${nonce}')">Disconnect</button>`;
 }
+
 function conn(){
 document.getElementById('s').textContent='Connecting...';
 ws=new WebSocket('ws://'+target+'/data');
 ws.binaryType='arraybuffer';
 ws.onopen=function(){
-  const upar=new URLSearchParams(window.location.search);
-  document.getElementById('s').textContent='Connected';ws.send('START_SD_STREAM'+(upar.get('datfr')?`:${upar.get('datfr')}:${upar.get('datto')}`:''));};
+const upar=new URLSearchParams(window.location.search);
+document.getElementById('s').textContent='Connected';ws.send('START_SD_STREAM'+(upar.get('datfr')?`:${upar.get('datfr')}:${upar.get('datto')}`:''));};
 ws.onclose=function(){document.getElementById('s').textContent='Disconnected';setTimeout(conn,2000);};
 ws.onmessage=function(e){
 if(e.data instanceof ArrayBuffer){handleData(e.data);}
