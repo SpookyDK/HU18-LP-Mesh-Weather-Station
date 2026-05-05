@@ -11,6 +11,7 @@
 #include "sd_protocol_types.h"
 #include "sdmmc_cmd.h"
 #include "time.h"
+#include <dirent.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -29,6 +30,22 @@ static inline void ensure_directory_exist(const char *year_path, const char *mon
         mkdir(year_path, 700);
     if (!dir_exists(month_path))
         mkdir(month_path, 700);
+}
+
+int find_first_dir(const char *path) {
+    struct dirent **namelist;
+    int n;
+
+    n = scandir(path, &namelist, NULL, alphasort);
+    if (n < 0)
+        return -1;
+
+    for (int i = 0; i < n; i++) {
+        printf("%s\n", namelist[i]->d_name);
+        free(namelist[i]);
+    }
+    free(namelist);
+    return 2026;
 }
 
 esp_err_t b_append_file(full_packet_time_t data) {
@@ -59,6 +76,7 @@ esp_err_t b_append_file(full_packet_time_t data) {
 }
 
 READ_RETURN_STATE b_read_date(uint8_t *result, struct tm timeinfo, size_t start, size_t *len) {
+    ESP_LOGI(TAG, "The value dont matter %d", find_first_dir(MOUNT_POINT DATA_DIR));
     char path[48] = {0};
     snprintf(path, 48, "%s/%04d/%02d/%02d-data.bin", MOUNT_POINT DATA_DIR, (timeinfo.tm_year + 1900) & 0xFFF, (timeinfo.tm_mon + 1) & 0xF,
              timeinfo.tm_mday & 0x2F);

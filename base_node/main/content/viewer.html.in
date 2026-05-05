@@ -11,9 +11,9 @@ Max:<select id="mr" onchange="render()"><option>100</option><option>200</option>
 Page:<input id="pg" size="2" type="number" min="0" onchange="render()">
 <form style="display:inline-flex;align-items:center;gap:3px;">
   <label for="datfr">Date From: </label>
-  <input id="datfr" name="datfr" type="date" value="2026-05-04" min="2026-01-01">
+  <input id="datfr" name="datfr" type="date" value="2026-04-01" min="2026-01-01">
   <label for="datto"> To:</label>
-  <input id="datto" name="datto" type="date" value="2026-05-04" min="2026-01-01">
+  <input id="datto" name="datto" type="date" value="2026-05-01" min="2026-01-01">
   <input type="submit" value="Submit">
 </form>
 <button onclick="idx=0;rows=[];error=0;erows=[];render();erender()">Clear</button>
@@ -107,15 +107,18 @@ var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h+b],{typ
 a.download='sensors.csv';a.click();
 }
 var ws,idx=0,heartbeatTimer,denounced=new Set(),target="192.168.4.1",upar=new URLSearchParams(window.location.search);
-var df=upar.get('datfr'),dt=upar.get('datto');
-if(df){document.getElementById('datfr').value=df;}
-if(dt){document.getElementById('datto').value=dt;}
-function resetHeartbeat(){
-  console.log("Am i ever used???");
-clearTimeout(heartbeatTimer);
-heartbeatTimer=setTimeout(()=>{
-console.warn("Heartbeat lost. Closing Conn");
-if(ws)ws.close();},10000);}
+const df=upar.get('datfr'),dt=upar.get('datto'),mdat=new Date().toISOString().split("T")[0];
+const dfe=document.getElementById('datfr'),dte=document.getElementById('datto');
+dfe.value=df||mdat;dfe.max=mdat;
+dte.value=dt||mdat;dte.max=mdat;
+function valDates(){
+  if (dfe.value>dte.value)
+    dfe.setCustomValidity('This date must be earlier than To');
+  else
+    dfe.setCustomValidity('');
+}
+dfe.addEventListener('change',valDates);
+dte.addEventListener('change',valDates);
 function pair_cb(id,btn){
 ws.send("PAIRING:ACCEPTED:"+id);
 btn.closest('li').innerHTML=`${id} Is awaiting an acknowledgement...`;
