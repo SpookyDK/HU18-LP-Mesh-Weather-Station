@@ -8,7 +8,7 @@
 #define PCNT_HIGH_LIMIT 32767
 #define PCNT_LOW_LIMIT -32767
 #define WIND_CUP_DIAMETER 0.97
-#define CALIBRATION_FACTOR 0.75
+#define CALIBRATION_FACTOR 0.625474587957
 #define PI 3.1415926
 
 esp_err_t get_rain_read(sensor_payload_t *payload);
