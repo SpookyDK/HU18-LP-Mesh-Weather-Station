@@ -36,6 +36,7 @@ equation_label = f'Trend: +{slope:.4f} V/day'
 # --- PLOTTING ---
 fig, ax1 = plt.subplots(figsize=(16, 10))
 
+plt.axhline(y=4.0, color='gray', linestyle='--', linewidth=1)
 # 1. Plot Battery Voltage (Left Axis)
 ax1.set_ylim(3.5, 4.25)
 ax1.set_xlabel('Time', fontsize=30)

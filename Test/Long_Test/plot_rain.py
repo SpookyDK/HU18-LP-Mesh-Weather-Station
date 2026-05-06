@@ -37,7 +37,7 @@ plt.figure(figsize=(16,10))
 # Plotting 'our' data as bars
 plt.ylim(0,2.5)
 plt.bar(our_hourly.index, our_hourly['RAIN'], 
-        label='Our Total Hourly Rain', 
+        label='Measured Total Hourly Rain', 
         color='blue', alpha=0.5, width=0.03)
 
 # Plotting 'dmi' data as bars (shifted slightly or with transparency to compare)

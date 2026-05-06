@@ -41,27 +41,32 @@ plt.title("Power Draw of Weather Station Over 1 Hour at 15 Minute Cycle",fontsiz
 
 tomin = 1 / 1000 / 60
 
-AvgLabel = f'Avg: +{FullPowerAvg:.1f} mA'
-MaxLabel = f'Max: +{FullPowerMax:.1f} mA'
-MinLabel = f'Min: +{FullPowerMin:.1f} mA'
-plt.plot(csvFull['TIME'] * tomin, csvFull['AMP'], color='blue', alpha = 0.5)
-plt.fill_between(csvFull['TIME'] *tomin, 0,0, color='blue', alpha=0.4, label=MaxLabel)
-plt.fill_between(csvFull['TIME']* tomin, 0,0, color='blue', alpha=0.4, label=MinLabel)
+AvgLabel = f'Avg: {FullPowerAvg:.1f} mA'
+MaxLabel = f'Max: {FullPowerMax:.1f} mA'
+MinLabel = f'Min: {FullPowerMin:.1f} mA'
+plt.plot(csvFull['TIME'] * tomin, csvFull['AMP'], color='blue', alpha = 0.5, )
+# plt.fill_between(csvFull['TIME'] *tomin, 0,0, color='blue', alpha=0.4, label=MaxLabel)
+plt.axhline(y=FullPowerMax, color='purple', alpha=0.6,linestyle='--', label=MaxLabel, linewidth = 2)
+plt.fill_between(csvFull['TIME']* tomin, 0,0, color='blue', alpha=0.4, label='Power Draw Excl GPS')
 plt.plot(csvGps['TIME']* tomin, csvGps['AMP'],color='lightblue', alpha = 0.4)
 
 GpsAvg = csvGps['AMP'].mean() - FullPowerAvg
-GpsMax = csvGps['AMP'].max() - FullPowerAvg
+GpsMax = csvGps['AMP'].max()
+GpsMaxR = csvGps['AMP'].max() - FullPowerAvg
 GpsAvgLabel = f'GPS Avg: +{GpsAvg:.1f} mA'
-GpsMaxLabel = f'GPS Max: +{GpsMax:.1f} mA'
+GpsMaxLabel = f'GPS Max: +{GpsMaxR:.1f} mA'
 plt.fill_between(csvGps['TIME']*tomin, csvGps['AMP'],FullPowerAvg, color='lightblue', alpha=0.3, label=GpsAvgLabel)
-plt.fill_between(csvGps['TIME']*tomin, 0,0, color='lightblue', alpha=0.3, label=GpsMaxLabel)
-AvgExclGpsLabel = f'Avg Excl GPS: +{FullPowerAvg:.1f} mA'
+# plt.fill_between(csvGps['TIME']*tomin, 0,0, color='lightblue', alpha=0.3, label=GpsMaxLabel)
+plt.axhline(y=GpsMax, color='blue', alpha=0.6,linestyle='--', label=GpsMaxLabel, linewidth = 2)
+AvgExclGpsLabel = f'Avg Excl GPS: {FullPowerAvg:.1f} mA'
 plt.axhline(y=FullPowerAvg, color='red', alpha=0.6, label=AvgExclGpsLabel, linewidth = 4)
 Avg = csvFuller['AMP'].mean()
-AvgInclGpsLabel = f'Avg Incl GPS: +{Avg:.1f} mA'
+AvgInclGpsLabel = f'Avg Incl GPS: {Avg:.1f} mA'
 plt.axhline(y=csvFuller['AMP'].mean(), color='orange', alpha=0.6, label=AvgInclGpsLabel, linewidth = 4)
 plt.fill_between(csvGps['TIME']*tomin, FullPowerAvg,0, color='blue', alpha=0.2)
 
+plt.xlim(0,75)
+plt.ylim(0,140)
 plt.legend(fontsize = 24, loc="upper right", frameon=True, shadow=True, fancybox=True)
 plt.subplots_adjust(left=0.08, right=0.92, top=0.92, bottom=0.12)
 plt.show()

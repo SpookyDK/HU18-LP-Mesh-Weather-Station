@@ -26,7 +26,7 @@ colors = ['red' if x < 0 else 'green' for x in our['diff']]
 
 # 1. Plot the main measured bars
 our_avg = our['measured'].mean()
-label_our = f"Measured Water Amount {our_avg:+.1f}ml"
+label_our = f"Measured Water Amount: Avg: {our_avg:+.1f}ml"
 plt.bar(our['ID'], our['measured'], 
         label=label_our, 
         color='blue', 
@@ -36,7 +36,7 @@ plt.bar(our['ID'], our['measured'],
 
 # 2. Plot the "Difference" bars starting from the 400 line
 dif_avg = our['diff'].mean()
-label_dif = f"Difference {dif_avg:+.1f}ml"
+label_dif = f"Difference: Avg: {dif_avg:+.1f}ml"
 plt.bar(our['ID'], our['diff'], 
         bottom=actual_value, 
         color=colors, 
@@ -67,8 +67,8 @@ for i in range(len(our)):
 plt.axhline(y=actual_value, color='black', linestyle='-', linewidth=3, label='Actual Amount: 400ml')
 
 # Formatting
-plt.xlabel('Test ID', fontsize=30)
-plt.ylabel('ml water', fontsize=36)
+plt.xlabel('Test NR', fontsize=30)
+plt.ylabel('ml Water', fontsize=36)
 plt.title('Measured Water Amount Through Bucket Gauge', fontsize=32)
 plt.xticks(our['ID'])
 plt.xticks(rotation=45, fontsize=24)
