@@ -11,11 +11,16 @@ fm.fontManager.addfont(pagella_path)
 plt.rcParams['font.family'] = 'TeX Gyre Pagella'
 
 csvBare = pd.read_csv("./power_bare.csv")
+csvBare1 = pd.read_csv("./power_bare.csv")
+csvBare2 = pd.read_csv("./power_bare.csv")
 csvFull = pd.read_csv("./power_full.csv") 
 csvHall = pd.read_csv("./power_hall.csv")
 csvTemp = pd.read_csv("./power_tempds.csv")
 csvLight = pd.read_csv("./power_light.csv")
 csvSoil = pd.read_csv("./power_soil.csv")
+
+
+
 
 print(csvBare.dtypes)
 print(csvFull.dtypes)
@@ -25,6 +30,8 @@ print(csvLight.dtypes)
 print(csvSoil.dtypes)
 
 csvBare = csvBare[csvBare['TIME'].between(5000, 45000)]
+csvBare1 = csvBare1[csvBare1['TIME'].between(5000, 45000)]
+csvBare2 = csvBare2[csvBare2['TIME'].between(5000, 45000)]
 
 csvFull['TIME'] = csvFull['TIME'] + 4605
 csvFull = csvFull[csvFull['TIME'].between(5000, 45000)]
@@ -39,6 +46,14 @@ csvLight = csvLight[csvLight['TIME'].between(5000, 45000)]
 
 csvSoil['TIME'] = csvSoil['TIME'] + 1100 - 20
 csvSoil = csvSoil[csvSoil['TIME'].between(5000, 45000)]
+mask = (csvBare['TIME'].between(6634, 7545)) | \
+       (csvBare['TIME'].between(16639, 17547)) | \
+       (csvBare['TIME'].between(26635, 27540)) | \
+       (csvBare['TIME'].between(36645, 37552))
+
+csvBare1.loc[mask, 'AMP'] = np.nan
+csvBare2.loc[~mask, 'AMP'] = np.nan
+
 # plt.plot(csvBare['TIME'], csvBare['AMP'], label=('BARE BOARD: Avg = ', 1, 'mA'))
 # plt.plot(csvFull['TIME'], csvFull['AMP'], label='FULL')
 # plt.plot(csvHall['TIME'], csvHall['AMP'], label='Hall')
@@ -105,10 +120,12 @@ plt.tick_params(axis='x', labelsize=28)
 plt.title("Cumulative Power Draw of Main Board and External Sensors On the Weather Station",fontsize=35)
 
 
-BareLabel = f'MainBoard Power Share: +{BarePowerAvg:.1f} mA'
-plt.plot(csvBare['TIME'], csvBare['AMP'])
-plt.fill_between(csvBare['TIME'], csvBare['AMP'], 0, color = 'gray', alpha = 0.2, label=BareLabel)
+BareLabel = f'MainBoard Power Share: {BarePowerAvg:.1f} mA'
+plt.plot(csvBare1['TIME'], csvBare1['AMP'])
+plt.fill_between(csvBare['TIME'], csvBare1['AMP'], 0, color = 'gray', alpha = 0.2, label=BareLabel)
 
+plt.plot(csvBare2['TIME'], csvBare2['AMP'])
+plt.fill_between(csvBare2['TIME'], csvBare2['AMP'], 0, color = 'blue', alpha = 0.2, label=BareLabel)
 
 
 LightLabel = f'Light Sensor Power Share: +{LightPowerDif:.1f} mA'
@@ -131,6 +148,8 @@ plt.fill_between(csvBare['TIME'], csvBare['AMP']+LightPowerDif+TempPowerDif+Soil
 FullLabel = f'Full PowerDraw: +{TotalAvg:.1f} mA'
 plt.fill_between(csvBare['TIME'], csvBare['AMP']+LightPowerDif+TempPowerDif+SoilPowerDif,csvBare['AMP']+LightPowerDif+TempPowerDif+SoilPowerDif+HallPowerDif, color='green', alpha=0.0, label=FullLabel)
 
+plt.xlim(5000,45000)
+plt.ylim(0,150)
 plt.legend(fontsize = 24, loc="upper right", frameon=True, shadow=True, fancybox=True)
 plt.subplots_adjust(left=0.08, right=0.92, top=0.92, bottom=0.12)
 plt.show()
