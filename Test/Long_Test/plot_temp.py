@@ -43,19 +43,20 @@ ax1.tick_params(axis='x', labelsize=28, rotation=45)
 line_air = ax1.plot(our['TIME'], our['AIR TEMP'], label='Air Temp', color='orange', linewidth=4)
 fill_soil = ax1.fill_between(our['TIME'], temp_min, temp_max, color='lightblue', alpha=0.7, label='Soil Temp Range')
 line_avg_soil = ax1.plot(our['TIME'], our[temp_cols].mean(axis=1) * 0.9094 + 0.1375, color='blue', label='Average Soil Temp', linewidth=1.5, alpha=0.3)
+# line_avg_soil = ax1.plot(our['TIME'], our[temp_cols].mean(axis=1), color='blue', label='Average Soil Temp', linewidth=1.5, alpha=0.3)
 line_dmi = ax1.plot(dmi['DateTime'], dmi['air_temp'], label='DMI Avg', color='green', linewidth=4)
 
 # --- PLOT LIGHT DATA (Right Axis) ---
 ax2 = ax1.twinx()  # Instantiate a second axes that shares the same x-axis
 ax2.set_ylim(0, 200000)
-ax2.set_ylabel('Relative LIGHT', color='gold', fontsize=30)
-ax2.tick_params(axis='y', labelcolor='gold', labelsize=28)
+ax2.set_ylabel('Relative LIGHT', color='black', fontsize=30)
+ax2.tick_params(axis='y', labelcolor='black', labelsize=28)
 
 line_light = ax2.plot(our['TIME'], our['LIGHT_SCALED'], label='Relative LIGHT', color='gold', linewidth=2)
 ax2.fill_between(our['TIME'], our['LIGHT_SCALED'], color='yellow', alpha=0.2)
 
 # --- FORMATTING ---
-plt.title('Air and Soil Temperatures Over Time For Initial Test Compared to DMI', fontsize=32)
+plt.title('Compensated Air and Soil Temperatures Over Time For Long Deployment Compared to DMI', fontsize=32)
 
 # X-axis date formatting
 ax1.xaxis.set_major_locator(mdates.HourLocator(interval=24))
