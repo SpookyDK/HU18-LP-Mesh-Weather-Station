@@ -32,6 +32,7 @@ print(csvSoil.dtypes)
 csvBare = csvBare[csvBare['TIME'].between(5000, 45000)]
 csvBare1 = csvBare1[csvBare1['TIME'].between(5000, 45000)]
 csvBare2 = csvBare2[csvBare2['TIME'].between(5000, 45000)]
+csvBare3 = csvBare2[csvBare2['TIME'].between(5000, 45000)]
 
 csvFull['TIME'] = csvFull['TIME'] + 4605
 csvFull = csvFull[csvFull['TIME'].between(5000, 45000)]
@@ -46,13 +47,18 @@ csvLight = csvLight[csvLight['TIME'].between(5000, 45000)]
 
 csvSoil['TIME'] = csvSoil['TIME'] + 1100 - 20
 csvSoil = csvSoil[csvSoil['TIME'].between(5000, 45000)]
-mask = (csvBare['TIME'].between(6634, 7545)) | \
+mask = (csvBare['TIME'].between(6634, 7745)) | \
        (csvBare['TIME'].between(16639, 17547)) | \
        (csvBare['TIME'].between(26635, 27540)) | \
        (csvBare['TIME'].between(36645, 37552))
 
-csvBare1.loc[mask, 'AMP'] = np.nan
-csvBare2.loc[~mask, 'AMP'] = np.nan
+mask2 = (csvBare['TIME'].between(6533, 7646)) | \
+       (csvBare['TIME'].between(16538, 17648)) | \
+       (csvBare['TIME'].between(26534, 27641)) | \
+       (csvBare['TIME'].between(36544, 37651))
+csvBare1.loc[mask, 'AMP'] = 36
+csvBare2.loc[~mask2, 'AMP'] = np.nan
+csvBare3.loc[~mask2, 'AMP'] = 0
 
 # plt.plot(csvBare['TIME'], csvBare['AMP'], label=('BARE BOARD: Avg = ', 1, 'mA'))
 # plt.plot(csvFull['TIME'], csvFull['AMP'], label='FULL')
@@ -117,37 +123,39 @@ plt.xlabel('Time[ms]', fontsize=30)
 plt.ylabel('mA', fontsize=30)
 plt.tick_params(axis='y', labelsize=28)
 plt.tick_params(axis='x', labelsize=28)
-plt.title("Cumulative Power Draw of Main Board and External Sensors On the Weather Station",fontsize=35)
+plt.title("Avg Relative Current Draw of Different Parts on The Weather Station in Relation to The MainBoard",fontsize=35)
 
 
-BareLabel = f'MainBoard Power Share: {BarePowerAvg:.1f} mA'
+BareLabel = f'MainBoard Avg Current: {BarePowerAvg:.1f} mA'
 plt.plot(csvBare1['TIME'], csvBare1['AMP'])
 plt.fill_between(csvBare['TIME'], csvBare1['AMP'], 0, color = 'gray', alpha = 0.2, label=BareLabel)
+LoraAvg = csvBare2['AMP'].mean()
+LoraAvgAll = csvBare3['AMP'].mean()
+# LoraLabel = f'LoRa Avg Current: +{LoraAvg:.1f} mA / Avg:+{LoraAvgAll:.1f} mA'
+# plt.plot(csvBare2['TIME'], csvBare2['AMP'])
+# plt.fill_between(csvBare2['TIME'], csvBare2['AMP'], 36, color = 'orange', alpha = 0.2, label=LoraLabel)
 
-plt.plot(csvBare2['TIME'], csvBare2['AMP'])
-plt.fill_between(csvBare2['TIME'], csvBare2['AMP'], 0, color = 'blue', alpha = 0.2, label=BareLabel)
 
+LightLabel = f'Light Sensor Avg Current: +{LightPowerDif:.1f} mA'
+plt.plot(csvBare['TIME'], csvBare['AMP']+LightPowerDif, color='yellow')
+plt.fill_between(csvBare['TIME'], csvBare['AMP']+LightPowerDif,csvBare['AMP'], color='yellow', alpha=0.2, label=LightLabel)
 
-LightLabel = f'Light Sensor Power Share: +{LightPowerDif:.1f} mA'
-plt.plot(csvBare['TIME'], csvBare['AMP'] + LightPowerDif, color='yellow')
-plt.fill_between(csvBare['TIME'], csvBare['AMP'],csvBare['AMP']+LightPowerDif, color='yellow', alpha=0.2, label=LightLabel)
-
-TempLabel = f'Ds18b20 Temp Power Share: +{TempPowerDif:.1f} mA'
+TempLabel = f'Ds18b20 Temp Avg Current: +{TempPowerDif:.1f} mA'
 plt.plot(csvBare['TIME'], csvBare['AMP'] + LightPowerDif + TempPowerDif, color='blue')
 plt.fill_between(csvBare['TIME'], csvBare['AMP']+LightPowerDif,csvBare['AMP']+LightPowerDif+TempPowerDif, color='blue', alpha=0.2, label=TempLabel)
 
 
-SoilLabel = f'Soil Moisture Power Share: +{SoilPowerDif:.1f} mA'
+SoilLabel = f'Soil Moisture Avg Current: +{SoilPowerDif:.1f} mA'
 plt.plot(csvBare['TIME'], csvBare['AMP'] + SoilPowerDif + LightPowerDif + TempPowerDif, color='red')
 plt.fill_between(csvBare['TIME'], csvBare['AMP']+LightPowerDif+TempPowerDif,csvBare['AMP']+LightPowerDif+TempPowerDif+SoilPowerDif, color='red', alpha=0.2, label=SoilLabel)
 
-HallLabel = f'Hall Effect Power Share: +{HallPowerDif:.1f} mA'
+HallLabel = f'Hall Effect Avg Current: +{HallPowerDif:.1f} mA'
 plt.plot(csvBare['TIME'], csvBare['AMP'] + SoilPowerDif + LightPowerDif + TempPowerDif + HallPowerDif, color='green')
 plt.fill_between(csvBare['TIME'], csvBare['AMP']+LightPowerDif+TempPowerDif+SoilPowerDif,csvBare['AMP']+LightPowerDif+TempPowerDif+SoilPowerDif+HallPowerDif, color='green', alpha=0.2, label=HallLabel)
 
-FullLabel = f'Full PowerDraw: +{TotalAvg:.1f} mA'
-plt.fill_between(csvBare['TIME'], csvBare['AMP']+LightPowerDif+TempPowerDif+SoilPowerDif,csvBare['AMP']+LightPowerDif+TempPowerDif+SoilPowerDif+HallPowerDif, color='green', alpha=0.0, label=FullLabel)
+FullLabel = f'Full System Avg Current: +{TotalAvg:.1f} mA'
 
+# plt.axhline(y=TotalAvg, color='purple', alpha=0.6,linestyle='--', label=FullLabel, linewidth = 2)
 plt.xlim(5000,45000)
 plt.ylim(0,150)
 plt.legend(fontsize = 24, loc="upper right", frameon=True, shadow=True, fancybox=True)
