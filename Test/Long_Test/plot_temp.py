@@ -26,8 +26,8 @@ cols_to_float = ['SOIL TEMP1', 'SOIL TEMP2', 'SOIL TEMP3', 'SOIL TEMP4', 'AIR TE
 for col in cols_to_float:
     our[col] = pd.to_numeric(our[col], errors='coerce')  # invalid values become NaN
 # Calculate row-wise min and max
-temp_min = our[temp_cols].min(axis=1)
-temp_max = our[temp_cols].max(axis=1)
+temp_min = our[temp_cols].min(axis=1) * 0.9094 + 0.1375
+temp_max = our[temp_cols].max(axis=1)* 0.9094 + 0.1375
 our['LIGHT_SCALED'] = our['LIGHT'] # Keeping your requested factor
 our['AIR TEMP'] =  our['AIR TEMP'] * 0.8723 - 0.0601# Keeping your requested factor
 

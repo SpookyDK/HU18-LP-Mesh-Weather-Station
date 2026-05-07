@@ -1,4 +1,4 @@
-import pandas as pd
+import pandas as pd 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
@@ -76,7 +76,7 @@ plt.xlabel('Time', fontsize=30)
 plt.ylabel('Wind Speed [m/s]', fontsize=30)
 plt.tick_params(axis='y', labelsize=28)
 plt.tick_params(axis='x', labelsize=28, rotation=45)
-plt.title("Gathered Wind Speed Data with Correction Applied Compared to DMI",fontsize=35)
+plt.title("Gathered Wind Speed Data Compared to DMI Aalborg Area",fontsize=35)
 ax = plt.gca()
 ax.xaxis.set_major_locator(mdates.HourLocator(interval=24))
 ax.xaxis.set_major_formatter(mdates.DateFormatter('%a:%H:%M'))
@@ -168,11 +168,12 @@ plt.plot(hourly_avg['hour'], hourly_avg['Højeste 10 min. middelvind'], label=Dm
 RawLabel = f'Raw Wind Data (Buggy): Avg +{RawAvg:.1f} [m/s]: Acc {accuracy_point_raw:.1f}%'
 plt.plot(hourly_avg['hour'], hourly_avg['wind'], label=RawLabel, color='orange', alpha=0.8)
 
-CorLabel = f'Corrected Wind Data: Avg +{CorAvg:.1f} [m/s]: Acc {accuracy_point:.1f}%'
-plt.plot(hourly_avg['hour'], hourly_avg['wind_corrected'], label=CorLabel, color='red', linewidth=2, alpha=0.8)
+# CorLabel = f'Corrected Wind Data: Avg +{CorAvg:.1f} [m/s]: Acc {accuracy_point:.1f}%'
+# plt.plot(hourly_avg['hour'], hourly_avg['wind_corrected'], label=CorLabel, color='red', linewidth=2, alpha=0.8)
+#
+# CorCorLabel = f'Calibrated Corrected Wind Data: Avg +{CorCorAvg:.1f} [m/s]: Acc {accuracy_point_cor:.1f}%'
+# plt.plot(hourly_avg['hour'], hourly_avg['wind_corrected_cor'], label=CorCorLabel, color='pink', linewidth=2, alpha=0.8)
 
-CorCorLabel = f'Calibrated Corrected Wind Data: Avg +{CorCorAvg:.1f} [m/s]: Acc {accuracy_point_cor:.1f}%'
-plt.plot(hourly_avg['hour'], hourly_avg['wind_corrected_cor'], label=CorCorLabel, color='pink', linewidth=2, alpha=0.8)
-
-plt.legend(fontsize = 24, loc="upper right", frameon=True, shadow=True, fancybox=True)
+plt.xlim(hourly_avg['hour'].min(), hourly_avg['hour'].max())
+plt.legend(fontsize = 24, loc="upper left", frameon=True, shadow=True, fancybox=True)
 plt.show()
