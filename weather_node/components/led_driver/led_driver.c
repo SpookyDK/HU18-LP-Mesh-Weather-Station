@@ -208,11 +208,17 @@ esp_err_t ws2812_on_red(void) {
 }
 esp_err_t ws2812_on_yellow(void) {
     LED_POST_PONE();
-    return ws2812_set_color(50, 30, 0);
+    ws2812_set_color(50, 15, 0);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    return ws2812_on_pink();
 }
 esp_err_t ws2812_on_blue(void) {
     LED_POST_PONE();
     return ws2812_set_color(0, 0, 50);
+}
+esp_err_t ws2812_on_pink(void) {
+    LED_POST_PONE();
+    return ws2812_set_color(50, 0, 50);
 }
 
 esp_err_t ws2812_deinit(void) {

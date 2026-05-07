@@ -44,6 +44,7 @@ esp_err_t ws2812_on_green(void);
 esp_err_t ws2812_on_red(void);
 esp_err_t ws2812_on_yellow(void);
 esp_err_t ws2812_on_blue(void);
+esp_err_t ws2812_on_pink(void);
 
 /**
  * @brief Release the RMT channel.  Call if you need to re-use the peripheral.
