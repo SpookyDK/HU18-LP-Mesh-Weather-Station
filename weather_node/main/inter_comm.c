@@ -320,9 +320,9 @@ void inter_comm_task(void *arg) {
         }
 
         if (xTaskNotifyWait(0, ULONG_MAX, NULL, 0) == pdPASS) {
+            ws2812_on_green();
             block_if_receiving();
             lora_send_packet((uint8_t *)&data_packet, sizeof(full_packet_t));
-            ws2812_on_green();
             ESP_LOGI(TAG, "Sent Packet with id: '%d'", data_packet.head.packet_id);
         }
 
