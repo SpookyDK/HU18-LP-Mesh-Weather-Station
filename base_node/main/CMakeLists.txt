@@ -1,7 +1,8 @@
 set(EXTERNAL_LIBS "../../weather_node/main/my_drivers")
 
-idf_component_register(SRCS "main.c" "site_content.c" "web_server.c" "big_data.c" "sd_card.c" "${EXTERNAL_LIBS}/lora.c" "${EXTERNAL_LIBS}/NEO_6M_UART.c" "fun_cache.c"
-  INCLUDE_DIRS "." "${EXTERNAL_LIBS}/../packet_def/" "${EXTERNAL_LIBS}/"
+idf_component_register(SRCS "main.c" "site_content.c" "web_server.c" "big_data.c" "sd_card.c" "${EXTERNAL_LIBS}/lora.c" "${EXTERNAL_LIBS}/NEO_6M_UART.c" "fun_cache.c" "${EXTERNAL_LIBS}/../../components/led_driver/led_driver.c"
+  INCLUDE_DIRS "." "${EXTERNAL_LIBS}/../packet_def/" "${EXTERNAL_LIBS}/" "${EXTERNAL_LIBS}/../../components/led_driver/"
+
                     EMBED_FILES "content/favicon.ico"
                     REQUIRES esp_wifi nvs_flash esp_http_server fatfs esp_timer driver)
 

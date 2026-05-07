@@ -6,6 +6,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "hal/spi_types.h"
+#include "led_driver.h"
 #include "lora.h"
 #include "pin_config.h"
 #include "soc/gpio_struct.h"
@@ -287,6 +288,7 @@ int lora_receive_packet(uint8_t *buf, int size) {
     }
     if (irq & IRQ_PAYLOAD_CRC_ERROR_MASK) {
         ESP_LOGW(TAG, "Failed to read due to CRC Masking error");
+        ws2812_on_red();
         return 0;
     }
 

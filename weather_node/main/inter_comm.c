@@ -7,6 +7,7 @@
 #include "freertos/semphr.h"
 #include "i2c_tasks.h"
 #include "inter_comm.h"
+#include "led_driver.h"
 #include "lora.h"
 #include "moist_soil.h"
 #include "nvs_flash.h"
@@ -232,6 +233,8 @@ static void receive_something() {
             ESP_LOGI(TAG, "Ignoring received cached packet id='%d' node='%d'", temp_packet.head.packet_id, temp_packet.head.orig_node_id);
             break;
         }
+        ws2812_on_blue();
+        vTaskDelay(pdMS_TO_TICKS(1000));
         block_if_receiving();
         lora_send_packet((uint8_t *)&temp_packet, lora_buf_len);
         ESP_LOGI(TAG, "Bouncing packet from node='%d' id='%d'", temp_packet.head.orig_node_id, temp_packet.head.packet_id);
@@ -308,6 +311,7 @@ void inter_comm_task(void *arg) {
     }
     const TickType_t interval = pdMS_TO_TICKS(30000);
     TickType_t last_interval = xTaskGetTickCount();
+    ws2812_init();
 
     while (1) {
         lora_receive();
@@ -318,6 +322,7 @@ void inter_comm_task(void *arg) {
         if (xTaskNotifyWait(0, ULONG_MAX, NULL, 0) == pdPASS) {
             block_if_receiving();
             lora_send_packet((uint8_t *)&data_packet, sizeof(full_packet_t));
+            ws2812_on_green();
             ESP_LOGI(TAG, "Sent Packet with id: '%d'", data_packet.head.packet_id);
         }
 
@@ -328,6 +333,7 @@ void inter_comm_task(void *arg) {
             last_interval = xTaskGetTickCount();
         }
         vTaskDelay(10);
+        ws2812_off();
     }
     ESP_LOGE(TAG, "Unexpectedly left comm task");
     vTaskDelete(NULL);

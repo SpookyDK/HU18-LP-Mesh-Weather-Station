@@ -11,6 +11,7 @@
 #include "freertos/task.h"
 #include "fun_cache.h"
 #include "hal/gpio_types.h"
+#include "led_driver.h"
 #include "lora.h"
 #include "packet_def.h"
 #include "pin_config.h"
@@ -88,6 +89,7 @@ static void receive_something() {
             break;
         }
         if (is_duplicate(full_packet.head)) {
+            ws2812_on_yellow();
             ESP_LOGI(TAG, "Ignoring received cached packet id='%d' node='%d'", full_packet.head.packet_id, full_packet.head.orig_node_id);
             break;
         }
@@ -176,11 +178,12 @@ static void receive_task(void *p) {
 
     lora_init();
     lora_dump_registers();
+    ws2812_init();
 
     while (1) {
         lora_receive();
         uint32_t notif;
-        xTaskNotifyWait(0, ULONG_MAX, &notif, portMAX_DELAY);
+        xTaskNotifyWait(0, ULONG_MAX, &notif, 0);
         switch (notif & 0xffff) {
         case NOTIF_LORA_PAIRING:
             send_pairing_confirmation(notif >> 16);
@@ -194,6 +197,7 @@ static void receive_task(void *p) {
             break;
         }
         vTaskDelay(pdMS_TO_TICKS(10));
+        ws2812_off();
     }
     ESP_LOGW(TAG, "Left task");
 }
