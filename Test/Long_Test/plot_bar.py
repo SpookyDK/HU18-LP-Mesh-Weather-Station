@@ -31,7 +31,7 @@ dmi_cropped = dmi[(dmi['DateTime'] >= start_date) & (dmi['DateTime'] <= end_date
 plt.figure(figsize=(16,10))
 plt.xlabel('Time', fontsize = 24)
 plt.ylabel('Humidity (RH%)', fontsize = 24)
-plt.title('Air Humidity Measured From Initial Test Compared To DMI', fontsize = 25)
+plt.title('Pressure Measured From 2 Week Deployment Compared To DMI', fontsize = 30)
 plt.plot(our_cropped['TIME'], our_cropped['PRESSURE'], label='Measured Pressure', color='orange', linewidth=4)
 plt.plot(dmi_cropped['DateTime'], dmi_cropped['Lufttryk'], label='DMI Pressure', color='green', linewidth = 4)
 plt.axhline()
@@ -42,7 +42,7 @@ plt.xticks(rotation=45, fontsize=20)  # x-axis values
 plt.yticks(fontsize=20)               # y-axis values
 plt.subplots_adjust(left=0.05, right=0.98, top=0.95, bottom=0.07, hspace=0.3)
 plt.legend(
-    fontsize=20,           # font size
+    fontsize=30,           # font size
     loc='upper right',     # legend position
     frameon=True,          # show box around legend
     shadow=True,           # shadow effect
