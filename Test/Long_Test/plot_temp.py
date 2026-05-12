@@ -162,4 +162,7 @@ if not sync_soil_df.empty:
     print(f"Average Moment-to-Moment Error: {mae_soil:.2f} °C")
 else:
     print("No overlapping data found for Soil Temp analysis.")
+
+testtest =our['SOIL_AVG'].mean()
+print(testtest)
 plt.show()
